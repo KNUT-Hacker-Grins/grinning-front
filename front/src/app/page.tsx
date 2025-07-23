@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 
 interface LostItem {
   id: number;
@@ -103,10 +104,16 @@ export default function Home() {
         {/* 로고와 프로필 */}
         <div className="flex justify-between items-center mb-[50px]">
           <div className="flex gap-[15px]">
-            <div className="w-[61px] h-10 bg-gray-300 rounded-[20px]"></div>
-            <div className="w-[61px] h-10 bg-gray-300 rounded-[20px]"></div>
+            <Link href="/mypage">
+              <div className="w-[61px] h-10 bg-gray-300 rounded-[20px]"></div>
+            </Link>
+            <Link href="/mypage">
+              <div className="w-[61px] h-10 bg-gray-300 rounded-[20px]"></div>
+            </Link>
           </div>
-          <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
+          <Link href="/mypage">
+            <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
+          </Link>
         </div>
 
         {/* 위치 */}
