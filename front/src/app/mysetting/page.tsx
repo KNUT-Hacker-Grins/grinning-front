@@ -19,6 +19,7 @@ export default function MySettingPage() {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
+  // prev 전체 상태,...prev 기존 상태 복사,[name]: value는 특정 필드만 바꿔치기
 
   const handleSave = () => {
     // TODO: 저장 처리 로직
