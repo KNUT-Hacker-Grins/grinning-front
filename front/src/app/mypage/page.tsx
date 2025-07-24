@@ -9,7 +9,7 @@ export default function MyPage() {
   return (
     <main className="min-h-screen bg-white flex justify-center">
       <div className="w-full max-w-md mx-auto" style={{maxWidth: '390px'}}>
-        <div className="p-4 pt-0 space-y-6">
+        <div className="p-4 pt-0 space-y-4">
           <MyPageHeader />
 
           <ProfileCard name="김민지" email="minji.kim@email.com" />
