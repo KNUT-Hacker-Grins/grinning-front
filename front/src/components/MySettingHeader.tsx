@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import Image from 'next/image';
+import { FaArrowLeft } from 'react-icons/fa';
+
 
 interface MySettingHeaderProps {
   onSave: () => void;
@@ -9,7 +10,7 @@ export default function MySettingHeader({ onSave }: MySettingHeaderProps) {
   return (
     <header className="w-full h-[69px] border-b border-gray-100 flex items-center justify-between px-4">
       <Link href="/mypage">
-        <Image src="/back-arrow.svg" alt="뒤로가기" width={24} height={24} />
+      <FaArrowLeft size={20} className="text-gray-700" />
       </Link>
       <h1 className="text-lg font-semibold text-gray-900">프로필 수정</h1>
       <button
