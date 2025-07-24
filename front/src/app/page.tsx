@@ -187,7 +187,7 @@ export default function Home() {
         <div className="overflow-x-auto scrollbar-hide">
           <div className="flex gap-[20px] px-6" style={{ width: 'max-content' }}>
             {foundItems.map((item) => (
-              <div key={item.id} className="flex flex-col flex-shrink-0" style={{ width: '124px' }}>
+              <Link key={item.id} href={`/lost-item/${item.id}`} className="flex flex-col flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity" style={{ width: '124px' }}>
                 <div className="w-[124px] h-[124px] bg-gray-300 rounded-xl mb-[7px] overflow-hidden">
                   {/* 실제로는 데이터베이스에서 가져온 이미지를 표시 */}
                   <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-400"></div>
@@ -199,7 +199,7 @@ export default function Home() {
                   <span className="line-clamp-1 max-w-[70px]">{item.location}</span>
                   <span className="flex-shrink-0">{item.timeAgo}</span>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -216,7 +216,7 @@ export default function Home() {
         <div className="overflow-x-auto scrollbar-hide">
           <div className="flex gap-[20px] px-6" style={{ width: 'max-content' }}>
             {wantedItems.map((item) => (
-              <div key={item.id} className="flex flex-col flex-shrink-0" style={{ width: '124px' }}>
+              <Link key={item.id} href={`/lost-item/${item.id}`} className="flex flex-col flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity" style={{ width: '124px' }}>
                 <div className="w-[124px] h-[124px] bg-gray-300 rounded-xl mb-[7px] overflow-hidden">
                   <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-400"></div>
                 </div>
@@ -227,7 +227,7 @@ export default function Home() {
                   <span className="line-clamp-1 max-w-[70px]">{item.location}</span>
                   <span className="flex-shrink-0">{item.timeAgo}</span>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>

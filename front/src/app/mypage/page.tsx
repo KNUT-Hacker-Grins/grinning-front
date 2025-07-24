@@ -17,18 +17,21 @@ export default function MyPage() {
           <div className="space-y-2">
             <SectionTitle title="내가 등록한 분실물" />
             <RegisteredItemCard
+              id="1"
               title="검은색 지갑"
               location="홍대입구역 2번 출구 근처"
               date="2024.01.15"
               status="진행 중"
             />
             <RegisteredItemCard
+              id="2"
               title="아이폰 14 Pro"
               location="강남역 스타벅스"
               date="2024.01.10"
               status="회수 완료"
             />
             <RegisteredItemCard
+              id="1"
               title="노트북 파우치"
               location="이대역 2번 출구"
               date="2024.01.08"
