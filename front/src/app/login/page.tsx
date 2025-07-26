@@ -2,18 +2,37 @@
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { api, tokenManager } from '@/lib/api';
 
 export default function LoginPage() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (provider: 'kakao' | 'google') => {
-    // 로그인 상태를 localStorage에 저장
-    localStorage.setItem('isLoggedIn', 'true');
-    localStorage.setItem('loginProvider', provider);
+  const handleSocialLogin = (provider: 'kakao' | 'google') => {
+    setIsLoading(true);
     
-    // 메인 페이지로 이동
-    router.push('/');
+    // 백엔드 OAuth URL로 리다이렉트
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    
+    if (provider === 'kakao') {
+      window.location.href = `${API_BASE_URL}/api/auth/kakao/callback`;
+    } else if (provider === 'google') {
+      window.location.href = `${API_BASE_URL}/api/auth/google/callback`;
+    }
   };
+
+  // URL에서 토큰 확인 (OAuth 콜백 후)
+  useState(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const accessToken = urlParams.get('access_token');
+    const refreshToken = urlParams.get('refresh_token');
+
+    if (accessToken && refreshToken) {
+      tokenManager.setTokens(accessToken, refreshToken);
+      router.push('/');
+    }
+  });
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-50">
@@ -41,8 +60,11 @@ export default function LoginPage() {
           <div className="absolute top-[216px] w-[342px] h-[108px]">
             {/* 카카오 로그인 버튼 */}
             <button 
-              className="w-[342px] h-[46px] bg-[#fee500] rounded-md flex items-center justify-center relative hover:bg-[#fdd835] transition-colors"
-              onClick={() => handleLogin('kakao')}
+              className={`w-[342px] h-[46px] bg-[#fee500] rounded-md flex items-center justify-center relative hover:bg-[#fdd835] transition-colors ${
+                isLoading ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+              onClick={() => handleSocialLogin('kakao')}
+              disabled={isLoading}
             >
               <div className="absolute left-[95px] flex items-center">
                 <Image 
@@ -54,14 +76,17 @@ export default function LoginPage() {
                 />
               </div>
               <span className="text-[14px] font-medium text-gray-800">
-                카카오로 로그인하기
+                {isLoading ? '로그인 중...' : '카카오로 로그인하기'}
               </span>
             </button>
 
             {/* 구글 로그인 버튼 */}
             <button 
-              className="w-[342px] h-[46px] bg-white border border-gray-300 rounded-md flex items-center justify-center relative mt-4 hover:bg-gray-50 transition-colors"
-              onClick={() => handleLogin('google')}
+              className={`w-[342px] h-[46px] bg-white border border-gray-300 rounded-md flex items-center justify-center relative mt-4 hover:bg-gray-50 transition-colors ${
+                isLoading ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+              onClick={() => handleSocialLogin('google')}
+              disabled={isLoading}
             >
               <div className="absolute left-[103px] flex items-center">
                 <Image 
@@ -73,7 +98,7 @@ export default function LoginPage() {
                 />
               </div>
               <span className="text-[14px] font-medium text-gray-700">
-                구글로 로그인하기
+                {isLoading ? '로그인 중...' : '구글로 로그인하기'}
               </span>
             </button>
           </div>

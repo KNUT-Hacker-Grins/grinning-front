@@ -1,39 +1,54 @@
 'use client';
 
 import { useRouter, useParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import { FaArrowLeft, FaEllipsisV, FaMapMarkerAlt, FaComments, FaCheck, FaFlag } from 'react-icons/fa';
 import BottomNav from '@/components/BottomNav';
+import { api } from '@/lib/api';
 
-// 임시 분실물 데이터 
-// DB 연동 TODO
+interface LostItem {
+  id: number;
+  title: string;
+  description: string;
+  lost_at: string;
+  lost_location: string;
+  image_urls: string[];
+  category: any;
+  reward: number;
+  status: 'searching' | 'found' | 'cancelled';
+  created_at: string;
+  updated_at: string;
+  user: {
+    id: number;
+    name: string;
+    email: string;
+  };
+}
 
-const mockLostItems = {
-  '1': {
-    id: '1',
-    title: '갈색 가죽 지갑',
-    category: '지갑',
-    image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=300&fit=crop',
-    timeAgo: '2시간 전',
-    location: '서울시 강남구 역삼동 테헤란로 427 지하철 2호선 역삼역 3번 출구 근처',
-    registrationDate: '2024년 1월 15일',
-    reward: '50,000원',
-    categoryDetail: '지갑 · 개인용품',
-    status: '찾는 중',
-    description: '갈색 가죽 지갑을 분실했습니다. 크기는 가로 10cm, 세로 8cm 정도이며, 안에 신분증과 카드들이 들어있습니다. 지갑 앞면에 작은 금속 로고가 있습니다. 찾아주시면 정말 감사하겠습니다.'
-  },
-  '2': {
-    id: '2',
-    title: '검은색 지갑',
-    category: '지갑',
-    image: 'https://images.unsplash.com/photo-1627123424574-724758594e93?w=400&h=300&fit=crop',
-    timeAgo: '5시간 전',
-    location: '홍대입구역 2번 출구 근처',
-    registrationDate: '2024년 1월 15일',
-    reward: '30,000원',
-    categoryDetail: '지갑 · 개인용품',
-    status: '진행 중',
-    description: '검은색 가죽 지갑을 분실했습니다. 작은 크기이며 카드와 현금이 들어있었습니다.'
-  }
+// 시간 차이 계산 함수
+const getTimeAgo = (dateString: string) => {
+  const now = new Date();
+  const createdAt = new Date(dateString);
+  const diffInMinutes = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60));
+  
+  if (diffInMinutes < 1) return '방금 전';
+  if (diffInMinutes < 60) return `${diffInMinutes}분 전`;
+  
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours}시간 전`;
+  
+  const diffInDays = Math.floor(diffInHours / 24);
+  return `${diffInDays}일 전`;
+};
+
+// 날짜 포맷 함수
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
 };
 
 export default function LostItemDetailPage() {
@@ -41,14 +56,60 @@ export default function LostItemDetailPage() {
   const params = useParams();
   const itemId = params.id as string;
   
-  const item = mockLostItems[itemId as keyof typeof mockLostItems];
+  const [item, setItem] = useState<LostItem | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!item) {
+  // 분실물 상세 정보 가져오기
+  useEffect(() => {
+    const fetchLostItem = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        const response = await api.lostItems.getById(parseInt(itemId));
+        
+        if (response) {
+          setItem(response);
+        } else {
+          setError('분실물을 찾을 수 없습니다.');
+        }
+      } catch (error: any) {
+        console.error('분실물 정보 가져오기 실패:', error);
+        setError('분실물 정보를 불러오는데 실패했습니다.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (itemId) {
+      fetchLostItem();
+    }
+  }, [itemId]);
+
+  // 로딩 상태
+  if (isLoading) {
     return (
       <main className="flex justify-center min-h-screen bg-white">
         <div className="flex justify-center items-center mx-auto w-full max-w-md" style={{maxWidth: '390px'}}>
           <div className="text-center">
-            <h2 className="mb-4 text-xl font-semibold text-gray-900">분실물을 찾을 수 없습니다</h2>
+            <div className="mx-auto mb-4 w-12 h-12 rounded-full border-b-2 border-indigo-600 animate-spin"></div>
+            <p className="text-gray-600">분실물 정보를 불러오는 중...</p>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // 에러 상태 또는 아이템이 없는 경우
+  if (error || !item) {
+    return (
+      <main className="flex justify-center min-h-screen bg-white">
+        <div className="flex justify-center items-center mx-auto w-full max-w-md" style={{maxWidth: '390px'}}>
+          <div className="text-center">
+            <h2 className="mb-4 text-xl font-semibold text-gray-900">
+              {error || '분실물을 찾을 수 없습니다'}
+            </h2>
             <button 
               onClick={() => router.back()}
               className="text-indigo-600 hover:text-indigo-800"
@@ -70,9 +131,17 @@ export default function LostItemDetailPage() {
     // TODO 채팅 기능 구현       
   };
 
-  const handleFound = () => {
-    console.log('분실물 찾음');
-    // TODO 분실물 찾음 기능        
+  const handleFound = async () => {
+    try {
+      await api.lostItems.updateStatus(item.id, 'found');
+      alert('분실물을 찾았다고 표시되었습니다!');
+      
+      // 상태 업데이트
+      setItem(prev => prev ? { ...prev, status: 'found' } : null);
+    } catch (error) {
+      console.error('상태 업데이트 실패:', error);
+      alert('상태 업데이트에 실패했습니다.');
+    }
   };
 
   const handleReport = () => {
@@ -82,143 +151,136 @@ export default function LostItemDetailPage() {
 
   return (
     <main className="flex justify-center min-h-screen bg-white">
-      <div className="mx-auto w-full max-w-md bg-white" style={{maxWidth: '390px'}}>
-        {/* 헤더 */}
-        <header className="flex justify-between items-center px-4 py-4 bg-white border-b border-gray-200">
+      <div className="flex flex-col mx-auto w-full max-w-md" style={{maxWidth: '390px'}}>
+        {/* 상단 헤더 */}
+        <div className="flex justify-between items-center p-4 bg-white border-b border-gray-200">
           <button 
             onClick={handleBack}
-            className="p-2 -ml-2 rounded-lg transition-colors hover:bg-gray-100"
+            className="p-2 text-gray-600 hover:text-gray-800"
           >
-            <FaArrowLeft className="text-gray-600" size={18} />
+            <FaArrowLeft size={20} />
           </button>
-          
-          <h1 className="text-lg font-medium text-gray-900">분실물 상세 정보</h1>
-          
-          <button className="p-2 -mr-2 rounded-lg transition-colors hover:bg-gray-100">
-            <FaEllipsisV className="text-gray-600" size={18} />
+          <h1 className="text-lg font-semibold text-gray-900">분실물 상세</h1>
+          <button className="p-2 text-gray-600 hover:text-gray-800">
+            <FaEllipsisV size={16} />
           </button>
-        </header>
-
-        {/* 메인 컨텐츠 */}
-        <div className="pb-20">
-          {/* 이미지 섹션 */}
-          <section className="px-4 pt-6">
-            <div className="overflow-hidden w-full h-64 bg-gray-100 rounded-2xl">
-              <img 
-                src={item.image}
-                alt={item.title}
-                className="object-cover w-full h-full"
-              />
-            </div>
-          </section>
-
-          {/* 제목 및 메타정보 */}
-          <section className="px-4 pt-6">
-            <div className="space-y-4">
-              <div>
-                <h2 className="text-xl font-medium text-gray-900">{item.title}</h2>
-                <div className="flex gap-3 items-center mt-2">
-                  <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-800 bg-blue-100 rounded-full">
-                    {item.category}
-                  </span>
-                  <span className="text-sm text-gray-500">{item.timeAgo}</span>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* 분실 위치 */}
-          <section className="px-4 pt-6">
-            <div className="p-4 bg-gray-50 rounded-xl">
-              <div className="flex gap-3">
-                <div className="mt-1">
-                  <FaMapMarkerAlt className="text-gray-400" size={14} />
-                </div>
-                <div>
-                  <h3 className="mb-1 text-base font-medium text-gray-900">분실 위치</h3>
-                  <p className="text-sm leading-relaxed text-gray-600">
-                    {item.location}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* 정보 테이블 */}
-          <section className="px-4 pt-6">
-            <div className="space-y-0">
-              {/* 등록일 */}
-              <div className="flex justify-between items-center py-3 border-b border-gray-100">
-                <span className="text-base text-gray-600">등록일</span>
-                <span className="text-base text-gray-900">{item.registrationDate}</span>
-              </div>
-              
-              {/* 현상금 */}
-              <div className="flex justify-between items-center py-3 border-b border-gray-100">
-                <span className="text-base text-gray-600">현상금</span>
-                <span className="text-base font-medium text-green-600">{item.reward}</span>
-              </div>
-              
-              {/* 카테고리 */}
-              <div className="flex justify-between items-center py-3 border-b border-gray-100">
-                <span className="text-base text-gray-600">카테고리</span>
-                <span className="text-base text-gray-900">{item.categoryDetail}</span>
-              </div>
-              
-              {/* 상태 */}
-              <div className="flex justify-between items-center py-3">
-                <span className="text-base text-gray-600">상태</span>
-                <span className="inline-flex items-center px-3 py-1 text-sm font-medium text-orange-800 bg-orange-100 rounded-full">
-                  {item.status}
-                </span>
-              </div>
-            </div>
-          </section>
-
-          {/* 상세 설명 */}
-          <section className="px-4 pt-6">
-            <div className="p-4 bg-gray-50 rounded-xl">
-              <h3 className="mb-4 text-base font-medium text-gray-900">상세 설명</h3>
-              <p className="text-sm leading-relaxed text-gray-600">
-                {item.description}
-              </p>
-            </div>
-          </section>
-
-          {/* 액션 버튼들 */}
-          <section className="px-4 pt-8">
-            <div className="grid grid-cols-3 gap-3">
-              {/* 채팅 시작 */}
-              <button 
-                onClick={handleChat}
-                className="flex flex-col gap-2 items-center p-4 text-white bg-indigo-600 rounded-xl transition-colors hover:bg-indigo-700"
-              >
-                <FaComments size={18} />
-                <span className="text-sm font-medium">채팅 시작</span>
-              </button>
-              
-              {/* 분실물 찾음 */}
-              <button 
-                onClick={handleFound}
-                className="flex flex-col gap-2 items-center p-4 text-white bg-green-500 rounded-xl transition-colors hover:bg-green-600"
-              >
-                <FaCheck size={18} />
-                <span className="text-sm font-medium">분실물 찾음</span>
-              </button>
-              
-              {/* 신고하기 */}
-              <button 
-                onClick={handleReport}
-                className="flex flex-col gap-2 items-center p-4 text-white bg-red-500 rounded-xl transition-colors hover:bg-red-600"
-              >
-                <FaFlag size={18} />
-                <span className="text-sm font-medium">신고하기</span>
-              </button>
-            </div>
-          </section>
         </div>
 
-        {/* 하단 네비게이션 */}
+        {/* 메인 이미지 */}
+        <div className="relative w-full h-80 bg-gray-200">
+          {item.image_urls && item.image_urls.length > 0 ? (
+            <img
+              src={item.image_urls[0]}
+              alt={item.title}
+              className="object-cover w-full h-full"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/api/placeholder/400/300';
+              }}
+            />
+          ) : (
+            <div className="flex justify-center items-center w-full h-full text-gray-400">
+              <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+          )}
+          
+          {/* 상태 배지 */}
+          <div className="absolute top-4 left-4">
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+              item.status === 'found' 
+                ? 'bg-green-100 text-green-800' 
+                : item.status === 'searching'
+                ? 'bg-blue-100 text-blue-800'
+                : 'bg-gray-100 text-gray-800'
+            }`}>
+              {item.status === 'found' ? '찾음' : item.status === 'searching' ? '찾는 중' : '취소됨'}
+            </span>
+          </div>
+        </div>
+
+        {/* 분실물 정보 */}
+        <div className="flex-1 p-4 space-y-4">
+          {/* 제목과 기본 정보 */}
+          <div>
+            <h2 className="mb-2 text-xl font-bold text-gray-900">{item.title}</h2>
+            <div className="flex items-center mb-1 text-sm text-gray-600">
+              <span>{item.category?.name || '기타'} · 개인용품</span>
+            </div>
+            <div className="flex items-center text-sm text-gray-500">
+              <span>{getTimeAgo(item.created_at)} · {formatDate(item.created_at)} 등록</span>
+            </div>
+            {item.reward > 0 && (
+              <div className="mt-2">
+                <span className="inline-block px-3 py-1 text-sm font-medium text-yellow-800 bg-yellow-100 rounded-full">
+                  현상금 {item.reward.toLocaleString()}원
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* 분실 위치 */}
+          <div className="p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-start">
+              <FaMapMarkerAlt className="flex-shrink-0 mt-1 mr-2 text-red-500" size={16} />
+              <div>
+                <h3 className="mb-1 font-medium text-gray-900">분실 위치</h3>
+                <p className="text-sm text-gray-600">{item.lost_location}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 상세 설명 */}
+          <div>
+            <h3 className="mb-2 font-medium text-gray-900">상세 설명</h3>
+            <p className="leading-relaxed text-gray-700">{item.description}</p>
+          </div>
+
+          {/* 등록자 정보 */}
+          <div className="p-4 bg-gray-50 rounded-lg">
+            <h3 className="mb-2 font-medium text-gray-900">등록자</h3>
+            <div className="flex items-center">
+              <div className="flex justify-center items-center w-10 h-10 font-medium text-white bg-indigo-500 rounded-full">
+                {item.user.name.charAt(0)}
+              </div>
+              <div className="ml-3">
+                <p className="font-medium text-gray-900">{item.user.name}</p>
+                <p className="text-sm text-gray-500">등록자</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 하단 액션 버튼 */}
+        <div className="p-4 bg-white border-t border-gray-200">
+          <div className="flex space-x-3">
+            <button
+              onClick={handleChat}
+              className="flex flex-1 justify-center items-center px-4 py-3 text-white bg-blue-500 rounded-lg transition-colors hover:bg-blue-600"
+            >
+              <FaComments className="mr-2" size={16} />
+              채팅하기
+            </button>
+            
+            {item.status === 'searching' && (
+              <button
+                onClick={handleFound}
+                className="flex flex-1 justify-center items-center px-4 py-3 text-white bg-green-500 rounded-lg transition-colors hover:bg-green-600"
+              >
+                <FaCheck className="mr-2" size={16} />
+                찾았어요
+              </button>
+            )}
+            
+            <button
+              onClick={handleReport}
+              className="flex justify-center items-center px-4 py-3 text-gray-700 bg-gray-200 rounded-lg transition-colors hover:bg-gray-300"
+            >
+              <FaFlag size={16} />
+            </button>
+          </div>
+        </div>
+
         <BottomNav />
       </div>
     </main>

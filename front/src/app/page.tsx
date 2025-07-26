@@ -1,105 +1,221 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { api } from '@/lib/api';
 
 interface LostItem {
   id: number;
   title: string;
-  location: string;
-  timeAgo: string;
-  imageUrl: string;
+  lost_location: string;
+  created_at: string;
+  image_urls: string[];
+  user: {
+    name: string;
+  };
+  status: 'searching' | 'found' | 'cancelled';
 }
 
+// 시간 차이 계산 함수
+const getTimeAgo = (dateString: string) => {
+  const now = new Date();
+  const createdAt = new Date(dateString);
+  const diffInMinutes = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60));
+  
+  if (diffInMinutes < 1) return '방금 전';
+  if (diffInMinutes < 60) return `${diffInMinutes}분 전`;
+  
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours}시간 전`;
+  
+  const diffInDays = Math.floor(diffInHours / 24);
+  return `${diffInDays}일 전`;
+};
+
 export default function Home() {
-  const [foundItems] = useState<LostItem[]>([
-    {
-      id: 1,
-      title: '애플워치 분실물',
-      location: '충청북도 충주시',
-      timeAgo: '5분 전',
-      imageUrl: '/api/placeholder/124/124'
-    },
-    {
-      id: 2,
-      title: '지갑 분실물',
-      location: '충청북도 충주시',
-      timeAgo: '2시간 전',
-      imageUrl: '/api/placeholder/124/124'
-    },
-    {
-      id: 3,
-      title: '아이폰 14 ...',
-      location: '충청북도 충주시',
-      timeAgo: '2시간 전',
-      imageUrl: '/api/placeholder/124/124'
-    },
-    {
-      id: 4,
-      title: '에어팟 프로',
-      location: '충청북도 충주시',
-      timeAgo: '1일 전',
-      imageUrl: '/api/placeholder/124/124'
-    },
-    {
-      id: 5,
-      title: '카드지갑',
-      location: '충청북도 충주시',
-      timeAgo: '3시간 전',
-      imageUrl: '/api/placeholder/124/124'
-    }
-  ]);
-
-  const [wantedItems] = useState<LostItem[]>([
-    {
-      id: 6,
-      title: '애플워치 분실물',
-      location: '충청북도 충주시',
-      timeAgo: '5분 전',
-      imageUrl: '/api/placeholder/124/124'
-    },
-    {
-      id: 7,
-      title: '지갑 잃어버리신 분',
-      location: '충청북도 충주시',
-      timeAgo: '2시간 전',
-      imageUrl: '/api/placeholder/124/124'
-    },
-    {
-      id: 8,
-      title: '아이폰 14 ...',
-      location: '충청북도 충주시',
-      timeAgo: '2시간 전',
-      imageUrl: '/api/placeholder/124/124'
-    },
-    {
-      id: 9,
-      title: '갤럭시 버즈 찾아요',
-      location: '충청북도 충주시',
-      timeAgo: '6시간 전',
-      imageUrl: '/api/placeholder/124/124'
-    },
-    {
-      id: 10,
-      title: '반지 잃어버림',
-      location: '충청북도 충주시',
-      timeAgo: '1일 전',
-      imageUrl: '/api/placeholder/124/124'
-    }
-  ]);
-
+  const [foundItems, setFoundItems] = useState<LostItem[]>([]);
+  const [wantedItems, setWantedItems] = useState<LostItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleRegister = () => {
-    {console.log('등록하기 버튼 클릭');}
-    //todo
-  };
+  // 분실물 데이터 가져오기
+  useEffect(() => {
+    const fetchLostItems = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        // 백엔드에서 분실물 목록 가져오기
+        const response = await api.lostItems.getAll();
+        
+        if (response && Array.isArray(response)) {
+          // 찾은 물건 (found 상태)과 찾는 물건 (searching 상태)으로 분리
+          const foundItemsList = response.filter((item: LostItem) => item.status === 'found');
+          const searchingItemsList = response.filter((item: LostItem) => item.status === 'searching');
+          
+          setFoundItems(foundItemsList);
+          setWantedItems(searchingItemsList);
+        } else {
+          // 백엔드에서 데이터가 없을 경우 빈 배열로 설정
+          setFoundItems([]);
+          setWantedItems([]);
+        }
+      } catch (error) {
+        console.error('분실물 데이터 가져오기 실패:', error);
+        setError('분실물 데이터를 불러오는데 실패했습니다.');
+        
+        // 에러 발생 시 빈 배열로 설정
+        setFoundItems([]);
+        setWantedItems([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchLostItems();
+  }, []);
+
+  const [activeTab, setActiveTab] = useState<'found' | 'wanted'>('found');
+
+  // 로딩 상태 표시
+  if (isLoading) {
+    return (
+      <main className="flex justify-center min-h-screen bg-white">
+        <div className="flex justify-center items-center mx-auto w-full max-w-md" style={{maxWidth: '390px'}}>
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">분실물 정보를 불러오는 중...</p>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // 에러 상태 표시
+  if (error) {
+    return (
+      <main className="flex justify-center min-h-screen bg-white">
+        <div className="flex justify-center items-center mx-auto w-full max-w-md" style={{maxWidth: '390px'}}>
+          <div className="text-center">
+            <p className="text-red-600 mb-4">{error}</p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+            >
+              다시 시도
+            </button>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
-    <main className="min-h-screen bg-white flex justify-center">
-      <div className="w-full max-w-md mx-auto" style={{maxWidth: '390px'}}>
-        {/* 상단 헤더 */}
+    <main className="flex justify-center min-h-screen bg-white">
+      <div className="flex flex-col mx-auto w-full max-w-md" style={{maxWidth: '390px'}}>
+        {/* 헤더 */}
+        <header className="flex items-center justify-between p-4 bg-white border-b border-gray-200">
+          <h1 className="text-xl font-bold text-gray-900">찾아줘!</h1>
+          <div className="flex items-center space-x-3">
+            <button className="p-2">
+              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5l-5-5h5v-12" />
+              </svg>
+            </button>
+            <button className="p-2">
+              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </button>
+          </div>
+        </header>
+
+        {/* 검색바 */}
+        <div className="p-4">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="어떤 물건을 찾고 계세요?"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-4 py-3 pl-10 bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+            <svg className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+        </div>
+
+        {/* 탭 버튼 */}
+        <div className="flex border-b border-gray-200">
+          <button
+            className={`flex-1 py-4 px-6 text-center font-medium ${
+              activeTab === 'found'
+                ? 'text-indigo-600 border-b-2 border-indigo-600'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+            onClick={() => setActiveTab('found')}
+          >
+            찾은 물건 ({foundItems.length})
+          </button>
+          <button
+            className={`flex-1 py-4 px-6 text-center font-medium ${
+              activeTab === 'wanted'
+                ? 'text-indigo-600 border-b-2 border-indigo-600'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+            onClick={() => setActiveTab('wanted')}
+          >
+            찾는 물건 ({wantedItems.length})
+          </button>
+        </div>
+
+        {/* 아이템 리스트 */}
+        <div className="flex-1 p-4 space-y-4">
+          {(activeTab === 'found' ? foundItems : wantedItems)
+            .filter(item => 
+              searchQuery === '' || 
+              item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              item.lost_location.toLowerCase().includes(searchQuery.toLowerCase())
+            )
+            .map((item) => (
+              <Link key={item.id} href={`/lost-item/${item.id}`}>
+                <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-[124px] h-[124px] bg-gray-200 rounded-lg flex-shrink-0 overflow-hidden">
+                      {item.image_urls && item.image_urls.length > 0 ? (
+                        <img 
+                          src={item.image_urls[0]} 
+                          alt={item.title}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = '/api/placeholder/124/124';
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                          <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-gray-900 mb-1 truncate">{item.title}</h3>
+                      <p className="text-sm text-gray-600 mb-1">{item.lost_location}</p>
+                      <p className="text-sm text-gray-500">{getTimeAgo(item.created_at)}</p>
+                      {item.user && (
+                        <p className="text-xs text-gray-400 mt-1">등록자: {item.user.name}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
+        </div>
+
+        {/* 하단 네비게이션 - 기존 코드 유지 */}
         <div className="relative px-6 pt-16 pb-6">
         {/* 로고와 프로필 */}
         <div className="flex justify-between items-center mb-[50px]">
@@ -122,39 +238,6 @@ export default function Home() {
           <h1 className="text-2xl font-semibold text-black">
             충청북도 충주시 대소원면
           </h1>
-        </div>
-
-        {/* 검색바 */}
-        <div className="relative mb-[20px]">
-          {/* 검색바 컨테이너 */}
-          <div className="relative h-[54px] w-full max-w-[340px] mx-auto">
-            {/* 배경과 테두리 */}
-            <div className="absolute inset-0 bg-white border-2 border-solid border-black rounded-[27px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)]"></div>
-            
-            {/* 검색 아이콘 */}
-            <div className="absolute left-3 top-[13px] w-[29px] h-[29px] overflow-hidden">
-              <div className="absolute inset-[12.5%]">
-                <img src="/Search.svg" alt="검색" className="w-full h-full block" />
-              </div>
-            </div>
-            
-            {/* 입력 필드 */}
-            <input
-              type="text"
-              placeholder="내 물건 찾기"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="absolute left-[55px] top-[15px] w-[200px] h-[24px] text-[#8b8484] text-base font-normal outline-none bg-transparent leading-none placeholder:text-[#8b8484] placeholder:leading-none"
-              style={{ fontFamily: 'Inter, Noto Sans KR, sans-serif' }}
-            />
-            
-            {/* 카메라 아이콘 */}
-            <div className="absolute right-3 top-[17px] w-5 h-5 overflow-hidden">
-              <div className="absolute bottom-[12.5%] left-[4.167%] right-[4.167%] top-[12.5%]">
-                <img src="/Camera.svg" alt="카메라" className="w-full h-full block" />
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* 카테고리 필터 */}
@@ -196,8 +279,8 @@ export default function Home() {
                   {item.title}
                 </h3>
                 <div className="flex justify-between items-center text-[8px] text-[#9e9e9e]" style={{ fontFamily: 'Inter, Noto Sans KR, sans-serif' }}>
-                  <span className="line-clamp-1 max-w-[70px]">{item.location}</span>
-                  <span className="flex-shrink-0">{item.timeAgo}</span>
+                  <span className="line-clamp-1 max-w-[70px]">{item.lost_location}</span>
+                  <span className="flex-shrink-0">{getTimeAgo(item.created_at)}</span>
                 </div>
               </Link>
             ))}
@@ -224,8 +307,8 @@ export default function Home() {
                   {item.title}
                 </h3>
                 <div className="flex justify-between items-center text-[8px] text-[#9e9e9e]" style={{ fontFamily: 'Inter, Noto Sans KR, sans-serif' }}>
-                  <span className="line-clamp-1 max-w-[70px]">{item.location}</span>
-                  <span className="flex-shrink-0">{item.timeAgo}</span>
+                  <span className="line-clamp-1 max-w-[70px]">{item.lost_location}</span>
+                  <span className="flex-shrink-0">{getTimeAgo(item.created_at)}</span>
                 </div>
               </Link>
             ))}
