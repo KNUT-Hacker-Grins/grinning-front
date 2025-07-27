@@ -8,7 +8,7 @@ import SectionTitle from '@/components/SectionTitle';
 import RegisteredItemCard from '@/components/RegisteredItemCard';
 import ChatPreviewCard from '@/components/ChatPreviewCard';
 import { useAuth } from '@/hooks/useAuth';
-import { api } from '@/lib/api';
+import { api, tokenManager } from '@/lib/api';
 import { LostItem } from '@/types/lostItems';
 
 interface ChatRoom {
@@ -65,9 +65,13 @@ export default function MyPage() {
         setError(null);
 
         // 내 분실물 목록 가져오기
-        const lostItemsResponse = await api.lostItems.getMy({ limit: 10 });
-        if (lostItemsResponse.status === 'success') {
-          setMyLostItems(lostItemsResponse.data.items || []);
+        try {
+          const lostItemsResponse = await api.lostItems.getMy({ limit: 10 });
+          if (lostItemsResponse.status === 'success') {
+            setMyLostItems(lostItemsResponse.data.items || []);
+          }
+        } catch (lostItemsError) {
+          console.error('분실물 목록 로드 실패:', lostItemsError);
         }
 
         // 채팅방 목록 가져오기
@@ -83,7 +87,9 @@ export default function MyPage() {
 
       } catch (error) {
         console.error('사용자 데이터 로드 실패:', error);
-        setError('데이터를 불러오는데 실패했습니다.');
+        console.error('현재 토큰:', tokenManager.getAccessToken());
+        console.error('API 응답:', error);
+        setError(`데이터를 불러오는데 실패했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
       } finally {
         setIsDataLoading(false);
       }
