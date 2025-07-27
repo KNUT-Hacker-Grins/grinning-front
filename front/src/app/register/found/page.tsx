@@ -176,6 +176,13 @@ export default function FoundItemRegisterPage() {
             { value: '의류', label: '의류' },
             { value: '기타', label: '기타' },
           ]}
+<<<<<<<<< Temporary merge branch 1
+        />
+
+        <Link href="/airesult" className="text-xs text-blue-500 mt-1">
+            AI 카테고리 추천받기
+        </Link>
+=========
           helperText={isClassifying ? "AI가 분석 중..." : "AI 카테고리 추천받기"}
           onHelperClick={handleCategoryRecommendation}
         />
@@ -215,6 +222,7 @@ export default function FoundItemRegisterPage() {
             </button>
           </div>
         )}
+>>>>>>>>> Temporary merge branch 2
 
         <FormInputSection
           label="상세 설명"
@@ -256,7 +264,7 @@ export default function FoundItemRegisterPage() {
       </main>
 
       <RegisterFooter 
-        onSubmit={handleSubmit} 
+        onSubmit={handleSubmit}
         isLoading={isLoading} 
         buttonText="습득물 신고하기"
       />
