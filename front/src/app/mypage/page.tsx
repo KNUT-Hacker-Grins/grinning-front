@@ -95,11 +95,11 @@ export default function MyPage() {
   // 로딩 상태
   if (authLoading || isDataLoading) {
     return (
-      <main className="min-h-screen bg-white flex justify-center">
-        <div className="w-full max-w-md mx-auto" style={{maxWidth: '390px'}}>
-          <div className="flex items-center justify-center h-screen">
+      <main className="flex justify-center min-h-screen bg-white">
+        <div className="mx-auto w-full max-w-md" style={{maxWidth: '390px'}}>
+          <div className="flex justify-center items-center h-screen">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+              <div className="mx-auto mb-4 w-12 h-12 rounded-full border-b-2 border-indigo-600 animate-spin"></div>
               <p className="text-gray-600">데이터를 불러오는 중...</p>
             </div>
           </div>
@@ -111,14 +111,14 @@ export default function MyPage() {
   // 에러 상태
   if (error) {
     return (
-      <main className="min-h-screen bg-white flex justify-center">
-        <div className="w-full max-w-md mx-auto" style={{maxWidth: '390px'}}>
-          <div className="flex items-center justify-center h-screen">
+      <main className="flex justify-center min-h-screen bg-white">
+        <div className="mx-auto w-full max-w-md" style={{maxWidth: '390px'}}>
+          <div className="flex justify-center items-center h-screen">
             <div className="text-center">
-              <p className="text-red-600 mb-4">{error}</p>
+              <p className="mb-4 text-red-600">{error}</p>
               <button 
                 onClick={() => window.location.reload()}
-                className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+                className="px-4 py-2 text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
               >
                 다시 시도
               </button>
@@ -132,9 +132,9 @@ export default function MyPage() {
   // 인증되지 않은 경우 (리다이렉트 전까지의 임시 상태)
   if (!isAuthenticated || !user) {
     return (
-      <main className="min-h-screen bg-white flex justify-center">
-        <div className="w-full max-w-md mx-auto" style={{maxWidth: '390px'}}>
-          <div className="flex items-center justify-center h-screen">
+      <main className="flex justify-center min-h-screen bg-white">
+        <div className="mx-auto w-full max-w-md" style={{maxWidth: '390px'}}>
+          <div className="flex justify-center items-center h-screen">
             <p className="text-gray-600">로그인이 필요합니다...</p>
           </div>
         </div>
@@ -163,8 +163,8 @@ export default function MyPage() {
   };
 
   return (
-    <main className="min-h-screen bg-white flex justify-center">
-      <div className="w-full max-w-md mx-auto" style={{maxWidth: '390px'}}>
+    <main className="flex justify-center min-h-screen bg-white">
+      <div className="mx-auto w-full max-w-md" style={{maxWidth: '390px'}}>
         <div className="p-4 pt-0 space-y-4">
           <MyPageHeader />
 
@@ -187,7 +187,7 @@ export default function MyPage() {
                 />
               ))
             ) : (
-              <div className="text-center py-8 text-gray-500">
+              <div className="py-8 text-center text-gray-500">
                 등록한 분실물이 없습니다.
               </div>
             )}
@@ -216,7 +216,7 @@ export default function MyPage() {
                 );
               })
             ) : (
-              <div className="text-center py-8 text-gray-500">
+              <div className="py-8 text-center text-gray-500">
                 참여한 채팅이 없습니다.
               </div>
             )}

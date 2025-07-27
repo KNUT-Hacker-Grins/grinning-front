@@ -17,7 +17,7 @@ export default function FoundItemRegisterPage() {
     category: '',
     description: '',
     found_location: '',
-    found_at: '',
+    found_date: '',
   });
 
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
@@ -53,7 +53,7 @@ export default function FoundItemRegisterPage() {
         alert('습득 위치를 입력해주세요.');
         return;
       }
-      if (!form.found_at) {
+      if (!form.found_date) {
         alert('습득 시간을 입력해주세요.');
         return;
       }
@@ -64,10 +64,10 @@ export default function FoundItemRegisterPage() {
       const requestData: CreateFoundItemRequest = {
         title: form.title.trim(),
         description: form.description.trim(),
-        found_at: new Date(form.found_at).toISOString(),
+        found_date: form.found_date, // 새로운 명세서에 맞춤
         found_location: form.found_location.trim(),
-        image_url: uploadedImages[0] || '', // 백엔드 모델에 맞춤 (단일 URL)
-        category: form.category, // 백엔드는 JSONField 사용
+        image_urls: uploadedImages, // 배열로 변경
+        category: form.category,
       };
 
       const response = await api.foundItems.create(requestData);
@@ -151,8 +151,8 @@ export default function FoundItemRegisterPage() {
         {/* 습득 시간 입력 */}
         <FormInputSection
           label="습득 시간"
-          name="found_at"
-          value={form.found_at}
+          name="found_date"
+          value={form.found_date}
           onChange={handleChange}
           type="datetime-local"
           placeholder="습득 시간을 선택하세요"

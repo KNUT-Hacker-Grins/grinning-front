@@ -160,6 +160,17 @@ export const api = {
         body: JSON.stringify(itemData)
       }),
 
+    // 전체 분실물 목록 조회 (메인 페이지용)
+    getAll: (params?: { page?: number; limit?: number; status?: string }) => {
+      const searchParams = new URLSearchParams();
+      if (params?.page) searchParams.append('page', params.page.toString());
+      if (params?.limit) searchParams.append('limit', params.limit.toString());
+      if (params?.status) searchParams.append('status', params.status);
+      
+      const queryString = searchParams.toString();
+      return apiRequest(`/api/lost-items${queryString ? `?${queryString}` : ''}`);
+    },
+
     // 내 분실물 목록 (페이징, 상태 필터링 지원)
     getMy: (params?: MyLostItemsParams): Promise<MyLostItemsResponse> => {
       const searchParams = new URLSearchParams();
@@ -249,48 +260,48 @@ export const api = {
     }
   },
 
-  // 습득물 관련 (TypeScript 타입 적용)
+  // 습득물 관련 (새로운 API 명세서에 맞춤)
   foundItems: {
-    // 분실물 등록 (현재 백엔드 구현에 맞춤)
+    // 습득물 등록 (새로운 명세서에 맞춤)
     create: (itemData: CreateFoundItemRequest): Promise<FoundItemCreateResponse> =>
-      apiRequest('/api/found-items/', {  // 백엔드 URL 패턴에 맞춤
+      apiRequest('/api/found-items', {  // URL 수정: 마지막 슬래시 제거
         method: 'POST',
         body: JSON.stringify(itemData)
       }),
 
-    // 분실물 목록 조회 (페이징, 필터링 지원)
+    // 습득물 목록 조회 (페이징, 필터링 지원)
     getAll: (params?: FoundItemListParams): Promise<FoundItemListResponse> => {
       const searchParams = new URLSearchParams();
       if (params?.page) searchParams.append('page', params.page.toString());
       if (params?.limit) searchParams.append('limit', params.limit.toString());
       if (params?.category) searchParams.append('category', params.category);
-      if (params?.found_location) searchParams.append('found_location', params.found_location);
+      if (params?.location) searchParams.append('location', params.location); // 파라미터명 수정
       
       const queryString = searchParams.toString();
-      return apiRequest(`/api/found-items/list${queryString ? `?${queryString}` : ''}`);  // 백엔드 URL에 맞춤
+      return apiRequest(`/api/found-items${queryString ? `?${queryString}` : ''}`);  // URL 수정: /list 제거
     },
     
-    // 분실물 상세 조회
+    // 습득물 상세 조회
     getById: (id: number): Promise<FoundItemDetailResponse> => 
       apiRequest(`/api/found-items/${id}`),
     
-    // 분실물 정보 수정
+    // 습득물 정보 수정 (새로운 명세서에 맞춤)
     update: (id: number, itemData: UpdateFoundItemRequest): Promise<FoundItemCreateResponse> =>
-      apiRequest(`/api/found-items/${id}/edit`, {  // 백엔드 URL 패턴에 맞춤
+      apiRequest(`/api/found-items/${id}`, {  // URL 수정: /edit 제거
         method: 'PUT',
         body: JSON.stringify(itemData)
       }),
 
-    // 습득물 상태 변경 (available → returned → archived)
+    // 습득물 상태 변경 (available → returned)
     updateStatus: (id: number, status: FoundItemStatus): Promise<FoundItemStatusResponse> =>
       apiRequest(`/api/found-items/${id}/status`, {
         method: 'PATCH',
         body: JSON.stringify({ status })
       }),
 
-    // 습득물 삭제
+    // 습득물 삭제 (새로운 명세서에 맞춤)
     delete: (id: number): Promise<FoundItemDeleteResponse> =>
-      apiRequest(`/api/found-items/${id}/delete`, {  // 백엔드 URL 패턴에 맞춰 복원
+      apiRequest(`/api/found-items/${id}`, {  // URL 수정: /delete 제거
         method: 'DELETE'
       }),
   },
