@@ -40,8 +40,8 @@ export default function LoginPage() {
         if (!googleClientId || !redirectUri) {
           throw new Error('구글 OAuth 설정이 없습니다.');
         }
-        
-        const googleAuthUrl = `https://accounts.google.com/oauth/authorize?client_id=${googleClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=email profile&state=google`;
+
+        const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${googleClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=openid%20email%20profile&state=google&access_type=offline`;
         window.location.href = googleAuthUrl;
       }
     } catch (error) {

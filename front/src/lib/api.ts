@@ -218,6 +218,9 @@ export const api = {
         })
       }),
 
+    // 채팅방 목록 조회
+    getRooms: () => apiRequest('/api/chat/rooms'),
+
     getMessages: (roomId: number, page?: number) => {
       const params = new URLSearchParams();
       if (page) params.append('page', page.toString());
@@ -258,6 +261,15 @@ export const api = {
         body: formData
       }).then(res => res.json());
     }
+  },
+
+  // 이미지 분류 (AI 카테고리 추천)
+  classify: {
+    image: (imageUrl: string) =>
+      apiRequest('/api/classify', {
+        method: 'POST',
+        body: JSON.stringify({ image_url: imageUrl })
+      })
   },
 
   // 습득물 관련 (새로운 API 명세서에 맞춤)

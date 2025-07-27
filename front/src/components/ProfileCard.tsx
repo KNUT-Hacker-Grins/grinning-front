@@ -34,7 +34,7 @@ export default function ProfileCard({ name, email }: Props) {
         onClick={handleProfileClick}
       />
       <div>
-        <div className="text-base font-semibold">{name}</div>
+        <div className="text-base font-semibold text-gray-800">{name}</div>
         <div className="text-sm text-gray-500">{email}</div>
       </div>
     </div>

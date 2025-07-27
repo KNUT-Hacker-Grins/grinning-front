@@ -12,6 +12,7 @@ interface FormSelectSectionProps {
   onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   options: SelectOption[];
   helperText?: string;
+  onHelperClick?: () => void;
 }
 
 export default function FormSelectSection({
@@ -21,6 +22,7 @@ export default function FormSelectSection({
   onChange,
   options,
   helperText,
+  onHelperClick,
 }: FormSelectSectionProps) {
   return (
     <section>
@@ -29,7 +31,7 @@ export default function FormSelectSection({
         name={name}
         value={value}
         onChange={onChange}
-        className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm bg-white"
+        className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm bg-white text-gray-800"
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>
@@ -37,7 +39,15 @@ export default function FormSelectSection({
           </option>
         ))}
       </select>
-      {helperText && <p className="text-xs text-blue-500 mt-1">{helperText}</p>}
+      {helperText && (
+        <button
+          type="button"
+          onClick={onHelperClick}
+          className="text-xs text-blue-500 mt-1 hover:text-blue-700 hover:underline cursor-pointer"
+        >
+          {helperText}
+        </button>
+      )}
     </section>
   );
 }
