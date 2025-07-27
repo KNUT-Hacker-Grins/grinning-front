@@ -25,8 +25,8 @@ export default function PhotoUploadSection({ onImageUpload }: PhotoUploadSection
       // 백엔드에 이미지 업로드
       const response = await api.upload.image(file);
       
-      if (response && response.url) {
-        const newImages = [...uploadedImages, response.url];
+      if (response && response.status === 'success' && response.data?.image_url) {
+        const newImages = [...uploadedImages, response.data.image_url];
         setUploadedImages(newImages);
         
         // 부모 컴포넌트에 업로드된 이미지 URL 전달
