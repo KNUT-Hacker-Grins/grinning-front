@@ -9,15 +9,7 @@ import RegisteredItemCard from '@/components/RegisteredItemCard';
 import ChatPreviewCard from '@/components/ChatPreviewCard';
 import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/lib/api';
-
-interface LostItem {
-  id: number;
-  title: string;
-  lost_location: string;
-  created_at: string;
-  status: 'searching' | 'found' | 'cancelled';
-  image_urls?: string[];
-}
+import { LostItem } from '@/types/lostItems';
 
 interface ChatRoom {
   id: number;
@@ -73,13 +65,21 @@ export default function MyPage() {
         setError(null);
 
         // 내 분실물 목록 가져오기
-        const lostItemsResponse = await api.user.getMyLostItems({ limit: 10 });
+        const lostItemsResponse = await api.lostItems.getMy({ limit: 10 });
         if (lostItemsResponse.status === 'success') {
           setMyLostItems(lostItemsResponse.data.items || []);
         }
 
-        // 채팅방 목록은 현재 API가 없어서 빈 상태로 처리
-        setChatRooms([]);
+        // 채팅방 목록 가져오기
+        try {
+          const chatRoomsResponse = await api.chat.getRooms();
+          if (chatRoomsResponse.status === 'success') {
+            setChatRooms(chatRoomsResponse.data || []);
+          }
+        } catch (chatError) {
+          console.error('채팅방 목록 로드 실패:', chatError);
+          // 채팅방 로드 실패는 전체 에러로 처리하지 않음
+        }
 
       } catch (error) {
         console.error('사용자 데이터 로드 실패:', error);
@@ -153,12 +153,12 @@ export default function MyPage() {
   };
 
   // 상태 텍스트 변환
-  const getStatusText = (status: string) => {
+  const getStatusText = (status: string): '진행 중' | '회수 완료' => {
     switch (status) {
       case 'searching': return '진행 중';
       case 'found': return '회수 완료';
-      case 'cancelled': return '취소됨';
-      default: return status;
+      case 'cancelled': return '진행 중'; // 취소된 항목도 진행 중으로 표시
+      default: return '진행 중';
     }
   };
 

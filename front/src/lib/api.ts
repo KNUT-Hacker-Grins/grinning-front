@@ -218,6 +218,9 @@ export const api = {
         })
       }),
 
+    // 채팅방 목록 조회
+    getRooms: () => apiRequest('/api/chat/rooms'),
+
     getMessages: (roomId: number, page?: number) => {
       const params = new URLSearchParams();
       if (page) params.append('page', page.toString());
