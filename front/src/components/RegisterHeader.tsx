@@ -7,7 +7,7 @@ interface RegisterHeaderProps {
 
 export default function RegisterHeader({ title }: RegisterHeaderProps) {
   return (
-    <header className="w-full h-[77px] bg-white border-b flex items-center justify-between px-4 sticky top-0 z-10">
+    <header className="w-full bg-white border-b flex items-center justify-between px-4 py-2 sticky top-0 z-10">
       <Link href="/" className="p-2">
         <FaArrowLeft size={20} className="text-gray-700" />
       </Link>
