@@ -3,17 +3,21 @@
 import Link from 'next/link';
 import { FaCog } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function MyPageHeader() {
   const router = useRouter();
+  const { logout } = useAuth();
 
-  const handleLogout = () => {
-    // 로그인 상태 초기화
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('loginProvider');
-    
-    // 메인 페이지로 이동
-    router.push('/');
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.push('/');
+    } catch (error) {
+      console.error('로그아웃 실패:', error);
+      // 오류가 발생해도 로컬 토큰은 정리되므로 홈페이지로 이동
+      router.push('/');
+    }
   };
 
   return (
