@@ -260,6 +260,15 @@ export const api = {
     }
   },
 
+  // 이미지 분류 (AI 카테고리 추천)
+  classify: {
+    image: (imageUrl: string) =>
+      apiRequest('/api/classify', {
+        method: 'POST',
+        body: JSON.stringify({ image_url: imageUrl })
+      })
+  },
+
   // 습득물 관련 (새로운 API 명세서에 맞춤)
   foundItems: {
     // 습득물 등록 (새로운 명세서에 맞춤)
