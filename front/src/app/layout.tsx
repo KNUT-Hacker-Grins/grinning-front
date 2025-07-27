@@ -1,4 +1,4 @@
-import BottomNav from '@/components/BottomNav';
+import ClientLayout from '@/components/ClientLayout';
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -50,8 +50,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen pb-16`}
       >
-                <main className="flex-grow">{children}</main>
-        <BottomNav />
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
   );
