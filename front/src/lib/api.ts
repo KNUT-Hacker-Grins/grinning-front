@@ -11,6 +11,19 @@ import {
   FoundItemDeleteResponse
 } from '@/types/foundItems';
 
+import {
+  LostItemStatus,
+  CreateLostItemRequest,
+  UpdateLostItemRequest,
+  MyLostItemsParams,
+  LostItemCreateResponse,
+  MyLostItemsResponse,
+  LostItemDetailResponse,
+  LostItemUpdateResponse,
+  LostItemDeleteResponse,
+  LostItemStatusResponse
+} from '@/types/lostItems';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 // JWT 토큰 관리
@@ -138,42 +151,47 @@ export const api = {
       }),
   },
 
-  // 분실물 관련
+  // 분실물 관련 (TypeScript 타입 적용)
   lostItems: {
-    create: (itemData: {
-      title: string;
-      description: string;
-      lost_at: string;
-      lost_location: string;
-      category: any;
-      reward?: number;
-      image_urls?: string[];
-    }) =>
-      apiRequest('/api/lost-items/create', {  // URL 변경
+    // 분실물 신고
+    create: (itemData: CreateLostItemRequest): Promise<LostItemCreateResponse> =>
+      apiRequest('/api/lost-items', {  // URL 수정: /create 제거
         method: 'POST',
         body: JSON.stringify(itemData)
       }),
 
-    getAll: () => apiRequest('/api/lost-items/'),  // 전체 목록 조회 (인증 불필요)
+    // 내 분실물 목록 (페이징, 상태 필터링 지원)
+    getMy: (params?: MyLostItemsParams): Promise<MyLostItemsResponse> => {
+      const searchParams = new URLSearchParams();
+      if (params?.page) searchParams.append('page', params.page.toString());
+      if (params?.limit) searchParams.append('limit', params.limit.toString());
+      if (params?.status) searchParams.append('status', params.status);
+      
+      const queryString = searchParams.toString();
+      return apiRequest(`/api/lost-items/my${queryString ? `?${queryString}` : ''}`);
+    },
     
-    getMy: () => apiRequest('/api/lost-items/my'),
+    // 분실물 상세 조회
+    getById: (id: string): Promise<LostItemDetailResponse> => 
+      apiRequest(`/api/lost-items/${id}`),
     
-    getById: (id: number) => apiRequest(`/api/lost-items/${id}`),
-    
-    update: (id: number, itemData: any) =>
-      apiRequest(`/api/lost-items/${id}/edit`, {
+    // 분실물 정보 수정
+    update: (id: string, itemData: UpdateLostItemRequest): Promise<LostItemUpdateResponse> =>
+      apiRequest(`/api/lost-items/${id}`, {  // URL 수정: /edit 제거
         method: 'PUT',
         body: JSON.stringify(itemData)
       }),
 
-    updateStatus: (id: number, status: 'searching' | 'found' | 'cancelled') =>
+    // 분실물 상태 변경 (searching → found/cancelled)
+    updateStatus: (id: string, status: LostItemStatus): Promise<LostItemStatusResponse> =>
       apiRequest(`/api/lost-items/${id}/status`, {
         method: 'PATCH',
         body: JSON.stringify({ status })
       }),
 
-    delete: (id: number) =>
-      apiRequest(`/api/lost-items/${id}/delete`, {
+    // 분실물 삭제
+    delete: (id: string): Promise<LostItemDeleteResponse> =>
+      apiRequest(`/api/lost-items/${id}`, {  // URL 수정: /delete 제거
         method: 'DELETE'
       }),
   },
@@ -263,14 +281,14 @@ export const api = {
         body: JSON.stringify(itemData)
       }),
 
-    // 분실물 상태 변경 (available → returned → archived)
+    // 습득물 상태 변경 (available → returned → archived)
     updateStatus: (id: number, status: FoundItemStatus): Promise<FoundItemStatusResponse> =>
       apiRequest(`/api/found-items/${id}/status`, {
         method: 'PATCH',
         body: JSON.stringify({ status })
       }),
 
-    // 분실물 삭제
+    // 습득물 삭제
     delete: (id: number): Promise<FoundItemDeleteResponse> =>
       apiRequest(`/api/found-items/${id}/delete`, {  // 백엔드 URL 패턴에 맞춰 복원
         method: 'DELETE'
@@ -279,19 +297,6 @@ export const api = {
 
   // 사용자 데이터 조회 (마이페이지용)
   user: {
-    // 내가 등록한 분실물 목록
-    getMyLostItems: (params?: { page?: number; limit?: number; status?: string }) => {
-      const searchParams = new URLSearchParams();
-      if (params?.page) searchParams.append('page', params.page.toString());
-      if (params?.limit) searchParams.append('limit', params.limit.toString());
-      if (params?.status) searchParams.append('status', params.status);
-      
-      const queryString = searchParams.toString();
-      return apiRequest(`/api/lost-items/my${queryString ? `?${queryString}` : ''}`);
-    },
-
-
-
     // 안읽은 메시지 수
     getUnreadCount: () => apiRequest('/api/chat/unread-count/'),
   }
