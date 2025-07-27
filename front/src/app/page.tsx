@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
 
 interface LostItem {
   id: number;
@@ -33,6 +34,7 @@ const getTimeAgo = (dateString: string) => {
 };
 
 export default function Home() {
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [foundItems, setFoundItems] = useState<LostItem[]>([]);
   const [wantedItems, setWantedItems] = useState<LostItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -124,15 +126,17 @@ export default function Home() {
           {/* 로고와 프로필 */}
           <div className="flex justify-between items-center mb-[50px]">
             <div className="flex gap-[15px]">
-              <Link href="/mypage">
-                <div className="w-[61px] h-10 bg-gray-300 rounded-[20px]"></div>
-              </Link>
-              <Link href="/mypage">
-                <div className="w-[61px] h-10 bg-gray-300 rounded-[20px]"></div>
-              </Link>
+              <div className="w-[61px] h-10 bg-gray-300 rounded-[20px]"></div>
+              <div className="w-[61px] h-10 bg-gray-300 rounded-[20px]"></div>
             </div>
-            <Link href="/mypage">
-              <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
+            <Link href={isAuthenticated ? "/mypage" : "/login"}>
+              <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
+                {!authLoading && (
+                  <span className="text-xs text-gray-600">
+                    {isAuthenticated ? "MY" : "LOGIN"}
+                  </span>
+                )}
+              </div>
             </Link>
           </div>
 
@@ -335,11 +339,11 @@ export default function Home() {
               </svg>
               <span className="text-xs text-gray-400 mt-1">채팅</span>
             </Link>
-            <Link href="/mypage" className="flex flex-col items-center py-2 px-4">
+            <Link href={isAuthenticated ? "/mypage" : "/login"} className="flex flex-col items-center py-2 px-4">
               <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
-              <span className="text-xs text-gray-400 mt-1">마이</span>
+              <span className="text-xs text-gray-400 mt-1">{isAuthenticated ? "마이" : "로그인"}</span>
             </Link>
           </div>
         </div>

@@ -2,12 +2,21 @@
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { api, tokenManager } from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+
+  // 이미 로그인된 사용자는 홈페이지로 리다이렉트
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      router.push('/');
+    }
+  }, [authLoading, isAuthenticated, router]);
 
   const handleSocialLogin = (provider: 'kakao' | 'google') => {
     setIsLoading(true);
@@ -23,7 +32,7 @@ export default function LoginPage() {
   };
 
   // URL에서 토큰 확인 (OAuth 콜백 후)
-  useState(() => {
+  useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const accessToken = urlParams.get('access_token');
     const refreshToken = urlParams.get('refresh_token');
@@ -32,7 +41,21 @@ export default function LoginPage() {
       tokenManager.setTokens(accessToken, refreshToken);
       router.push('/');
     }
-  });
+  }, [router]);
+
+  // 인증 체크 중이거나 이미 로그인된 경우 로딩 표시
+  if (authLoading || isAuthenticated) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="mx-auto mb-4 w-12 h-12 rounded-full border-b-2 border-indigo-600 animate-spin"></div>
+          <p className="text-gray-600">
+            {isAuthenticated ? '홈페이지로 이동 중...' : '로그인 상태 확인 중...'}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-50">
@@ -83,8 +106,7 @@ export default function LoginPage() {
             {/* 구글 로그인 버튼 */}
             <button 
               className={`w-[342px] h-[46px] bg-white border border-gray-300 rounded-md flex items-center justify-center relative mt-4 hover:bg-gray-50 transition-colors ${
-                isLoading ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
+                isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
               onClick={() => handleSocialLogin('google')}
               disabled={isLoading}
             >
