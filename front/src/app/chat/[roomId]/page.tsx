@@ -37,7 +37,7 @@ export default function ChatRoomPage() {
     const fetchMessages = async () => {
       try {
         setIsLoading(true);
-        const response = await api.chat.getMessages(parseInt(roomId, 10));
+        const response = await api.chat.getMessages(parseInt(roomId, 10), 1, 50);
         setMessages(response.data.messages.reverse()); // 최신 메시지가 아래로 가도록 배열을 뒤집습니다.
       } catch (error) {
         console.error('채팅 내역을 불러오는 데 실패했습니다.', error);
