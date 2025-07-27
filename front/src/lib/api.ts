@@ -1,4 +1,16 @@
 // API 클라이언트 설정
+import {
+  FoundItemStatus,
+  CreateFoundItemRequest,
+  UpdateFoundItemRequest,
+  FoundItemListParams,
+  FoundItemListResponse,
+  FoundItemDetailResponse,
+  FoundItemCreateResponse,
+  FoundItemStatusResponse,
+  FoundItemDeleteResponse
+} from '@/types/foundItems';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 // JWT 토큰 관리
@@ -93,23 +105,13 @@ export const apiRequest = async (endpoint: string, options: RequestInit = {}) =>
 
 // API 함수들
 export const api = {
-  // 인증 관련
+  // 인증 관련 (소셜 로그인만)
   auth: {
-    login: (credentials: { email: string; password: string }) =>
-      apiRequest('/api/auth/login/password', {
+    // 소셜 로그인
+    socialLogin: (provider: 'kakao' | 'google', code: string) =>
+      apiRequest('/api/auth/login', {
         method: 'POST',
-        body: JSON.stringify(credentials)
-      }),
-    
-    register: (userData: { 
-      email: string; 
-      password: string; 
-      name: string; 
-      phone_number?: string 
-    }) =>
-      apiRequest('/api/auth/register', {
-        method: 'POST',
-        body: JSON.stringify(userData)
+        body: JSON.stringify({ provider, code })
       }),
 
     logout: () =>
@@ -119,6 +121,21 @@ export const api = {
       }),
 
     getProfile: () => apiRequest('/api/users/me'),
+
+    updateProfile: (userData: { 
+      name?: string; 
+      phone_number?: string;
+      password?: string;
+    }) =>
+      apiRequest('/api/users/me', {
+        method: 'PUT',
+        body: JSON.stringify(userData)
+      }),
+
+    deleteAccount: () =>
+      apiRequest('/api/users/me', {
+        method: 'DELETE'
+      }),
   },
 
   // 분실물 관련
@@ -214,39 +231,48 @@ export const api = {
     }
   },
 
-  // 습득물 관련
+  // 습득물 관련 (TypeScript 타입 적용)
   foundItems: {
-    create: (itemData: {
-      title: string;
-      description: string;
-      found_at: string;
-      found_location: string;
-      category: any;
-      image_urls?: string[];
-    }) =>
-      apiRequest('/api/found-items/', {
+    // 분실물 등록 (현재 백엔드 구현에 맞춤)
+    create: (itemData: CreateFoundItemRequest): Promise<FoundItemCreateResponse> =>
+      apiRequest('/api/found-items/', {  // 백엔드 URL 패턴에 맞춤
         method: 'POST',
         body: JSON.stringify(itemData)
       }),
 
-    getAll: () => apiRequest('/api/found-items/list'),
+    // 분실물 목록 조회 (페이징, 필터링 지원)
+    getAll: (params?: FoundItemListParams): Promise<FoundItemListResponse> => {
+      const searchParams = new URLSearchParams();
+      if (params?.page) searchParams.append('page', params.page.toString());
+      if (params?.limit) searchParams.append('limit', params.limit.toString());
+      if (params?.category) searchParams.append('category', params.category);
+      if (params?.found_location) searchParams.append('found_location', params.found_location);
+      
+      const queryString = searchParams.toString();
+      return apiRequest(`/api/found-items/list${queryString ? `?${queryString}` : ''}`);  // 백엔드 URL에 맞춤
+    },
     
-    getById: (id: number) => apiRequest(`/api/found-items/${id}`),
+    // 분실물 상세 조회
+    getById: (id: number): Promise<FoundItemDetailResponse> => 
+      apiRequest(`/api/found-items/${id}`),
     
-    update: (id: number, itemData: any) =>
-      apiRequest(`/api/found-items/${id}/edit`, {
+    // 분실물 정보 수정
+    update: (id: number, itemData: UpdateFoundItemRequest): Promise<FoundItemCreateResponse> =>
+      apiRequest(`/api/found-items/${id}/edit`, {  // 백엔드 URL 패턴에 맞춤
         method: 'PUT',
         body: JSON.stringify(itemData)
       }),
 
-    updateStatus: (id: number, status: 'available' | 'returned' | 'cancelled') =>
+    // 분실물 상태 변경 (available → returned → archived)
+    updateStatus: (id: number, status: FoundItemStatus): Promise<FoundItemStatusResponse> =>
       apiRequest(`/api/found-items/${id}/status`, {
         method: 'PATCH',
         body: JSON.stringify({ status })
       }),
 
-    delete: (id: number) =>
-      apiRequest(`/api/found-items/${id}/delete`, {
+    // 분실물 삭제
+    delete: (id: number): Promise<FoundItemDeleteResponse> =>
+      apiRequest(`/api/found-items/${id}/delete`, {  // 백엔드 URL 패턴에 맞춰 복원
         method: 'DELETE'
       }),
   },

@@ -1,0 +1,112 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { api, tokenManager } from '@/lib/api';
+
+export default function LoginCallbackPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  const [message, setMessage] = useState('로그인 처리 중...');
+
+  useEffect(() => {
+    const handleCallback = async () => {
+      try {
+        // URL에서 인증 코드와 상태 확인
+        const code = searchParams.get('code');
+        const state = searchParams.get('state');
+        const error = searchParams.get('error');
+
+        if (error) {
+          throw new Error(`OAuth 인증 실패: ${error}`);
+        }
+
+        if (!code) {
+          throw new Error('인증 코드가 없습니다.');
+        }
+
+        // state에서 provider 정보 추출 (kakao 또는 google)
+        const provider = state as 'kakao' | 'google';
+        if (!provider || !['kakao', 'google'].includes(provider)) {
+          throw new Error('올바르지 않은 OAuth 제공자입니다.');
+        }
+
+        setMessage(`${provider === 'kakao' ? '카카오' : '구글'} 로그인 처리 중...`);
+
+        // 백엔드로 인증 코드 전송
+        const response = await api.auth.socialLogin(provider, code);
+
+        if (response.status === 'success') {
+          // 토큰 저장
+          tokenManager.setTokens(
+            response.data.access_token, 
+            response.data.refresh_token
+          );
+          
+          setStatus('success');
+          setMessage('로그인 성공! 홈페이지로 이동합니다...');
+          
+          // 홈페이지로 리다이렉트
+          setTimeout(() => {
+            router.push('/');
+          }, 1500);
+        } else {
+          throw new Error('로그인 처리 중 오류가 발생했습니다.');
+        }
+      } catch (error) {
+        console.error('OAuth 콜백 처리 실패:', error);
+        setStatus('error');
+        setMessage(
+          error instanceof Error 
+            ? error.message 
+            : '로그인 중 오류가 발생했습니다.'
+        );
+        
+        // 3초 후 로그인 페이지로 이동
+        setTimeout(() => {
+          router.push('/login');
+        }, 3000);
+      }
+    };
+
+    handleCallback();
+  }, [searchParams, router]);
+
+  return (
+    <div className="flex justify-center items-center min-h-screen bg-gray-50">
+      <div className="p-8 mx-4 w-full max-w-md text-center bg-white rounded-lg shadow-md">
+        {status === 'loading' && (
+          <div className="flex flex-col items-center">
+            <div className="mb-4 w-12 h-12 rounded-full border-b-2 border-indigo-600 animate-spin"></div>
+            <p className="text-gray-700">{message}</p>
+          </div>
+        )}
+        
+        {status === 'success' && (
+          <div className="flex flex-col items-center">
+            <div className="flex justify-center items-center mb-4 w-12 h-12 bg-green-100 rounded-full">
+              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <p className="font-medium text-green-700">{message}</p>
+          </div>
+        )}
+        
+        {status === 'error' && (
+          <div className="flex flex-col items-center">
+            <div className="flex justify-center items-center mb-4 w-12 h-12 bg-red-100 rounded-full">
+              <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </div>
+            <p className="mb-2 font-medium text-red-700">로그인 실패</p>
+            <p className="text-sm text-gray-600">{message}</p>
+            <p className="mt-2 text-xs text-gray-500">잠시 후 로그인 페이지로 이동합니다...</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+} 

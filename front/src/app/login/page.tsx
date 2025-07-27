@@ -21,27 +21,37 @@ export default function LoginPage() {
   const handleSocialLogin = (provider: 'kakao' | 'google') => {
     setIsLoading(true);
     
-    // 백엔드 OAuth URL로 리다이렉트
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-    
-    if (provider === 'kakao') {
-      window.location.href = `${API_BASE_URL}/api/auth/kakao/callback`;
-    } else if (provider === 'google') {
-      window.location.href = `${API_BASE_URL}/api/auth/google/callback`;
+    try {
+      if (provider === 'kakao') {
+        const kakaoClientId = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID;
+        const redirectUri = process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI;
+        
+        if (!kakaoClientId || !redirectUri) {
+          throw new Error('카카오 OAuth 설정이 없습니다.');
+        }
+        
+        const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${kakaoClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&state=kakao`;
+        window.location.href = kakaoAuthUrl;
+        
+      } else if (provider === 'google') {
+        const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+        const redirectUri = process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI;
+        
+        if (!googleClientId || !redirectUri) {
+          throw new Error('구글 OAuth 설정이 없습니다.');
+        }
+        
+        const googleAuthUrl = `https://accounts.google.com/oauth/authorize?client_id=${googleClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=email profile&state=google`;
+        window.location.href = googleAuthUrl;
+      }
+    } catch (error) {
+      console.error('소셜 로그인 오류:', error);
+      alert(error instanceof Error ? error.message : '로그인 중 오류가 발생했습니다.');
+      setIsLoading(false);
     }
   };
 
-  // URL에서 토큰 확인 (OAuth 콜백 후)
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const accessToken = urlParams.get('access_token');
-    const refreshToken = urlParams.get('refresh_token');
-
-    if (accessToken && refreshToken) {
-      tokenManager.setTokens(accessToken, refreshToken);
-      router.push('/');
-    }
-  }, [router]);
+  // OAuth는 콜백 페이지에서 처리됨
 
   // 인증 체크 중이거나 이미 로그인된 경우 로딩 표시
   if (authLoading || isAuthenticated) {
@@ -135,6 +145,7 @@ export default function LoginPage() {
               <span className="text-gray-500"> 에 동의합니다.</span>
             </p>
           </div>
+
         </div>
       </div>
     </div>

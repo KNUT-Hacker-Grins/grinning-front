@@ -56,20 +56,7 @@ export const useAuth = () => {
     }
   };
 
-  // 로그인
-  const login = async (email: string, password: string) => {
-    try {
-      const response = await api.auth.login({ email, password });
-      if (response.status === 'success') {
-        tokenManager.setTokens(response.data.access, response.data.refresh);
-        await checkAuth();
-        return { success: true };
-      }
-    } catch (error) {
-      console.error('로그인 실패:', error);
-      return { success: false, error: '로그인에 실패했습니다.' };
-    }
-  };
+  // 소셜 로그인은 콜백 페이지에서 처리됨
 
   // 로그아웃
   const logout = async () => {
@@ -92,10 +79,24 @@ export const useAuth = () => {
     checkAuth();
   }, []);
 
+  // 프로필 업데이트
+  const updateProfile = async (userData: { name?: string; phone_number?: string; password?: string }) => {
+    try {
+      const response = await api.auth.updateProfile(userData);
+      if (response.status === 'success') {
+        await checkAuth(); // 프로필 정보 새로고침
+        return { success: true };
+      }
+    } catch (error) {
+      console.error('프로필 업데이트 실패:', error);
+      return { success: false, error: '프로필 업데이트에 실패했습니다.' };
+    }
+  };
+
   return {
     ...authState,
-    login,
     logout,
-    checkAuth
+    checkAuth,
+    updateProfile
   };
 }; 
