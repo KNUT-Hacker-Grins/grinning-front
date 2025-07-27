@@ -139,7 +139,7 @@ export default function LostItemRegisterPage() {
             { value: '기타', label: '기타' },
           ]}
         />
-        <Link href="/ai-result" className="text-xs text-blue-500 mt-1">
+        <Link href="/airesult" className="text-xs text-blue-500 mt-1">
             AI 카테고리 추천받기
         </Link>
 
