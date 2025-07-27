@@ -2,9 +2,10 @@ interface RegisterFooterProps {
   onSubmit: () => void;
   isLoading?: boolean;
   disabled?: boolean;
+  buttonText?: string;
 }
 
-export default function RegisterFooter({ onSubmit, isLoading = false, disabled = false }: RegisterFooterProps) {
+export default function RegisterFooter({ onSubmit, isLoading = false, disabled = false, buttonText = "등록하기" }: RegisterFooterProps) {
   return (
     <footer className="w-full p-4 bg-white sticky bottom-0 border-t border-gray-200">
       <button
@@ -22,7 +23,7 @@ export default function RegisterFooter({ onSubmit, isLoading = false, disabled =
             등록 중...
           </div>
         ) : (
-          '분실물 등록하기'
+          buttonText
         )}
       </button>
     </footer>

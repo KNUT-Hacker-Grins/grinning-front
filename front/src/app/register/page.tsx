@@ -1,189 +1,109 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { api } from '@/lib/api';
-import { CreateLostItemRequest } from '@/types/lostItems';
 import RegisterHeader from '@/components/RegisterHeader';
-import PhotoUploadSection from '@/components/PhotoUploadSection';
-import FormInputSection from '@/components/FormInputSection';
-import FormSelectSection from '@/components/FormSelectSection';
-import RegisterFooter from '@/components/RegisterFooter';
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [form, setForm] = useState({
-    title: '',
-    category: '',
-    description: '',
-    lost_location: '',
-    lost_at: '',
-    reward: '',
-  });
 
-  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+  const handleLostItemRegister = () => {
+    router.push('/register/lost');
   };
 
-  // PhotoUploadSection에서 업로드된 이미지 URL들을 받는 함수
-  const handleImageUpload = (imageUrls: string[]) => {
-    setUploadedImages(imageUrls);
-  };
-
-  // 분실물 등록 처리
-  const handleSubmit = async () => {
-    try {
-      // 필수 필드 검증
-      if (!form.title.trim()) {
-        alert('분실물 이름을 입력해주세요.');
-        return;
-      }
-      if (!form.category) {
-        alert('카테고리를 선택해주세요.');
-        return;
-      }
-      if (!form.description.trim()) {
-        alert('상세 설명을 입력해주세요.');
-        return;
-      }
-      if (!form.lost_location.trim()) {
-        alert('분실 위치를 입력해주세요.');
-        return;
-      }
-      if (!form.lost_at) {
-        alert('분실 시간을 입력해주세요.');
-        return;
-      }
-
-      setIsLoading(true);
-
-      // API 요청 데이터 구성
-      const requestData: CreateLostItemRequest = {
-        title: form.title.trim(),
-        description: form.description.trim(),
-        lost_at: new Date(form.lost_at).toISOString(),
-        lost_location: form.lost_location.trim(),
-        image_urls: uploadedImages,
-        category: form.category,
-        reward: form.reward ? parseInt(form.reward) : 0,
-      };
-
-      const response = await api.lostItems.create(requestData);
-
-      if (response.status === 'success') {
-        alert('분실물이 성공적으로 등록되었습니다!');
-        router.push('/mypage'); // 마이페이지로 이동
-      }
-    } catch (error) {
-      console.error('분실물 등록 실패:', error);
-      alert('분실물 등록에 실패했습니다. 다시 시도해주세요.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleCurrentLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          // 실제로는 좌표를 주소로 변환하는 로직이 필요함
-          // 여기서는 간단히 좌표만 표시
-          const { latitude, longitude } = position.coords;
-          setForm(prev => ({ 
-            ...prev, 
-            lost_location: `위도: ${latitude.toFixed(6)}, 경도: ${longitude.toFixed(6)}` 
-          }));
-        },
-        (error) => {
-          console.error('위치 정보를 가져올 수 없습니다:', error);
-          alert('위치 정보를 가져올 수 없습니다. 직접 입력해주세요.');
-        }
-      );
-    } else {
-      alert('이 브라우저는 위치 서비스를 지원하지 않습니다.');
-    }
+  const handleFoundItemRegister = () => {
+    router.push('/register/found');
   };
 
   return (
     <div className="flex flex-col mx-auto w-full max-w-sm min-h-screen bg-white">
-      <RegisterHeader title="분실물 등록" />
+      <RegisterHeader title="신고하기" />
 
-      <main className="flex-grow px-4 py-6 space-y-6">
-        <PhotoUploadSection
-          onImageUpload={handleImageUpload}
-        />
+      <main className="flex-grow px-4 py-6">
+        <div className="space-y-4">
+          <h2 className="mb-8 text-lg font-semibold text-center text-gray-900">
+            어떤 종류의 신고를 하시겠습니까?
+          </h2>
 
-        <FormInputSection
-          label="분실물 이름"
-          name="title"
-          value={form.title}
-          onChange={handleChange}
-          placeholder="분실물 이름을 입력하세요"
-        />
+          {/* 분실물 신고 카드 */}
+          <div 
+            onClick={handleLostItemRegister}
+            className="p-6 bg-white rounded-lg border-2 border-red-200 transition-all cursor-pointer hover:border-red-300 hover:shadow-md"
+          >
+            <div className="flex items-center space-x-4">
+              <div className="flex justify-center items-center w-12 h-12 bg-red-100 rounded-full">
+                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-gray-900">분실물 신고</h3>
+                <p className="mt-1 text-sm text-gray-600">
+                  물건을 잃어버렸어요
+                </p>
+                <p className="mt-2 text-xs text-gray-500">
+                  • 분실 시간과 위치를 등록하세요<br/>
+                  • 현상금을 설정할 수 있어요<br/>
+                  • 많은 사람들이 찾아드릴게요
+                </p>
+              </div>
+              <div className="text-red-400">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </div>
+          </div>
 
-        <FormSelectSection
-          label="카테고리"
-          name="category"
-          value={form.category}
-          onChange={handleChange}
-          options={[
-            { value: '', label: '카테고리를 선택하세요' },
-            { value: '전자기기', label: '전자기기' },
-            { value: '지갑', label: '지갑' },
-            { value: '의류', label: '의류' },
-            { value: '기타', label: '기타' },
-          ]}
-          helperText="AI 카테고리 추천받기"
-        />
+          {/* 습득물 신고 카드 */}
+          <div 
+            onClick={handleFoundItemRegister}
+            className="p-6 bg-white rounded-lg border-2 border-blue-200 transition-all cursor-pointer hover:border-blue-300 hover:shadow-md"
+          >
+            <div className="flex items-center space-x-4">
+              <div className="flex justify-center items-center w-12 h-12 bg-blue-100 rounded-full">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-gray-900">습득물 신고</h3>
+                <p className="mt-1 text-sm text-gray-600">
+                  물건을 찾았어요
+                </p>
+                <p className="mt-2 text-xs text-gray-500">
+                  • 습득 시간과 위치를 등록하세요<br/>
+                  • 주인을 찾아드릴게요<br/>
+                  • 따뜻한 마음에 감사해요
+                </p>
+              </div>
+              <div className="text-blue-400">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </div>
+          </div>
 
-        <FormInputSection
-          label="상세 설명"
-          name="description"
-          value={form.description}
-          onChange={handleChange}
-          placeholder="분실물의 특징이나 상세 정보를 입력하세요"
-          type="textarea"
-          rows={4}
-        />
-
-        {/* 분실 시간 입력 */}
-        <FormInputSection
-          label="분실 시간"
-          name="lost_at"
-          value={form.lost_at}
-          onChange={handleChange}
-          type="datetime-local"
-          placeholder="분실 시간을 선택하세요"
-        />
-
-        <FormInputSection
-          label="분실 위치"
-          name="lost_location"
-          value={form.lost_location}
-          onChange={handleChange}
-          placeholder="분실 위치를 입력하세요"
-          buttonText="현재 위치로 설정"
-          onButtonClick={handleCurrentLocation}
-        />
-
-        <FormInputSection
-          label="보상금 (선택사항)"
-          name="reward"
-          value={form.reward}
-          onChange={handleChange}
-          type="number"
-          placeholder="0"
-          helperText="보상금을 설정하면 더 많은 사람들이 찾아드립니다."
-        />
-
-
+          {/* 안내 메시지 */}
+          <div className="p-4 mt-8 bg-green-50 rounded-lg">
+            <div className="flex items-start space-x-3">
+              <div className="w-5 h-5 text-green-500 mt-0.5">
+                <svg fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div>
+                <h4 className="text-sm font-medium text-green-800">신고 전 확인사항</h4>
+                <p className="mt-1 text-xs text-green-700">
+                  • 정확한 정보를 입력해주세요<br/>
+                  • 사진을 등록하면 찾을 확률이 높아져요<br/>
+                  • 개인정보는 보호됩니다
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </main>
-
-      <RegisterFooter onSubmit={handleSubmit} isLoading={isLoading} />
     </div>
   );
 }
