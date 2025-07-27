@@ -21,7 +21,7 @@ export default function BottomNav() {
       <NavItem href="/" imageSrc="/button (3).png" active={activePath === '/'} />
       <NavItem href="/register" imageSrc="/button (2).png" active={activePath === '/register'} />
       <NavItem href="/chat" imageSrc="/button (1).png" active={activePath.startsWith('/chat')} />
-      <NavItem href="/mypage" imageSrc="/button (8).png" active={activePath.startsWith('/mypage')} />
+      <NavItem href="/mypage" imageSrc="/button.png" active={activePath.startsWith('/mypage')} />
     </nav>
   );
 }

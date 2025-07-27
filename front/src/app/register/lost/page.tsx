@@ -9,6 +9,7 @@ import PhotoUploadSection from '@/components/PhotoUploadSection';
 import FormInputSection from '@/components/FormInputSection';
 import FormSelectSection from '@/components/FormSelectSection';
 import RegisterFooter from '@/components/RegisterFooter';
+import Link from 'next/link';
 
 export default function LostItemRegisterPage() {
   const router = useRouter();
@@ -137,8 +138,10 @@ export default function LostItemRegisterPage() {
             { value: '의류', label: '의류' },
             { value: '기타', label: '기타' },
           ]}
-          helperText="AI 카테고리 추천받기"
         />
+        <Link href="/ai-result" className="text-xs text-blue-500 mt-1">
+            AI 카테고리 추천받기
+        </Link>
 
         <FormInputSection
           label="상세 설명"
