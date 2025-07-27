@@ -176,9 +176,6 @@ export default function FoundItemRegisterPage() {
             { value: '의류', label: '의류' },
             { value: '기타', label: '기타' },
           ]}
-        />
-
-
           helperText={isClassifying ? "AI가 분석 중..." : "AI 카테고리 추천받기"}
           onHelperClick={handleCategoryRecommendation}
         />

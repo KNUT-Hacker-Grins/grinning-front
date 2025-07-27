@@ -221,11 +221,12 @@ export const api = {
     // 채팅방 목록 조회
     getRooms: () => apiRequest('/api/chat/rooms'),
 
-    getMessages: (roomId: number, page?: number) => {
+    getMessages: (roomId: number, page: number = 1, limit: number = 50) => {
       const params = new URLSearchParams();
-      if (page) params.append('page', page.toString());
+      params.append('page', page.toString());
+      params.append('limit', limit.toString());
       
-      return apiRequest(`/api/chat/${roomId}/list${params.toString() ? `?${params.toString()}` : ''}`);
+      return apiRequest(`/api/chat/${roomId}/messages?${params.toString()}`);
     },
 
     sendMessage: (roomId: number, content: string, messageType: string = 'text') =>
