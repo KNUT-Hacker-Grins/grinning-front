@@ -194,7 +194,7 @@ export default function Home() {
               placeholder="내 물건 찾기"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="absolute left-[55px] top-[15px] w-[200px] h-[24px] text-[#8b8484] text-base font-normal outline-none bg-transparent leading-none placeholder:text-[#8b8484] placeholder:leading-none"
+              className="absolute left-[55px] top-[15px] w-[200px] h-[24px] text-gray-800 text-base font-normal outline-none bg-transparent leading-none placeholder:text-[#8b8484] placeholder:leading-none"
               style={{ fontFamily: 'Inter, Noto Sans KR, sans-serif' }}
             />
             

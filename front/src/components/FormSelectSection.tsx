@@ -31,7 +31,7 @@ export default function FormSelectSection({
         name={name}
         value={value}
         onChange={onChange}
-        className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm bg-white"
+        className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm bg-white text-gray-800"
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>
