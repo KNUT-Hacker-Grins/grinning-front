@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
 import ChatPreviewCard from '@/components/ChatPreviewCard';
 import SettingHeader from '@/components/SettingHeader'; // 헤더 재사용
 import RegisterHeader from '@/components/RegisterHeader';
@@ -22,42 +24,56 @@ interface ChatRoom {
 }
 
 export default function ChatListPage() {
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const router = useRouter();
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // TODO: 백엔드에서 실제 채팅방 목록을 가져오는 API를 호출해야 합니다.
-    // const fetchChatRooms = async () => {
-    //   try {
-    //     const response = await api.chat.getRooms(); // 예시: api.chat.getRooms() 같은 함수 필요
-    //     setChatRooms(response.data);
-    //   } catch (error) {
-    //     console.error('채팅 목록을 불러오는 데 실패했습니다.', error);
-    //   } finally {
-    //     setIsLoading(false);
-    //   }
-    // };
-    // fetchChatRooms();
+    if (!isAuthLoading && !isAuthenticated) {
+      router.push('/login');
+    }
+  }, [isAuthLoading, isAuthenticated, router]);
 
-    // --- 임시 데이터 사용 ---
-    const mockData: ChatRoom[] = [
-      {
-        id: '1',
-        participant: { name: '이준호' },
-        lastMessage: { content: '안녕하세요, 지갑 찾으셨나요?', timestamp: '오후 2:30' },
-        unreadCount: 1,
-      },
-      {
-        id: '2',
-        participant: { name: '박서준' },
-        lastMessage: { content: '파우치 사진 좀 더 보내주실 수 있나요?', timestamp: '오전 11:15' },
-        unreadCount: 0,
-      },
-    ];
-    setChatRooms(mockData);
-    setIsLoading(false);
-    // --- 임시 데이터 끝 ---
-  }, []);
+  useEffect(() => {
+    if (isAuthenticated) {
+      // TODO: 백엔드에서 실제 채팅방 목록을 가져오는 API를 호출해야 합니다.
+      // const fetchChatRooms = async () => {
+      //   try {
+      //     const response = await api.chat.getRooms(); // 예시: api.chat.getRooms() 같은 함수 필요
+      //     setChatRooms(response.data);
+      //   } catch (error) {
+      //     console.error('채팅 목록을 불러오는 데 실패했습니다.', error);
+      //   } finally {
+      //     setIsLoading(false);
+      //   }
+      // };
+      // fetchChatRooms();
+
+      // --- 임시 데이터 사용 ---
+      const mockData: ChatRoom[] = [
+        {
+          id: '1',
+          participant: { name: '이준호' },
+          lastMessage: { content: '안녕하세요, 지갑 찾으셨나요?', timestamp: '오후 2:30' },
+          unreadCount: 1,
+        },
+        {
+          id: '2',
+          participant: { name: '박서준' },
+          lastMessage: { content: '파우치 사진 좀 더 보내주실 수 있나요?', timestamp: '오전 11:15' },
+          unreadCount: 0,
+        },
+      ];
+      setChatRooms(mockData);
+      setIsLoading(false);
+      // --- 임시 데이터 끝 ---
+    }
+  }, [isAuthenticated]);
+
+  if (isAuthLoading || !isAuthenticated) {
+    return <div className="text-center pt-20">인증 상태를 확인하는 중...</div>;
+  }
 
   return (
     <div className="w-full mx-auto bg-white flex flex-col min-h-screen border-x" style={{ maxWidth: '390px' }}>

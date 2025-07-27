@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
+import Link from 'next/link';
 import { CreateFoundItemRequest } from '@/types/foundItems';
 import RegisterHeader from '@/components/RegisterHeader';
 import PhotoUploadSection from '@/components/PhotoUploadSection';
@@ -175,6 +176,9 @@ export default function FoundItemRegisterPage() {
             { value: '의류', label: '의류' },
             { value: '기타', label: '기타' },
           ]}
+        />
+
+
           helperText={isClassifying ? "AI가 분석 중..." : "AI 카테고리 추천받기"}
           onHelperClick={handleCategoryRecommendation}
         />
@@ -214,6 +218,7 @@ export default function FoundItemRegisterPage() {
             </button>
           </div>
         )}
+
 
         <FormInputSection
           label="상세 설명"
@@ -255,7 +260,7 @@ export default function FoundItemRegisterPage() {
       </main>
 
       <RegisterFooter 
-        onSubmit={handleSubmit} 
+        onSubmit={handleSubmit}
         isLoading={isLoading} 
         buttonText="습득물 신고하기"
       />
