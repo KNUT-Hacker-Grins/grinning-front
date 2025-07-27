@@ -1,50 +1,38 @@
-"use client";
+'use client';
 
-import { usePathname } from "next/navigation";
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import Image from "next/image";
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { MdHome, MdAddBox, MdChat, MdPerson } from 'react-icons/md';
 
 export default function BottomNav() {
   const pathname = usePathname();
-  const [activePath, setActivePath] = useState(pathname);
-
-  useEffect(() => {
-    setActivePath(pathname);
-  }, [pathname]);
 
   return (
-    <nav
-      className="fixed bottom-0 left-0 right-0 z-50 bg-white shadow-sm max-w-md mx-auto h-16 flex justify-around items-center"
-      style={{ maxWidth: "390px" }}
-    >
-      <NavItem href="/" imageSrc="/button (3).png" active={activePath === '/'} />
-      <NavItem href="/register" imageSrc="/button (2).png" active={activePath === '/register'} />
-      <NavItem href="/chat" imageSrc="/button (1).png" active={activePath.startsWith('/chat')} />
-      <NavItem href="/mypage" imageSrc="/button.png" active={activePath.startsWith('/mypage')} />
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white shadow-sm max-w-md mx-auto h-16 flex justify-around items-center" style={{ maxWidth: '390px' }}>
+      <NavItem href="/" icon={<MdHome size={24} />} label="홈" active={pathname === '/'} />
+      <NavItem href="/register" icon={<MdAddBox size={24} />} label="등록" active={pathname === '/register'} />
+      <NavItem href="/chat" icon={<MdChat size={24} />} label="대화" active={pathname.startsWith('/chat')} />
+      <NavItem href="/mypage" icon={<MdPerson size={24} />} label="내 정보" active={pathname.startsWith('/mypage')} />
     </nav>
   );
 }
 
 type NavItemProps = {
   href: string;
-  imageSrc: string;
+  icon: React.ReactNode;
+  label: string;
   active: boolean;
 };
 
-function NavItem({ href, imageSrc, active }: NavItemProps) {
+function NavItem({ href, icon, label, active }: NavItemProps) {
   return (
-    <Link
-      href={href}
-      className="flex flex-col items-center justify-center text-sm"
-    >
-      <Image
-        src={imageSrc}
-        alt="nav-icon"
-        width={40}
-        height={40}
-        className={active ? "opacity-100" : "opacity-40"}
-      />
+    <Link href={href} className="flex flex-col items-center justify-center text-xs text-gray-500 hover:text-blue-600">
+      <div className={active ? 'text-blue-600' : 'text-gray-400'}>
+        {icon}
+      </div>
+      <span className={active ? 'text-blue-600 font-semibold' : 'text-gray-500'}>
+        {label}
+      </span>
     </Link>
   );
 }
