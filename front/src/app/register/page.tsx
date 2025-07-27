@@ -6,6 +6,7 @@ import PhotoUploadSection from '@/components/PhotoUploadSection';
 import FormInputSection from '@/components/FormInputSection';
 import FormSelectSection from '@/components/FormSelectSection';
 import RegisterFooter from '@/components/RegisterFooter';
+import MapModal from '@/components/MapModal'; // MapModal import
 
 export default function RegisterPage() {
   const [form, setForm] = useState({
@@ -16,6 +17,7 @@ export default function RegisterPage() {
     reward: '',
     contact: '',
   });
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false); // MapModal 상태 추가
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -28,8 +30,12 @@ export default function RegisterPage() {
   };
 
   const handleCurrentLocation = () => {
-    // TODO: 현재 위치 설정 로직
-    console.log('현재 위치 설정');
+    setIsMapModalOpen(true); // 모달 열기
+  };
+
+  const handleSelectAddress = (address: string, lat: number, lng: number) => {
+    setForm((prev) => ({ ...prev, location: address })); // 선택된 주소로 location 업데이트
+    console.log(`선택된 주소: ${address}, 위도: ${lat}, 경도: ${lng}`);
   };
 
   return (
@@ -80,6 +86,7 @@ export default function RegisterPage() {
           placeholder="분실 위치를 입력하세요"
           buttonText="현재 위치로 설정"
           onButtonClick={handleCurrentLocation}
+          className="text-gray-900" // 글씨 색상을 검은색으로 변경
         />
 
         <FormInputSection
@@ -102,6 +109,13 @@ export default function RegisterPage() {
       </main>
 
       <RegisterFooter onSubmit={handleSubmit} />
+
+      {/* MapModal 추가 */}
+      <MapModal
+        isOpen={isMapModalOpen}
+        onClose={() => setIsMapModalOpen(false)}
+        onSelectAddress={handleSelectAddress}
+      />
     </div>
   );
 }
