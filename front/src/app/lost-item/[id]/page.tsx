@@ -1,10 +1,18 @@
-'use client';
+"use client";
 
-import { useRouter, useParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import { FaArrowLeft, FaEllipsisV, FaMapMarkerAlt, FaComments, FaCheck, FaFlag } from 'react-icons/fa';
-import BottomNav from '@/components/BottomNav';
-import { api } from '@/lib/api';
+import { useRouter, useParams } from "next/navigation";
+import { useState, useEffect } from "react";
+import {
+  FaArrowLeft,
+  FaEllipsisV,
+  FaMapMarkerAlt,
+  FaComments,
+  FaCheck,
+  FaFlag,
+} from "react-icons/fa";
+import BottomNav from "@/components/BottomNav";
+import ReportModal from "@/components/ReportModal";
+import { api } from "@/lib/api";
 
 interface LostItem {
   id: number;
@@ -15,7 +23,7 @@ interface LostItem {
   image_urls: string[];
   category: any;
   reward: number;
-  status: 'searching' | 'found' | 'cancelled';
+  status: "searching" | "found" | "cancelled";
   created_at: string;
   updated_at: string;
   owner: {
@@ -27,14 +35,16 @@ interface LostItem {
 const getTimeAgo = (dateString: string) => {
   const now = new Date();
   const createdAt = new Date(dateString);
-  const diffInMinutes = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60));
-  
-  if (diffInMinutes < 1) return '방금 전';
+  const diffInMinutes = Math.floor(
+    (now.getTime() - createdAt.getTime()) / (1000 * 60)
+  );
+
+  if (diffInMinutes < 1) return "방금 전";
   if (diffInMinutes < 60) return `${diffInMinutes}분 전`;
-  
+
   const diffInHours = Math.floor(diffInMinutes / 60);
   if (diffInHours < 24) return `${diffInHours}시간 전`;
-  
+
   const diffInDays = Math.floor(diffInHours / 24);
   return `${diffInDays}일 전`;
 };
@@ -42,18 +52,36 @@ const getTimeAgo = (dateString: string) => {
 // 날짜 포맷 함수
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
-  return date.toLocaleDateString('ko-KR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
+  return date.toLocaleDateString("ko-KR", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
+};
+
+// 신고 하기
+const [isReportOpen, setIsReportOpen] = useState(false);
+
+const handleReport = () => {
+  setIsReportOpen(true); // 버튼 클릭 시 모달 열림
+};
+
+const handleCloseReport = () => {
+  setIsReportOpen(false); // 모달 닫기
+};
+
+const handleSubmitReport = (reason: string, details: string) => {
+  console.log("신고 사유:", reason);
+  console.log("상세 내용:", details);
+  alert("신고가 접수되었습니다.");
+  setIsReportOpen(false);
 };
 
 export default function LostItemDetailPage() {
   const router = useRouter();
   const params = useParams();
   const itemId = params.id as string;
-  
+
   const [item, setItem] = useState<LostItem | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -65,17 +93,17 @@ export default function LostItemDetailPage() {
       try {
         setIsLoading(true);
         setError(null);
-        
+
         const response = await api.lostItems.getById(parseInt(itemId));
-        
+
         if (response) {
           setItem(response);
         } else {
-          setError('분실물을 찾을 수 없습니다.');
+          setError("분실물을 찾을 수 없습니다.");
         }
       } catch (error: any) {
-        console.error('분실물 정보 가져오기 실패:', error);
-        setError('분실물 정보를 불러오는데 실패했습니다.');
+        console.error("분실물 정보 가져오기 실패:", error);
+        setError("분실물 정보를 불러오는데 실패했습니다.");
       } finally {
         setIsLoading(false);
       }
@@ -90,7 +118,10 @@ export default function LostItemDetailPage() {
   if (isLoading) {
     return (
       <main className="flex justify-center min-h-screen bg-white">
-        <div className="flex justify-center items-center mx-auto w-full max-w-md" style={{maxWidth: '390px'}}>
+        <div
+          className="flex justify-center items-center mx-auto w-full max-w-md"
+          style={{ maxWidth: "390px" }}
+        >
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
             <p className="text-gray-600">분실물 정보를 불러오는 중...</p>
@@ -104,12 +135,15 @@ export default function LostItemDetailPage() {
   if (error || !item) {
     return (
       <main className="flex justify-center min-h-screen bg-white">
-        <div className="flex justify-center items-center mx-auto w-full max-w-md" style={{maxWidth: '390px'}}>
+        <div
+          className="flex justify-center items-center mx-auto w-full max-w-md"
+          style={{ maxWidth: "390px" }}
+        >
           <div className="text-center">
             <h2 className="mb-4 text-xl font-semibold text-gray-900">
-              {error || '분실물을 찾을 수 없습니다'}
+              {error || "분실물을 찾을 수 없습니다"}
             </h2>
-            <button 
+            <button
               onClick={() => router.back()}
               className="text-indigo-600 hover:text-indigo-800"
             >
@@ -128,26 +162,26 @@ export default function LostItemDetailPage() {
   const handleChat = async () => {
     try {
       setIsStartingChat(true);
-      
+
       // 채팅방 시작 요청
-      const response = await api.chat.startChat(item.id, 'lost');
-      
+      const response = await api.chat.startChat(item.id, "lost");
+
       if (response && response.data && response.data.room_id) {
         // 채팅 페이지로 이동
         router.push(`/chat/${response.data.room_id}`);
       } else {
-        alert('채팅방 생성에 실패했습니다.');
+        alert("채팅방 생성에 실패했습니다.");
       }
     } catch (error: any) {
-      console.error('채팅 시작 실패:', error);
-      
-      if (error.message.includes('403')) {
-        alert('자신의 글에는 채팅을 시작할 수 없습니다.');
-      } else if (error.message.includes('401')) {
-        alert('로그인이 필요합니다.');
-        router.push('/login');
+      console.error("채팅 시작 실패:", error);
+
+      if (error.message.includes("403")) {
+        alert("자신의 글에는 채팅을 시작할 수 없습니다.");
+      } else if (error.message.includes("401")) {
+        alert("로그인이 필요합니다.");
+        router.push("/login");
       } else {
-        alert('채팅 시작에 실패했습니다. 다시 시도해 주세요.');
+        alert("채팅 시작에 실패했습니다. 다시 시도해 주세요.");
       }
     } finally {
       setIsStartingChat(false);
@@ -156,28 +190,31 @@ export default function LostItemDetailPage() {
 
   const handleFound = async () => {
     try {
-      await api.lostItems.updateStatus(item.id, 'found');
-      alert('분실물을 찾았다고 표시되었습니다!');
-      
+      await api.lostItems.updateStatus(item.id, "found");
+      alert("분실물을 찾았다고 표시되었습니다!");
+
       // 상태 업데이트
-      setItem(prev => prev ? { ...prev, status: 'found' } : null);
+      setItem((prev) => (prev ? { ...prev, status: "found" } : null));
     } catch (error) {
-      console.error('상태 업데이트 실패:', error);
-      alert('상태 업데이트에 실패했습니다.');
+      console.error("상태 업데이트 실패:", error);
+      alert("상태 업데이트에 실패했습니다.");
     }
   };
 
   const handleReport = () => {
-    console.log('신고하기');
-    // TODO 신고 기능 
+    console.log("신고하기");
+    // TODO 신고 기능
   };
 
   return (
     <main className="flex justify-center min-h-screen bg-white">
-      <div className="flex flex-col mx-auto w-full max-w-md" style={{maxWidth: '390px'}}>
+      <div
+        className="flex flex-col mx-auto w-full max-w-md"
+        style={{ maxWidth: "390px" }}
+      >
         {/* 상단 헤더 */}
         <div className="flex items-center justify-between p-4 bg-white border-b border-gray-200">
-          <button 
+          <button
             onClick={handleBack}
             className="p-2 text-gray-600 hover:text-gray-800"
           >
@@ -197,27 +234,43 @@ export default function LostItemDetailPage() {
               alt={item.title}
               className="w-full h-full object-cover"
               onError={(e) => {
-                (e.target as HTMLImageElement).src = '/api/placeholder/400/300';
+                (e.target as HTMLImageElement).src = "/api/placeholder/400/300";
               }}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-400">
-              <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              <svg
+                className="w-16 h-16"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
               </svg>
             </div>
           )}
-          
+
           {/* 상태 배지 */}
           <div className="absolute top-4 left-4">
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-              item.status === 'found' 
-                ? 'bg-green-100 text-green-800' 
-                : item.status === 'searching'
-                ? 'bg-blue-100 text-blue-800'
-                : 'bg-gray-100 text-gray-800'
-            }`}>
-              {item.status === 'found' ? '찾음' : item.status === 'searching' ? '찾는 중' : '취소됨'}
+            <span
+              className={`px-3 py-1 rounded-full text-sm font-medium ${
+                item.status === "found"
+                  ? "bg-green-100 text-green-800"
+                  : item.status === "searching"
+                  ? "bg-blue-100 text-blue-800"
+                  : "bg-gray-100 text-gray-800"
+              }`}
+            >
+              {item.status === "found"
+                ? "찾음"
+                : item.status === "searching"
+                ? "찾는 중"
+                : "취소됨"}
             </span>
           </div>
         </div>
@@ -226,12 +279,17 @@ export default function LostItemDetailPage() {
         <div className="flex-1 p-4 space-y-4">
           {/* 제목과 기본 정보 */}
           <div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">{item.title}</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">
+              {item.title}
+            </h2>
             <div className="flex items-center text-sm text-gray-600 mb-1">
-              <span>{item.category?.name || '기타'} · 개인용품</span>
+              <span>{item.category?.name || "기타"} · 개인용품</span>
             </div>
             <div className="flex items-center text-sm text-gray-500">
-              <span>{getTimeAgo(item.created_at)} · {formatDate(item.created_at)} 등록</span>
+              <span>
+                {getTimeAgo(item.created_at)} · {formatDate(item.created_at)}{" "}
+                등록
+              </span>
             </div>
             {item.reward > 0 && (
               <div className="mt-2">
@@ -245,7 +303,10 @@ export default function LostItemDetailPage() {
           {/* 분실 위치 */}
           <div className="bg-gray-50 p-4 rounded-lg">
             <div className="flex items-start">
-              <FaMapMarkerAlt className="text-red-500 mr-2 mt-1 flex-shrink-0" size={16} />
+              <FaMapMarkerAlt
+                className="text-red-500 mr-2 mt-1 flex-shrink-0"
+                size={16}
+              />
               <div>
                 <h3 className="font-medium text-gray-900 mb-1">분실 위치</h3>
                 <p className="text-sm text-gray-600">{item.lost_location}</p>
@@ -264,10 +325,12 @@ export default function LostItemDetailPage() {
             <h3 className="font-medium text-gray-900 mb-2">등록자</h3>
             <div className="flex items-center">
               <div className="w-10 h-10 bg-indigo-500 text-white rounded-full flex items-center justify-center font-medium">
-                {item.owner?.nickname?.charAt(0) || 'U'}
+                {item.owner?.nickname?.charAt(0) || "U"}
               </div>
               <div className="ml-3">
-                <p className="font-medium text-gray-900">{item.owner?.nickname || '익명'}</p>
+                <p className="font-medium text-gray-900">
+                  {item.owner?.nickname || "익명"}
+                </p>
                 <p className="text-sm text-gray-500">등록자</p>
               </div>
             </div>
@@ -282,8 +345,8 @@ export default function LostItemDetailPage() {
               disabled={isStartingChat}
               className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center transition-colors ${
                 isStartingChat
-                  ? 'bg-gray-400 text-white cursor-not-allowed'
-                  : 'bg-blue-500 text-white hover:bg-blue-600'
+                  ? "bg-gray-400 text-white cursor-not-allowed"
+                  : "bg-blue-500 text-white hover:bg-blue-600"
               }`}
             >
               {isStartingChat ? (
@@ -298,8 +361,8 @@ export default function LostItemDetailPage() {
                 </>
               )}
             </button>
-            
-            {item.status === 'searching' && (
+
+            {item.status === "searching" && (
               <button
                 onClick={handleFound}
                 className="flex-1 bg-green-500 text-white py-3 px-4 rounded-lg flex items-center justify-center hover:bg-green-600 transition-colors"
@@ -308,18 +371,24 @@ export default function LostItemDetailPage() {
                 찾았어요
               </button>
             )}
-            
+
             <button
               onClick={handleReport}
               className="bg-gray-200 text-gray-700 py-3 px-4 rounded-lg flex items-center justify-center hover:bg-gray-300 transition-colors"
             >
               <FaFlag size={16} />
+              신고하기
             </button>
           </div>
         </div>
+        <ReportModal
+          isOpen={isReportOpen}
+          onClose={handleCloseReport}
+          onSubmit={handleSubmitReport}
+        />
 
         <BottomNav />
       </div>
     </main>
   );
-} 
+}
