@@ -194,7 +194,7 @@ export default function Home() {
               placeholder="내 물건 찾기"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="absolute left-[55px] top-[15px] w-[200px] h-[24px] text-[#8b8484] text-base font-normal outline-none bg-transparent leading-none placeholder:text-[#8b8484] placeholder:leading-none"
+              className="absolute left-[55px] top-[15px] w-[200px] h-[24px] text-gray-800 text-base font-normal outline-none bg-transparent leading-none placeholder:text-[#8b8484] placeholder:leading-none"
               style={{ fontFamily: 'Inter, Noto Sans KR, sans-serif' }}
             />
             
@@ -215,7 +215,7 @@ export default function Home() {
               onClick={() => setSelectedCategory(category === selectedCategory ? null : category)}
               className={`w-[61px] h-6 rounded-[20px] text-sm font-normal flex items-center justify-center ${
                 selectedCategory === category
-                  ? 'bg-blue-500 text-white'
+                  ? 'bg-blue-500 text-gray-800'
                   : 'bg-[#d9d9d9] text-[#8b8484]'
               }`}
               style={{ fontFamily: 'Inter, sans-serif' }}
@@ -331,9 +331,9 @@ export default function Home() {
         <div className="fixed right-6 bottom-6 z-10">
           <button
             onClick={handleRegister}
-            className="px-6 py-3 bg-indigo-600 rounded-xl shadow-lg transition-colors duration-200 hover:bg-indigo-700"
+            className="px-6 py-3 bg-blue-100 rounded-xl shadow-lg transition-colors duration-200 hover:bg-blue-200"
           >
-            <span className="text-sm font-medium text-white">+ 등록하기</span>
+            <span className="text-sm font-medium text-gray-800">+ 등록하기</span>
           </button>
         </div>
 

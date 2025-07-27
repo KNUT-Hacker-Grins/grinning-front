@@ -3,12 +3,14 @@
 import { useRouter } from 'next/navigation';
 import RegisterHeader from '@/components/RegisterHeader';
 
+
 export default function RegisterPage() {
   const router = useRouter();
 
   const handleLostItemRegister = () => {
     router.push('/register/lost');
   };
+
 
   const handleFoundItemRegister = () => {
     router.push('/register/found');
@@ -83,6 +85,7 @@ export default function RegisterPage() {
               </div>
             </div>
           </div>
+
 
           {/* 안내 메시지 */}
           <div className="p-4 mt-8 bg-green-50 rounded-lg">

@@ -10,6 +10,14 @@ import PhotoUploadSection from '@/components/PhotoUploadSection';
 import FormInputSection from '@/components/FormInputSection';
 import FormSelectSection from '@/components/FormSelectSection';
 import RegisterFooter from '@/components/RegisterFooter';
+import MapModal from '@/components/MapModal';
+
+// AI 카테고리 추천 결과 타입
+interface CategoryRecommendation {
+  category: string;
+  label: string;
+  confidence: string;
+}
 
 export default function FoundItemRegisterPage() {
   const router = useRouter();
@@ -23,6 +31,11 @@ export default function FoundItemRegisterPage() {
 
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  
+  // AI 카테고리 추천 관련 상태
+  const [isClassifying, setIsClassifying] = useState(false);
+  const [recommendations, setRecommendations] = useState<CategoryRecommendation[]>([]);
+  const [showRecommendations, setShowRecommendations] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -32,6 +45,44 @@ export default function FoundItemRegisterPage() {
   // PhotoUploadSection에서 업로드된 이미지 URL들을 받는 함수
   const handleImageUpload = (imageUrls: string[]) => {
     setUploadedImages(imageUrls);
+  };
+
+  // AI 카테고리 추천 함수
+  const handleCategoryRecommendation = async () => {
+    if (uploadedImages.length === 0) {
+      alert('이미지를 먼저 업로드해주세요.');
+      return;
+    }
+
+    try {
+      setIsClassifying(true);
+      
+      // 첫 번째 이미지를 사용하여 분류
+      const response = await api.classify.image(uploadedImages[0]);
+      
+      if (response.status === 'success' && response.data) {
+        // confidence 높은 순서대로 정렬하고 상위 2개만 가져오기
+        const sortedRecommendations = response.data
+          .sort((a: CategoryRecommendation, b: CategoryRecommendation) => 
+            parseFloat(b.confidence) - parseFloat(a.confidence)
+          )
+          .slice(0, 2);
+        
+        setRecommendations(sortedRecommendations);
+        setShowRecommendations(true);
+      }
+    } catch (error) {
+      console.error('AI 카테고리 추천 실패:', error);
+      alert('AI 카테고리 추천에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsClassifying(false);
+    }
+  };
+
+  // 추천된 카테고리 선택
+  const handleSelectRecommendation = (category: string) => {
+    setForm(prev => ({ ...prev, category }));
+    setShowRecommendations(false);
   };
 
   // 습득물 등록 처리
@@ -85,26 +136,15 @@ export default function FoundItemRegisterPage() {
     }
   };
 
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+
   const handleCurrentLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          // 실제로는 좌표를 주소로 변환하는 로직이 필요함
-          // 여기서는 간단히 좌표만 표시
-          const { latitude, longitude } = position.coords;
-          setForm(prev => ({ 
-            ...prev, 
-            found_location: `위도: ${latitude.toFixed(6)}, 경도: ${longitude.toFixed(6)}` 
-          }));
-        },
-        (error) => {
-          console.error('위치 정보를 가져올 수 없습니다:', error);
-          alert('위치 정보를 가져올 수 없습니다. 직접 입력해주세요.');
-        }
-      );
-    } else {
-      alert('이 브라우저는 위치 서비스를 지원하지 않습니다.');
-    }
+    setIsMapModalOpen(true);
+  };
+
+  const handleSelectAddress = (address: string, lat: number, lng: number) => {
+    setForm((prev) => ({ ...prev, found_location: address }));
+    console.log(`선택된 주소: ${address}, 위도: ${lat}, 경도: ${lng}`);
   };
 
   return (
@@ -138,9 +178,47 @@ export default function FoundItemRegisterPage() {
           ]}
         />
 
-        <Link href="/airesult" className="text-xs text-blue-500 mt-1">
-            AI 카테고리 추천받기
-        </Link>
+
+          helperText={isClassifying ? "AI가 분석 중..." : "AI 카테고리 추천받기"}
+          onHelperClick={handleCategoryRecommendation}
+        />
+
+        {/* AI 카테고리 추천 결과 */}
+        {showRecommendations && recommendations.length > 0 && (
+          <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200">
+            <div className="flex items-center mb-3">
+              <span className="text-sm font-medium text-gray-700">🤖 AI 추천 카테고리</span>
+            </div>
+            <div className="space-y-2">
+              {recommendations.map((rec, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => handleSelectRecommendation(rec.category)}
+                  className="p-3 w-full text-left bg-white rounded-lg border border-gray-200 transition-colors hover:border-blue-300 hover:bg-blue-50"
+                >
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <span className="font-medium text-gray-900">{rec.category}</span>
+                      <span className="ml-2 text-sm text-gray-500">({rec.label})</span>
+                    </div>
+                    <span className="px-2 py-1 text-xs text-blue-700 bg-blue-100 rounded-full">
+                      {rec.confidence}
+                    </span>
+                  </div>
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowRecommendations(false)}
+              className="mt-3 text-xs text-gray-500 hover:text-gray-700"
+            >
+              닫기
+            </button>
+          </div>
+        )}
+
 
         <FormInputSection
           label="상세 설명"
@@ -172,7 +250,7 @@ export default function FoundItemRegisterPage() {
           onButtonClick={handleCurrentLocation}
         />
 
-        <div className="bg-blue-50 p-4 rounded-lg">
+        <div className="p-4 bg-blue-50 rounded-lg">
           <p className="text-sm text-blue-700">
             💡 <strong>습득물 신고 안내</strong><br/>
             주인을 찾아주시는 따뜻한 마음에 감사합니다. 등록된 습득물은 분실물을 찾는 분들이 확인할 수 있습니다.
@@ -182,9 +260,15 @@ export default function FoundItemRegisterPage() {
       </main>
 
       <RegisterFooter 
-        onSubmit={handleSubmit} 
+        onSubmit={handleSubmit}
         isLoading={isLoading} 
         buttonText="습득물 신고하기"
+      />
+
+      <MapModal
+        isOpen={isMapModalOpen}
+        onClose={() => setIsMapModalOpen(false)}
+        onSelectAddress={handleSelectAddress}
       />
     </div>
   );

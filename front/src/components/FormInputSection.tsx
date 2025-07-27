@@ -39,7 +39,7 @@ export default function FormInputSection({
         placeholder={placeholder}
         type={type === 'textarea' ? undefined : type} // textarea는 type 속성 없음
         rows={rows}
-        className={`${className || ''} w-full px-4 py-3 border border-gray-300 rounded-xl text-sm ${type === 'textarea' ? 'resize-none' : ''} bg-gray-50`}
+        className={`${className || ''} w-full px-4 py-3 border border-gray-300 rounded-xl text-sm ${type === 'textarea' ? 'resize-none' : ''} bg-gray-50 text-gray-800`}
       />
       {helperText && <p className="text-xs text-gray-400 mt-1">{helperText}</p>}
       {buttonText && (

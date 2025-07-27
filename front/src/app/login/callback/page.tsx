@@ -13,7 +13,25 @@ export default function LoginCallbackPage() {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        // URL에서 인증 코드와 상태 확인
+        // URL에서 토큰 확인 (백엔드에서 직접 전달받은 경우)
+        const access = searchParams.get('access');
+        const refresh = searchParams.get('refresh');
+        
+        if (access && refresh) {
+          // 백엔드에서 이미 처리된 토큰을 받은 경우
+          tokenManager.setTokens(access, refresh);
+          
+          setStatus('success');
+          setMessage('로그인 성공! 홈페이지로 이동합니다...');
+          
+          // 홈페이지로 리다이렉트
+          setTimeout(() => {
+            router.push('/');
+          }, 1500);
+          return;
+        }
+
+        // URL에서 인증 코드와 상태 확인 (기존 로직)
         const code = searchParams.get('code');
         const state = searchParams.get('state');
         const error = searchParams.get('error');
