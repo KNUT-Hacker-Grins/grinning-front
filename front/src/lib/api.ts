@@ -179,7 +179,7 @@ export const api = {
       if (params?.status) searchParams.append('status', params.status);
       
       const queryString = searchParams.toString();
-      return apiRequest(`/api/lost-items/list/${queryString ? `?${queryString}` : ''}`);
+      return apiRequest(`/api/lost-items/list${queryString ? `?${queryString}` : ''}`);
     },
     
     // 분실물 상세 조회
