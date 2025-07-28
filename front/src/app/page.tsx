@@ -275,7 +275,7 @@ export default function Home() {
         <section className="mb-[56px]">
           <div className="flex justify-between items-center mb-[27px] px-6">
             <h2 className="text-lg font-normal text-black">분실물 찾기</h2>
-            <Link href="/found-item" className="text-xs text-black/30">더보기</Link> 
+            <Link href="../items/found-item" className="text-xs text-black/30">더보기</Link> 
           </div>
           
           {/* 가로 스크롤 컨테이너 */}
@@ -327,7 +327,7 @@ export default function Home() {
         <section className="mb-8">
           <div className="flex justify-between items-center mb-[27px] px-6">
             <h2 className="text-lg font-normal text-black">분실물 수배</h2>
-            <Link href="/found-item" className="text-xs text-black/30">더보기</Link> 
+            <Link href="../items/lost-item" className="text-xs text-black/30">더보기</Link> 
           </div>
           
           {/* 가로 스크롤 컨테이너 */}

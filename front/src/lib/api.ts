@@ -161,11 +161,12 @@ export const api = {
       }),
 
     // 전체 분실물 목록 조회 (메인 페이지용)
-    getAll: (params?: { page?: number; limit?: number; status?: string }) => {
+    getAll: (params?: { page?: number; limit?: number; status?: string; category?: string }): Promise<MyLostItemsResponse> => {
       const searchParams = new URLSearchParams();
       if (params?.page) searchParams.append('page', params.page.toString());
       if (params?.limit) searchParams.append('limit', params.limit.toString());
       if (params?.status) searchParams.append('status', params.status);
+      if (params?.category) searchParams.append('category', params.category);
       
       const queryString = searchParams.toString();
       return apiRequest(`/api/lost-items/list${queryString ? `?${queryString}` : ''}`);
