@@ -45,7 +45,7 @@ export default function LoginCallbackPage() {
         }
 
         // state에서 provider 정보 추출 (kakao 또는 google)
-        const provider = state as 'kakao' | 'google';
+        const provider = state; // 'kakao' 또는 'google'로 가정
         if (!provider || !['kakao', 'google'].includes(provider)) {
           throw new Error('올바르지 않은 OAuth 제공자입니다.');
         }
