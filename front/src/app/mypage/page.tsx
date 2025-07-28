@@ -10,6 +10,7 @@ import ChatPreviewCard from '@/components/ChatPreviewCard';
 import { useAuth } from '@/hooks/useAuth';
 import { api, tokenManager } from '@/lib/api';
 import { LostItem } from '@/types/lostItems';
+import MainHeader from '@/components/MainHeader';
 
 interface ChatRoom {
   id: number;
@@ -172,7 +173,8 @@ export default function MyPage() {
     <main className="flex justify-center min-h-screen bg-white">
       <div className="mx-auto w-full max-w-md" style={{maxWidth: '390px'}}>
         <div className="p-4 pt-0 space-y-4">
-          <MyPageHeader />
+          <MainHeader isAuthenticated={isAuthenticated} authLoading={authLoading} />
+
 
           <ProfileCard 
             name={user.name || user.nickname || '사용자'} 

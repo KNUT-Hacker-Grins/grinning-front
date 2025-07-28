@@ -7,6 +7,9 @@ import { api } from '@/lib/api';
 import MySettingHeader from '@/components/MySettingHeader';
 import MySettingBackground from '@/components/MySettingBackground';
 import FormInputSection from '@/components/FormInputSection'; // 재사용
+import MainHeader from '@/components/MainHeader';
+
+
 
 
 export default function MySettingPage() {
@@ -15,7 +18,7 @@ export default function MySettingPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  
+
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -130,7 +133,7 @@ export default function MySettingPage() {
 
   return (
     <div className="w-full max-w-sm mx-auto bg-white min-h-screen border-x border-gray-100 relative">
-      <MySettingHeader onSave={handleSave} />
+      <MainHeader isAuthenticated={isAuthenticated} authLoading={authLoading} />
       <MySettingBackground />
 
       <div className="p-6 space-y-6">

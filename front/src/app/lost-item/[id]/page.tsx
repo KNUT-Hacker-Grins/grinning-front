@@ -13,6 +13,9 @@ import {
 import BottomNav from "@/components/BottomNav";
 import ReportModal from "@/components/ReportModal";
 import { api } from "@/lib/api";
+import MainHeader from '@/components/MainHeader';
+import { useAuth } from '@/hooks/useAuth';
+
 
 interface LostItem {
   id: number;
@@ -64,7 +67,7 @@ export default function LostItemDetailPage() {
   const router = useRouter();
   const params = useParams();
   const itemId = params.id as string;
-
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [item, setItem] = useState<LostItem | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -223,20 +226,8 @@ export default function LostItemDetailPage() {
         className="flex flex-col mx-auto w-full max-w-md"
         style={{ maxWidth: "390px" }}
       >
-        {/* 상단 헤더 */}
-        <div className="flex items-center justify-between p-4 bg-white border-b border-gray-200">
-          <button
-            onClick={handleBack}
-            className="p-2 text-gray-600 hover:text-gray-800"
-          >
-            <FaArrowLeft size={20} />
-          </button>
-          <h1 className="text-lg font-semibold text-gray-900">분실물 상세</h1>
-          <button className="p-2 text-gray-600 hover:text-gray-800">
-            <FaEllipsisV size={16} />
-          </button>
-        </div>
-
+      <MainHeader isAuthenticated={isAuthenticated} authLoading={authLoading} />
+      
         {/* 메인 이미지 */}
         <div className="relative w-full h-80 bg-gray-200">
           {item.image_urls && item.image_urls.length > 0 ? (

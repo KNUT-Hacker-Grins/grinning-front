@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { api } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 
+
 // 분실물 타입 (Lost Items)
 interface LostItem {
   id: string; // UUID
@@ -81,7 +82,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<'found' | 'wanted'>('found');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  
   // 분실물과 습득물 데이터 가져오기
   useEffect(() => {
     const fetchAllItems = async () => {
@@ -274,7 +275,7 @@ export default function Home() {
         <section className="mb-[56px]">
           <div className="flex justify-between items-center mb-[27px] px-6">
             <h2 className="text-lg font-normal text-black">분실물 찾기</h2>
-            <button className="text-xs text-black/30">더보기</button>
+            <Link href="/found-item" className="text-xs text-black/30">더보기</Link> 
           </div>
           
           {/* 가로 스크롤 컨테이너 */}
@@ -326,7 +327,7 @@ export default function Home() {
         <section className="mb-8">
           <div className="flex justify-between items-center mb-[27px] px-6">
             <h2 className="text-lg font-normal text-black">분실물 수배</h2>
-            <button className="text-xs text-black/30">더보기</button>
+            <Link href="/found-item" className="text-xs text-black/30">더보기</Link> 
           </div>
           
           {/* 가로 스크롤 컨테이너 */}

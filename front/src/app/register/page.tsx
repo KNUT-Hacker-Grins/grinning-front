@@ -2,10 +2,13 @@
 
 import { useRouter } from 'next/navigation';
 import RegisterHeader from '@/components/RegisterHeader';
+import MainHeader from '@/components/MainHeader';
+import { useAuth } from '@/hooks/useAuth';
 
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { user, isAuthenticated, isLoading: authLoading, logout, updateProfile } = useAuth();
 
   const handleLostItemRegister = () => {
     router.push('/register/lost');
@@ -18,7 +21,7 @@ export default function RegisterPage() {
 
   return (
     <div className="flex flex-col mx-auto w-full max-w-sm min-h-screen bg-white">
-      <RegisterHeader title="신고하기" />
+      <MainHeader isAuthenticated={isAuthenticated} authLoading={authLoading} />
 
       <main className="flex-grow px-4 py-6">
         <div className="space-y-4">

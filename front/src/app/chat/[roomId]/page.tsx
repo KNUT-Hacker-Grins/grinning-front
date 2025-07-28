@@ -6,8 +6,8 @@ import ChatHeader from '@/components/ChatHeader';
 import MessageInput from '@/components/MessageInput';
 import ChatMessage from '@/components/ChatMessage';
 import { api } from '@/lib/api'; // API 클라이언트
+import { useAuth } from '@/hooks/useAuth';
 
-// API 응답에 맞춘 메시지 타입 정의
 interface Message {
   id: number;
   content: string;
@@ -18,29 +18,38 @@ interface Message {
   timestamp: string;
 }
 
-// 임시로 내 유저 ID를 설정합니다. (실제로는 로그인 정보에서 가져와야 함)
-const MY_USER_ID = 1;
+
 
 export default function ChatRoomPage() {
   const params = useParams();
   const roomId = params.roomId as string;
+  const { user } = useAuth();
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [participantName, setParticipantName] = useState('상대방'); // 참여자 이름 상태
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
-  // 채팅 내역 불러오기
   useEffect(() => {
     if (!roomId) return;
+
+    console.log('🔁 메시지 불러오기 시도 중:', roomId); // 로그 추가
 
     const fetchMessages = async () => {
       try {
         setIsLoading(true);
-        const response = await api.chat.getMessages(parseInt(roomId, 10), 1, 50);
-        setMessages(response.data.messages.reverse()); // 최신 메시지가 아래로 가도록 배열을 뒤집습니다.
+        const numericRoomId = Number(roomId); // roomId를 숫자로 변환
+        if (isNaN(numericRoomId)) {
+          console.error('유효하지 않은 채팅방 ID입니다:', roomId);
+          setIsLoading(false);
+          return;
+        }
+        const response = await api.chat.getMessages(numericRoomId, 1, 50);
+        console.log('✅ 메시지 응답:', response);
+        setMessages(response.data.messages.reverse());
       } catch (error) {
-        console.error('채팅 내역을 불러오는 데 실패했습니다.', error);
+        console.error('❌ 메시지 요청 실패:', error);
       } finally {
         setIsLoading(false);
       }
@@ -49,20 +58,50 @@ export default function ChatRoomPage() {
     fetchMessages();
   }, [roomId]);
 
-  // 스크롤을 맨 아래로 이동시키는 함수
+
+  // 참여자 이름 불러오기
+  useEffect(() => {
+    if (!roomId) return;
+
+    const fetchParticipantName = async () => {
+      try {
+        const numericRoomId = Number(roomId);
+        if (isNaN(numericRoomId)) {
+          console.error('유효하지 않은 채팅방 ID입니다:', roomId);
+          return;
+        }
+        const response = await api.chat.getRooms();
+        const room = response.data.find((r: any) => Number(r.id) === numericRoomId);
+        if (room) {
+          setParticipantName(room.participant.name);
+        }
+      } catch (error) {
+        console.error('참여자 이름을 불러오는 데 실패했습니다.', error);
+      }
+    };
+
+    fetchParticipantName();
+  }, [roomId]);
+
+  // 스크롤 아래로 자동 이동
   useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [messages]);
 
-  // 메시지 전송 핸들러
+  // 메시지 전송
   const handleSendMessage = async () => {
     if (inputValue.trim() && roomId) {
       try {
-        const response = await api.chat.sendMessage(parseInt(roomId, 10), inputValue);
-        // 성공 시, 화면에 새 메시지 즉시 추가
-        setMessages(prevMessages => [...prevMessages, response.data]);
+        const numericRoomId = Number(roomId);
+        if (isNaN(numericRoomId)) {
+          console.error('유효하지 않은 채팅방 ID입니다:', roomId);
+          alert('메시지 전송에 실패했습니다: 유효하지 않은 채팅방 ID');
+          return;
+        }
+        const response = await api.chat.sendMessage(numericRoomId, inputValue);
+        setMessages((prevMessages) => [...prevMessages, response.data]);
         setInputValue('');
       } catch (error) {
         console.error('메시지 전송에 실패했습니다.', error);
@@ -76,12 +115,9 @@ export default function ChatRoomPage() {
 
   return (
     <div className="w-full mx-auto bg-white flex flex-col h-screen border-x" style={{ maxWidth: '390px' }}>
-      {/* TODO: 채팅방 상대방 이름 동적으로 가져오기 */}
-      <ChatHeader name="상대방" />
+      <ChatHeader name={participantName} />
       <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
-        <div className="text-center text-sm text-gray-500 my-2">
-          {dateString}
-        </div>
+        <div className="text-center text-sm text-gray-500 my-2">{dateString}</div>
         {isLoading ? (
           <div className="text-center">대화 내역을 불러오는 중...</div>
         ) : (
@@ -89,7 +125,7 @@ export default function ChatRoomPage() {
             <ChatMessage
               key={msg.id}
               text={msg.content}
-              isMine={msg.sender.id === MY_USER_ID}
+              isMine={msg.sender.id === user?.id}
             />
           ))
         )}
