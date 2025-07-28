@@ -12,6 +12,7 @@ interface FormInputSectionProps {
   buttonText?: string;
   onButtonClick?: () => void;
   className?: string; // className prop 추가
+  disabled?: boolean; // disabled prop 추가
 }
 
 export default function FormInputSection({
@@ -25,7 +26,8 @@ export default function FormInputSection({
   helperText,
   buttonText,
   onButtonClick,
-  className, // className prop 받기
+  className,
+  disabled, // disabled prop 받기
 }: FormInputSectionProps) {
   const InputComponent = type === 'textarea' ? 'textarea' : 'input';
 
@@ -40,6 +42,7 @@ export default function FormInputSection({
         type={type === 'textarea' ? undefined : type} // textarea는 type 속성 없음
         rows={rows}
         className={`${className || ''} w-full px-4 py-3 border border-gray-300 rounded-xl text-sm ${type === 'textarea' ? 'resize-none' : ''} bg-gray-50 text-gray-800`}
+        disabled={disabled} // disabled 속성 전달
       />
       {helperText && <p className="text-xs text-gray-400 mt-1">{helperText}</p>}
       {buttonText && (

@@ -73,12 +73,12 @@ export default function MySettingPage() {
 
       const result = await updateProfile(updateData);
       
-      if (result.success) {
+      if (result && result.success) {
         setSuccess('프로필이 성공적으로 수정되었습니다.');
         // 비밀번호 필드 초기화
         setForm(prev => ({ ...prev, password: '', confirmPassword: '' }));
       } else {
-        setError(result.error || '프로필 수정에 실패했습니다.');
+        setError(result?.error || '프로필 수정에 실패했습니다.');
       }
     } catch (error: any) {
       console.error('프로필 수정 실패:', error);

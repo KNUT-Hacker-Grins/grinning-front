@@ -15,24 +15,7 @@ import ReportModal from "@/components/ReportModal";
 import { api } from "@/lib/api";
 import MainHeader from '@/components/MainHeader';
 import { useAuth } from '@/hooks/useAuth';
-
-
-interface LostItem {
-  id: number;
-  title: string;
-  description: string;
-  lost_at: string;
-  lost_location: string;
-  image_urls: string[];
-  category: any;
-  reward: number;
-  status: "searching" | "found" | "cancelled";
-  created_at: string;
-  updated_at: string;
-  owner: {
-    nickname: string;
-  };
-}
+import { LostItem } from '@/types/lostItems';
 
 // 시간 차이 계산 함수
 const getTimeAgo = (dateString: string) => {
@@ -115,8 +98,8 @@ export default function LostItemDetailPage() {
 
         const response = await api.lostItems.getById(parseInt(itemId));
 
-        if (response) {
-          setItem(response);
+        if (response && response.data) {
+          setItem(response.data);
         } else {
           setError("분실물을 찾을 수 없습니다.");
         }
@@ -285,7 +268,7 @@ export default function LostItemDetailPage() {
               {item.title}
             </h2>
             <div className="flex items-center text-sm text-gray-600 mb-1">
-              <span>{item.category?.name || "기타"} · 개인용품</span>
+              <span>{item.category || "기타"} · 개인용품</span>
             </div>
             <div className="flex items-center text-sm text-gray-500">
               <span>
@@ -327,11 +310,11 @@ export default function LostItemDetailPage() {
             <h3 className="font-medium text-gray-900 mb-2">등록자</h3>
             <div className="flex items-center">
               <div className="w-10 h-10 bg-indigo-500 text-white rounded-full flex items-center justify-center font-medium">
-                {item.owner?.nickname?.charAt(0) || "U"}
+                {item.user_name?.charAt(0) || "U"}
               </div>
               <div className="ml-3">
                 <p className="font-medium text-gray-900">
-                  {item.owner?.nickname || "익명"}
+                  {item.user_name || "익명"}
                 </p>
                 <p className="text-sm text-gray-500">등록자</p>
               </div>
