@@ -1,39 +1,37 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
+import Link from "next/link";
 
 interface MainHeaderProps {
   isAuthenticated: boolean;
   authLoading: boolean;
 }
 
-export default function MainHeader({ isAuthenticated, authLoading }: MainHeaderProps) {
+export default function MainHeader({
+  isAuthenticated,
+  authLoading,
+}: MainHeaderProps) {
   return (
-    <div className="relative px-6 pt-16 pb-6">
-      {/* 로고와 네비게이션 */}
-      <div className="flex justify-between items-center mb-[50px]">
-        {/* 왼쪽: 로고 + 찾아줘! + 번역 */}
-        <div className="flex gap-3 items-center">
-          {/* 로고 */}
-          <img
-            src="/logo.jpeg"
-            alt="찾아줘 로고"
-            width="40"
-            height="40"
-            className="rounded-lg"
-          />
-
-          {/* 찾아줘! 타이틀 */}
+    <header className="w-full bg-white border-b sticky top-0 z-10">
+      <div className="max-w-screen-md mx-auto flex items-center justify-between px-4 py-10">
+        {/* 왼쪽: 로고 + 텍스트 + 언어 선택 */}
+        <div className="flex items-center gap-3">
+          <Link href="/" className="p-1">
+            <img
+              src="/logo.jpeg"
+              alt="찾아줘 로고"
+              width="40"
+              height="40"
+              className="rounded-lg cursor-pointer"
+            />
+          </Link>
           <h1 className="text-xl font-bold text-gray-800">찾아줘!</h1>
-
-          {/* 번역 기능 */}
-          <div className="flex gap-1 items-center">
+          <div className="flex gap-1 items-center ml-2">
             <span className="text-lg">🇰🇷</span>
             <select
               className="text-sm text-gray-600 bg-transparent border-none cursor-pointer"
               onChange={(e) => {
-                // 번역 기능 추후 구현
-                console.log('언어 변경:', e.target.value);
+                console.log("언어 변경:", e.target.value);
               }}
             >
               <option value="ko">한국어</option>
@@ -44,7 +42,7 @@ export default function MainHeader({ isAuthenticated, authLoading }: MainHeaderP
           </div>
         </div>
 
-        {/* 오른쪽: 프로필 */}
+        {/* 오른쪽: 프로필 버튼 */}
         <Link href={isAuthenticated ? "/mypage" : "/login"}>
           <div className="flex justify-center items-center w-10 h-10 bg-gray-300 rounded-full">
             {!authLoading && (
@@ -55,6 +53,6 @@ export default function MainHeader({ isAuthenticated, authLoading }: MainHeaderP
           </div>
         </Link>
       </div>
-    </div>
+    </header>
   );
 }

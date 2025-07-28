@@ -23,6 +23,18 @@ interface ChatRoom {
   unreadCount: number;
 }
 
+interface ChatRoomsResponse {
+  status: string;
+  code: number;
+  data: {
+    items: ChatRoom[];
+    page: number;
+    limit: number;
+    total: number;
+  };
+  message: string;
+}
+
 export default function ChatListPage() {
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
@@ -39,8 +51,8 @@ export default function ChatListPage() {
     if (isAuthenticated) {
       const fetchChatRooms = async () => {
         try {
-          const response = await api.chat.getRooms(); 
-          setChatRooms(response.data);
+          const response: ChatRoomsResponse = await api.chat.getRooms(); 
+          setChatRooms(response.data.items);
         } catch (error) {
           console.error('채팅 목록을 불러오는 데 실패했습니다.', error);
         } finally {

@@ -11,6 +11,9 @@ import FormInputSection from '@/components/FormInputSection';
 import FormSelectSection from '@/components/FormSelectSection';
 import RegisterFooter from '@/components/RegisterFooter';
 import MapModal from '@/components/MapModal';
+import MainHeader from '@/components/MainHeader';
+import { useAuth } from '@/hooks/useAuth';
+
 
 // AI 카테고리 추천 결과 타입
 interface CategoryRecommendation {
@@ -29,6 +32,7 @@ export default function FoundItemRegisterPage() {
     found_date: '',
   });
 
+  const { user, isAuthenticated, isLoading: authLoading, logout, updateProfile } = useAuth();
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   
@@ -149,7 +153,7 @@ export default function FoundItemRegisterPage() {
 
   return (
     <div className="flex flex-col mx-auto w-full max-w-sm min-h-screen bg-white">
-      <RegisterHeader title="습득물 신고" />
+      <MainHeader isAuthenticated={isAuthenticated} authLoading={authLoading} />
 
       <main className="flex-grow px-4 py-6 space-y-6">
         <PhotoUploadSection
