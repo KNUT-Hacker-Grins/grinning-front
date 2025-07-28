@@ -59,23 +59,6 @@ const formatDate = (dateString: string) => {
   });
 };
 
-// 신고 하기
-const [isReportOpen, setIsReportOpen] = useState(false);
-
-const handleReport = () => {
-  setIsReportOpen(true); // 버튼 클릭 시 모달 열림
-};
-
-const handleCloseReport = () => {
-  setIsReportOpen(false); // 모달 닫기
-};
-
-const handleSubmitReport = (reason: string, details: string) => {
-  console.log("신고 사유:", reason);
-  console.log("상세 내용:", details);
-  alert("신고가 접수되었습니다.");
-  setIsReportOpen(false);
-};
 
 export default function LostItemDetailPage() {
   const router = useRouter();
@@ -86,6 +69,39 @@ export default function LostItemDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isStartingChat, setIsStartingChat] = useState(false);
+  const [isReportOpen, setIsReportOpen] = useState(false);
+
+  // 신고 하기
+  const handleReport = () => {
+    setIsReportOpen(true); // 버튼 클릭 시 모달 열림
+  };
+
+  const handleCloseReport = () => {
+    setIsReportOpen(false); // 모달 닫기
+  };
+
+  const handleSubmitReport = async (reason: string, details: string) => {
+  try {
+    if (!item) return;
+
+    const response = await api.reports.submit(item.id, {
+      post_type: "lost", // 또는 "found"로 상황에 따라 조정
+      reason,
+      description: details,
+    });
+
+    if (response?.status === "success") {
+      alert("신고가 접수되었습니다.");
+    } else {
+      alert("신고에 실패했습니다. 다시 시도해주세요.");
+    }
+  } catch (err) {
+    console.error("신고 실패:", err);
+    alert("신고 중 오류가 발생했습니다.");
+  } finally {
+    setIsReportOpen(false);
+  }
+};
 
   // 분실물 상세 정보 가져오기
   useEffect(() => {
@@ -199,11 +215,6 @@ export default function LostItemDetailPage() {
       console.error("상태 업데이트 실패:", error);
       alert("상태 업데이트에 실패했습니다.");
     }
-  };
-
-  const handleReport = () => {
-    console.log("신고하기");
-    // TODO 신고 기능
   };
 
   return (
