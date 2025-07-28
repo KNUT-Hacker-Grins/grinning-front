@@ -24,7 +24,7 @@ export interface CreateLostItemRequest {
   lost_at: string; // ISO 8601 형식
   lost_location: string;
   image_urls: string[];
-  category: string;
+  category: { name: string }; // 백엔드 요구사항에 맞춰 객체 형태로 변경
   reward?: number; // 선택적 현상금
 }
 

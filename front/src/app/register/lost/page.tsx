@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { CreateLostItemRequest } from '@/types/lostItems';
+import { useAuth } from '@/hooks/useAuth';
 import RegisterHeader from '@/components/RegisterHeader';
 import PhotoUploadSection from '@/components/PhotoUploadSection';
 import FormInputSection from '@/components/FormInputSection';
@@ -13,6 +14,7 @@ import Link from 'next/link';
 
 export default function LostItemRegisterPage() {
   const router = useRouter();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [form, setForm] = useState({
     title: '',
     category: '',
@@ -24,6 +26,14 @@ export default function LostItemRegisterPage() {
 
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  // 인증 상태 확인
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      alert('로그인이 필요합니다.');
+      router.push('/login');
+    }
+  }, [authLoading, isAuthenticated, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -69,10 +79,13 @@ export default function LostItemRegisterPage() {
         lost_at: new Date(form.lost_at).toISOString(),
         lost_location: form.lost_location.trim(),
         image_urls: uploadedImages,
-        category: form.category,
+        category: { name: form.category }, // 객체 형태로 변경
         reward: form.reward ? parseInt(form.reward) : 0,
       };
 
+      console.log('API 요청 데이터:', requestData);
+      console.log('현재 토큰:', localStorage.getItem('access_token'));
+      
       const response = await api.lostItems.create(requestData);
 
       if (response.status === 'success') {
@@ -81,6 +94,10 @@ export default function LostItemRegisterPage() {
       }
     } catch (error) {
       console.error('분실물 신고 실패:', error);
+      console.error('에러 상세:', {
+        message: error instanceof Error ? error.message : '알 수 없는 오류',
+        stack: error instanceof Error ? error.stack : null
+      });
       alert('분실물 신고에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setIsLoading(false);

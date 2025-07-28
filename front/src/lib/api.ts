@@ -155,7 +155,7 @@ export const api = {
   lostItems: {
     // 분실물 신고
     create: (itemData: CreateLostItemRequest): Promise<LostItemCreateResponse> =>
-      apiRequest('/api/lost-items', {  // URL 수정: /create 제거
+      apiRequest('/api/lost-items/', {  // URL 수정: 끝에 슬래시 추가
         method: 'POST',
         body: JSON.stringify(itemData)
       }),
@@ -179,30 +179,30 @@ export const api = {
       if (params?.status) searchParams.append('status', params.status);
       
       const queryString = searchParams.toString();
-      return apiRequest(`/api/lost-items/list${queryString ? `?${queryString}` : ''}`);
+      return apiRequest(`/api/lost-items/list/${queryString ? `?${queryString}` : ''}`);
     },
     
     // 분실물 상세 조회
     getById: (id: string): Promise<LostItemDetailResponse> => 
-      apiRequest(`/api/lost-items/${id}`),
+      apiRequest(`/api/lost-items/${id}/`),
     
     // 분실물 정보 수정
     update: (id: string, itemData: UpdateLostItemRequest): Promise<LostItemUpdateResponse> =>
-      apiRequest(`/api/lost-items/${id}`, {  // URL 수정: /edit 제거
+      apiRequest(`/api/lost-items/${id}/`, {
         method: 'PUT',
         body: JSON.stringify(itemData)
       }),
 
     // 분실물 상태 변경 (searching → found/cancelled)
     updateStatus: (id: string, status: LostItemStatus): Promise<LostItemStatusResponse> =>
-      apiRequest(`/api/lost-items/${id}/status`, {
+      apiRequest(`/api/lost-items/${id}/status/`, {
         method: 'PATCH',
         body: JSON.stringify({ status })
       }),
 
     // 분실물 삭제
     delete: (id: string): Promise<LostItemDeleteResponse> =>
-      apiRequest(`/api/lost-items/${id}`, {  // URL 수정: /delete 제거
+      apiRequest(`/api/lost-items/${id}/`, {
         method: 'DELETE'
       }),
   },
@@ -277,7 +277,7 @@ export const api = {
   foundItems: {
     // 습득물 등록 (새로운 명세서에 맞춤)
     create: (itemData: CreateFoundItemRequest): Promise<FoundItemCreateResponse> =>
-      apiRequest('/api/found-items', {  // URL 수정: 마지막 슬래시 제거
+      apiRequest('/api/found-items/', {
         method: 'POST',
         body: JSON.stringify(itemData)
       }),
@@ -292,29 +292,30 @@ export const api = {
       
       const queryString = searchParams.toString();
       return apiRequest(`/api/found-items/list${queryString ? `?${queryString}` : ''}`);
+
     },
     
     // 습득물 상세 조회
     getById: (id: number): Promise<FoundItemDetailResponse> => 
-      apiRequest(`/api/found-items/${id}`),
+      apiRequest(`/api/found-items/${id}/`),
     
     // 습득물 정보 수정 (새로운 명세서에 맞춤)
     update: (id: number, itemData: UpdateFoundItemRequest): Promise<FoundItemCreateResponse> =>
-      apiRequest(`/api/found-items/${id}`, {  // URL 수정: /edit 제거
+      apiRequest(`/api/found-items/${id}/`, {
         method: 'PUT',
         body: JSON.stringify(itemData)
       }),
 
     // 습득물 상태 변경 (available → returned)
     updateStatus: (id: number, status: FoundItemStatus): Promise<FoundItemStatusResponse> =>
-      apiRequest(`/api/found-items/${id}/status`, {
+      apiRequest(`/api/found-items/${id}/status/`, {
         method: 'PATCH',
         body: JSON.stringify({ status })
       }),
 
     // 습득물 삭제 (새로운 명세서에 맞춤)
     delete: (id: number): Promise<FoundItemDeleteResponse> =>
-      apiRequest(`/api/found-items/${id}`, {  // URL 수정: /delete 제거
+      apiRequest(`/api/found-items/${id}/`, {
         method: 'DELETE'
       }),
   },
