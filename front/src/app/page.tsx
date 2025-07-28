@@ -7,7 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 
 // 분실물 타입 (Lost Items)
 interface LostItem {
-  id: string; // UUID
+  id: number; // Integer ID (백엔드 요구사항에 맞춤)
   title: string;
   description: string;
   lost_at: string;
@@ -81,6 +81,8 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<'found' | 'wanted'>('found');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentLanguage, setCurrentLanguage] = useState('ko');
+  const [isTranslating, setIsTranslating] = useState(false);
 
   // 분실물과 습득물 데이터 가져오기
   useEffect(() => {
@@ -125,6 +127,102 @@ export default function Home() {
 
     fetchAllItems();
   }, []);
+
+  // 번역 함수
+  const translateItems = async (targetLang: string) => {
+    if (targetLang === 'ko' || isTranslating) return;
+    
+    setIsTranslating(true);
+    try {
+      // 습득물 번역
+      const translatedFoundItems = await Promise.all(
+        foundItems.map(async (item) => {
+          try {
+            const titleResponse = await api.translate.text(item.title, 'ko', targetLang);
+            const descResponse = await api.translate.text(item.description, 'ko', targetLang);
+            const locationResponse = await api.translate.text(item.found_location, 'ko', targetLang);
+            
+            return {
+              ...item,
+              title: titleResponse.translated || item.title,
+              description: descResponse.translated || item.description,
+              found_location: locationResponse.translated || item.found_location,
+            };
+          } catch (error) {
+            console.error('습득물 번역 오류:', error);
+            return item;
+          }
+        })
+      );
+
+      // 분실물 번역
+      const translatedWantedItems = await Promise.all(
+        wantedItems.map(async (item) => {
+          try {
+            const titleResponse = await api.translate.text(item.title, 'ko', targetLang);
+            const descResponse = await api.translate.text(item.description, 'ko', targetLang);
+            const locationResponse = await api.translate.text(item.lost_location, 'ko', targetLang);
+            
+            return {
+              ...item,
+              title: titleResponse.translated || item.title,
+              description: descResponse.translated || item.description,
+              lost_location: locationResponse.translated || item.lost_location,
+            };
+          } catch (error) {
+            console.error('분실물 번역 오류:', error);
+            return item;
+          }
+        })
+      );
+
+      setFoundItems(translatedFoundItems);
+      setWantedItems(translatedWantedItems);
+    } catch (error) {
+      console.error('번역 중 오류:', error);
+    } finally {
+      setIsTranslating(false);
+    }
+  };
+
+  // 언어 변경 핸들러
+  const handleLanguageChange = async (newLang: string) => {
+    if (newLang === currentLanguage) return;
+    
+    setCurrentLanguage(newLang);
+    
+    if (newLang === 'ko') {
+      // 한국어로 돌아갈 때는 데이터 새로고침
+      const fetchAllItems = async () => {
+        try {
+          setIsLoading(true);
+          const [foundItemsResponse, lostItemsResponse] = await Promise.allSettled([
+            api.foundItems.getAll({}),
+            api.lostItems.getAll({})
+          ]);
+
+          if (foundItemsResponse.status === 'fulfilled' && 
+              foundItemsResponse.value?.data?.items) {
+            setFoundItems(foundItemsResponse.value.data.items);
+          }
+
+          if (lostItemsResponse.status === 'fulfilled' && 
+              lostItemsResponse.value?.data?.items) {
+            setWantedItems(lostItemsResponse.value.data.items);
+          }
+        } catch (error) {
+          console.error('데이터 새로고침 실패:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      
+      await fetchAllItems();
+    } else {
+      // 다른 언어로 번역
+      await translateItems(newLang);
+    }
+  };
 
   const handleRegister = () => {
     window.location.href = '/register';
@@ -180,19 +278,24 @@ export default function Home() {
               
               {/* 번역 기능 */}
               <div className="flex gap-1 items-center">
-                <span className="text-lg">🇰🇷</span>
+                <span className="text-lg">
+                  {currentLanguage === 'ko' && '🇰🇷'}
+                  {currentLanguage === 'en' && '🇺🇸'}
+                  {currentLanguage === 'ja' && '🇯🇵'}
+                  {currentLanguage === 'zh' && '🇨🇳'}
+                </span>
                 <select 
+                  value={currentLanguage}
                   className="text-sm text-gray-600 bg-transparent border-none cursor-pointer"
-                  onChange={(e) => {
-                    // 번역 기능 추후 구현
-                    console.log('언어 변경:', e.target.value);
-                  }}
+                  onChange={(e) => handleLanguageChange(e.target.value)}
+                  disabled={isTranslating}
                 >
                   <option value="ko">한국어</option>
                   <option value="en">English</option>
-                  <option value="ja">日本語</option>
-                  <option value="zh">中文</option>
                 </select>
+                {isTranslating && (
+                  <div className="w-3 h-3 border border-gray-400 border-t-blue-500 rounded-full animate-spin"></div>
+                )}
               </div>
             </div>
             
