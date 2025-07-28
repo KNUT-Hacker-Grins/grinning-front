@@ -52,12 +52,32 @@ const getTimeAgo = (dateString: string) => {
   return `${diffInDays}일 전`;
 };
 
+// 카테고리 순환 애니메이션 컴포넌트
+const AnimatedCategory = () => {
+  const categories = ['전자기기', '지갑', '의류', '기타'];
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % categories.length);
+    }, 2000); // 2초마다 변경
+
+    return () => clearInterval(interval);
+  }, [categories.length]);
+
+  return (
+    <span className="text-lg font-semibold text-blue-600 transition-all duration-500 ease-in-out">
+      {categories[currentIndex]}
+    </span>
+  );
+};
+
 export default function Home() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [foundItems, setFoundItems] = useState<FoundItem[]>([]); // 습득물 배열
   const [wantedItems, setWantedItems] = useState<LostItem[]>([]); // 분실물 배열
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'found' | 'wanted'>('found');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -71,8 +91,8 @@ export default function Home() {
         
         // 습득물과 분실물을 병렬로 가져오기
         const [foundItemsResponse, lostItemsResponse] = await Promise.allSettled([
-          api.foundItems.getAll({ status: 'available' }), // 주인을 찾고 있는 습득물들
-          api.lostItems.getAll({ status: 'searching' })    // 찾고 있는 분실물들
+          api.foundItems.getAll({}), // 모든 습득물들
+          api.lostItems.getAll({})    // 모든 분실물들
         ]);
 
         // 습득물 데이터 처리
@@ -148,12 +168,35 @@ export default function Home() {
       <div className="mx-auto w-full max-w-md" style={{maxWidth: '390px'}}>
         {/* 상단 헤더 */}
         <div className="relative px-6 pt-16 pb-6">
-          {/* 로고와 프로필 */}
+          {/* 로고와 네비게이션 */}
           <div className="flex justify-between items-center mb-[50px]">
-            <div className="flex gap-[15px]">
-              <div className="w-[61px] h-10 bg-gray-300 rounded-[20px]"></div>
-              <div className="w-[61px] h-10 bg-gray-300 rounded-[20px]"></div>
+            {/* 왼쪽: 로고 + 찾아줘! + 번역 */}
+            <div className="flex gap-3 items-center">
+              {/* 로고 */}
+              <img src="/logo.jpeg" alt="찾아줘 로고" width="40" height="40" className="rounded-lg" />
+              
+              {/* 찾아줘! 타이틀 */}
+              <h1 className="text-xl font-bold text-gray-800">찾아줘!</h1>
+              
+              {/* 번역 기능 */}
+              <div className="flex gap-1 items-center">
+                <span className="text-lg">🇰🇷</span>
+                <select 
+                  className="text-sm text-gray-600 bg-transparent border-none cursor-pointer"
+                  onChange={(e) => {
+                    // 번역 기능 추후 구현
+                    console.log('언어 변경:', e.target.value);
+                  }}
+                >
+                  <option value="ko">한국어</option>
+                  <option value="en">English</option>
+                  <option value="ja">日本語</option>
+                  <option value="zh">中文</option>
+                </select>
+              </div>
             </div>
+            
+            {/* 오른쪽: 프로필 */}
             <Link href={isAuthenticated ? "/mypage" : "/login"}>
               <div className="flex justify-center items-center w-10 h-10 bg-gray-300 rounded-full">
                 {!authLoading && (
@@ -165,13 +208,15 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* 위치 */}
-          <div className="flex items-center gap-2 mb-[50px]">
-            <img src="/location logo.svg" alt="위치" width="31" height="31" className="text-red-500" />
-            <h1 className="text-2xl font-semibold text-black">
-              충청북도 충주시 대소원면
-            </h1>
-          </div>
+          {/* 메시지 (로그인 상태별) */}
+          {!authLoading && !isAuthenticated && (
+            <div className="text-center mb-[30px]">
+              <div className="flex gap-1 justify-center items-center">
+                <AnimatedCategory />
+                <span className="text-lg text-gray-700">를 찾기 위해서는 로그인해주세요</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* 검색바 */}
@@ -208,14 +253,14 @@ export default function Home() {
         </div>
 
         {/* 카테고리 필터 */}
-        <div className="flex gap-[15px] mb-[13px] pl-[23px]">
-          {[1, 2, 3, 4].map((category) => (
+        <div className="flex gap-[15px] mb-[13px] pl-[23px] overflow-x-auto">
+          {['전자기기', '지갑', '의류', '기타'].map((category) => (
             <button
               key={category}
               onClick={() => setSelectedCategory(category === selectedCategory ? null : category)}
-              className={`w-[61px] h-6 rounded-[20px] text-sm font-normal flex items-center justify-center ${
+              className={`px-3 h-6 rounded-[20px] text-xs font-normal flex items-center justify-center whitespace-nowrap ${
                 selectedCategory === category
-                  ? 'bg-blue-500 text-gray-800'
+                  ? 'bg-blue-500 text-white'
                   : 'bg-[#d9d9d9] text-[#8b8484]'
               }`}
               style={{ fontFamily: 'Inter, sans-serif' }}
@@ -237,9 +282,10 @@ export default function Home() {
             <div className="flex gap-[20px] px-6" style={{ width: 'max-content' }}>
               {foundItems
                 .filter(item => 
-                  searchQuery === '' || 
-                  item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  item.found_location.toLowerCase().includes(searchQuery.toLowerCase())
+                  (searchQuery === '' || 
+                   item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                   item.found_location.toLowerCase().includes(searchQuery.toLowerCase())) &&
+                  (selectedCategory === null || item.category === selectedCategory)
                 )
                 .map((item) => (
                 <Link key={item.id} href={`/lost-item/${item.id}`} className="flex flex-col flex-shrink-0 transition-opacity cursor-pointer hover:opacity-80" style={{ width: '124px' }}>
@@ -288,9 +334,10 @@ export default function Home() {
             <div className="flex gap-[20px] px-6" style={{ width: 'max-content' }}>
               {wantedItems
                 .filter(item => 
-                  searchQuery === '' || 
-                  item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  item.lost_location.toLowerCase().includes(searchQuery.toLowerCase())
+                  (searchQuery === '' || 
+                   item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                   item.lost_location.toLowerCase().includes(searchQuery.toLowerCase())) &&
+                  (selectedCategory === null || item.category === selectedCategory)
                 )
                 .map((item) => (
                 <Link key={item.id} href={`/lost-item/${item.id}`} className="flex flex-col flex-shrink-0 transition-opacity cursor-pointer hover:opacity-80" style={{ width: '124px' }}>
@@ -326,16 +373,6 @@ export default function Home() {
             </div>
           </div>
         </section>
-
-        {/* 등록하기 버튼 */}
-        <div className="fixed right-6 bottom-6 z-10">
-          <button
-            onClick={handleRegister}
-            className="px-6 py-3 bg-blue-100 rounded-xl shadow-lg transition-colors duration-200 hover:bg-blue-200"
-          >
-            <span className="text-sm font-medium text-gray-800">+ 등록하기</span>
-          </button>
-        </div>
 
         {/* 하단 네비게이션 */}
         <div className="fixed bottom-0 left-1/2 py-2 w-full max-w-md bg-white border-t border-gray-200 transform -translate-x-1/2">
