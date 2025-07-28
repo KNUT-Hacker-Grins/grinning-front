@@ -75,16 +75,17 @@ export default function LoginPage() {
           {/* 로고 및 타이틀 섹션 */}
           <div className="w-[342px] h-[184px] relative">
             {/* 앱 로고 */}
-            <div className="absolute left-[123px] top-0 w-24 h-24 bg-[#4a90a4] rounded-lg flex items-center justify-center">      
+            <div className="absolute left-[90px] top-0 w-30 h-24 rounded-lg flex items-center justify-center">
+                <Image 
+                  src="/logo.jpeg" 
+                  alt="로고" 
+                  width={150} 
+                  height={150}
+                  className="mr-2"
+                />      
             </div>
-            
-            {/* 메인 타이틀 */}
-            <h1 className="absolute left-1/2 transform -translate-x-1/2 top-[111px] text-[30px] font-bold text-gray-900 text-center leading-[36px] tracking-[-1.25px]">
-              찾아줘!
-            </h1>
-            
             {/* 서브 타이틀 */}
-            <p className="absolute left-1/2 transform -translate-x-1/2 top-[164px] text-[14px] text-gray-600 text-center leading-[20px]">
+            <p className="absolute left-1/2 transform -translate-x-1/2 top-[145px] text-[17px] text-gray-600 text-center leading-[20px]">
               분실물을 찾는 가장 빠른 방법
             </p>
           </div>
