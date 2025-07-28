@@ -323,5 +323,22 @@ export const api = {
   user: {
     // 안읽은 메시지 수
     getUnreadCount: () => apiRequest('/api/chat/unread-count/'),
-  }
+  },
+
+  // 게시물 신고
+  reports: {
+    submit: (
+      postId: number,
+      payload: {
+        post_type: 'found' | 'lost';
+        reason: string;
+        description: string;
+      }
+    ) =>
+      apiRequest(`/api/posts/${postId}/report`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      }),
+  },
+
 }; 

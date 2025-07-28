@@ -374,16 +374,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 등록하기 버튼 */}
-        <div className="fixed right-6 bottom-6 z-10">
-          <button
-            onClick={handleRegister}
-            className="px-6 py-3 bg-blue-100 rounded-xl shadow-lg transition-colors duration-200 hover:bg-blue-200"
-          >
-            <span className="text-sm font-medium text-gray-800">+ 등록하기</span>
-          </button>
-        </div>
-
         {/* 하단 네비게이션 */}
         <div className="fixed bottom-0 left-1/2 py-2 w-full max-w-md bg-white border-t border-gray-200 transform -translate-x-1/2">
           <div className="flex justify-around items-center">

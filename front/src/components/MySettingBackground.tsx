@@ -12,6 +12,7 @@ export default function MySettingBackground() {
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     // input 파일 요소를 가르킴, 파일이 있으면 첫 번째 파일을 가져온다
+    
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
