@@ -3,7 +3,7 @@ export type LostItemStatus = 'searching' | 'found' | 'cancelled';
 
 // 분실물 기본 정보 타입
 export interface LostItem {
-  id: string; // UUID
+  id: number; // Integer ID (백엔드 요구사항에 맞춤)
   title: string;
   description: string;
   lost_at: string; // ISO 8601 형식
@@ -51,7 +51,7 @@ export interface LostItemCreateResponse {
   status: 'success';
   code: 201;
   data: {
-    id: string;
+    id: number;
     title: string;
     status: LostItemStatus;
   };
@@ -87,7 +87,7 @@ export interface LostItemUpdateResponse {
   status: 'success';
   code: 200;
   data: {
-    id: string;
+    id: number;
     title: string;
   };
   message: string;
@@ -107,7 +107,7 @@ export interface LostItemStatusResponse {
   status: 'success';
   code: 200;
   data: {
-    id: string;
+    id: number;
     status: LostItemStatus;
   };
   message: string;

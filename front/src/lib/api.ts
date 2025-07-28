@@ -183,26 +183,26 @@ export const api = {
     },
     
     // 분실물 상세 조회
-    getById: (id: string): Promise<LostItemDetailResponse> => 
-      apiRequest(`/api/lost-items/${id}/`),
+    getById: (id: number): Promise<LostItemDetailResponse> => 
+      apiRequest(`/api/lost-items/${id}`),
     
     // 분실물 정보 수정
-    update: (id: string, itemData: UpdateLostItemRequest): Promise<LostItemUpdateResponse> =>
-      apiRequest(`/api/lost-items/${id}/`, {
+    update: (id: number, itemData: UpdateLostItemRequest): Promise<LostItemUpdateResponse> =>
+      apiRequest(`/api/lost-items/${id}/edit`, {
         method: 'PUT',
         body: JSON.stringify(itemData)
       }),
 
     // 분실물 상태 변경 (searching → found/cancelled)
-    updateStatus: (id: string, status: LostItemStatus): Promise<LostItemStatusResponse> =>
-      apiRequest(`/api/lost-items/${id}/status/`, {
+    updateStatus: (id: number, status: LostItemStatus): Promise<LostItemStatusResponse> =>
+      apiRequest(`/api/lost-items/${id}/status`, {
         method: 'PATCH',
         body: JSON.stringify({ status })
       }),
 
     // 분실물 삭제
-    delete: (id: string): Promise<LostItemDeleteResponse> =>
-      apiRequest(`/api/lost-items/${id}/`, {
+    delete: (id: number): Promise<LostItemDeleteResponse> =>
+      apiRequest(`/api/lost-items/${id}/delete`, {
         method: 'DELETE'
       }),
   },
@@ -339,6 +339,19 @@ export const api = {
       apiRequest(`/api/posts/${postId}/report`, {
         method: 'POST',
         body: JSON.stringify(payload),
+      }),
+  },
+
+  // 번역 관련
+  translate: {
+    text: (text: string, sourceLang: string, targetLang: string) =>
+      apiRequest('/api/translation/', {
+        method: 'POST',
+        body: JSON.stringify({
+          text,
+          source_language: sourceLang,
+          target_language: targetLang
+        })
       }),
   },
 
