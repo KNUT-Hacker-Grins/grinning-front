@@ -168,7 +168,7 @@ export const api = {
       if (params?.status) searchParams.append('status', params.status);
       
       const queryString = searchParams.toString();
-      return apiRequest(`/api/lost-items${queryString ? `?${queryString}` : ''}`);
+      return apiRequest(`/api/lost-items/list${queryString ? `?${queryString}` : ''}`);
     },
 
     // 내 분실물 목록 (페이징, 상태 필터링 지원)
@@ -291,11 +291,8 @@ export const api = {
       if (params?.location) searchParams.append('location', params.location); // 파라미터명 수정
       
       const queryString = searchParams.toString();
-<<<<<<< Updated upstream
-      return apiRequest(`/api/found-items${queryString ? `?${queryString}` : ''}`);  // URL 수정: /list 제거
-=======
-      return apiRequest(`/api/found-items/list/${queryString ? `?${queryString}` : ''}`);
->>>>>>> Stashed changes
+      return apiRequest(`/api/found-items/list${queryString ? `?${queryString}` : ''}`);
+
     },
     
     // 습득물 상세 조회
