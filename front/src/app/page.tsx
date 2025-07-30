@@ -74,7 +74,7 @@ const AnimatedCategory = () => {
 };
 
 export default function Home() {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth(); // user 추가
   const [foundItems, setFoundItems] = useState<FoundItem[]>([]); // 습득물 배열
   const [wantedItems, setWantedItems] = useState<LostItem[]>([]); // 분실물 배열
   const [searchQuery, setSearchQuery] = useState('');
@@ -85,6 +85,14 @@ export default function Home() {
   
   const [currentLanguage, setCurrentLanguage] = useState('ko');
   const [isTranslating, setIsTranslating] = useState(false);
+
+  // Home 컴포넌트 마운트/업데이트 시 useAuth 상태 로깅
+  useEffect(() => {
+    console.log('Home component mounted/updated.');
+    console.log('isAuthenticated:', isAuthenticated);
+    console.log('authLoading:', authLoading);
+    console.log('User data from useAuth:', user); // user 데이터 로깅
+  }, [isAuthenticated, authLoading, user]); // user를 의존성 배열에 추가
   
   // 분실물과 습득물 데이터 가져오기
   useEffect(() => {
