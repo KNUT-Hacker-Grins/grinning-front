@@ -83,13 +83,21 @@ export const apiRequest = async (endpoint: string, options: RequestInit = {}) =>
 
         if (refreshResponse.ok) {
           const { access } = await refreshResponse.json();
-          tokenManager.setTokens(access, refreshToken);
-          
-          // 원래 요청 재시도
-          config.headers = {
-            ...config.headers,
-            'Authorization': `Bearer ${access}`
-          };
+          // 토큰 타입 검사 추가
+          if (typeof access === 'string' && typeof refreshToken === 'string') {
+            tokenManager.setTokens(access, refreshToken);
+            
+            // 원래 요청 재시도
+            config.headers = {
+              ...config.headers,
+              'Authorization': `Bearer ${access}`
+            };
+          } else {
+            console.error('토큰 갱신 응답에서 유효하지 않은 토큰 타입:', { access, refreshToken });
+            tokenManager.clearTokens();
+            window.location.href = '/login'; // 유효하지 않은 토큰이면 로그인 페이지로 리다이렉트
+            return; // 추가 처리 중단
+          }
           response = await fetch(url, config);
         } else {
           tokenManager.clearTokens();

@@ -88,6 +88,7 @@ export default function Home() {
   
   // 분실물과 습득물 데이터 가져오기
   useEffect(() => {
+    console.log('첫 페이지 진입: 데이터 로딩 시작'); // <-- 이 라인을 추가합니다.
     const fetchAllItems = async () => {
       try {
         setIsLoading(true);

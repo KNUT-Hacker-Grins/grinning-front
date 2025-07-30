@@ -57,18 +57,22 @@ export default function LoginCallbackPage() {
 
         if (response.status === 'success') {
           // 토큰 저장
-          tokenManager.setTokens(
-            response.data.access_token, 
-            response.data.refresh_token
-          );
-          
-          setStatus('success');
-          setMessage('로그인 성공! 홈페이지로 이동합니다...');
-          
-          // 홈페이지로 리다이렉트
-          setTimeout(() => {
-            router.push('/');
-          }, 1500);
+          const { access_token, refresh_token } = response.data;
+
+          if (typeof access_token === 'string' && typeof refresh_token === 'string') {
+            tokenManager.setTokens(access_token, refresh_token);
+            
+            setStatus('success');
+            setMessage('로그인 성공! 홈페이지로 이동합니다...');
+            
+            // 홈페이지로 리다이렉트
+            setTimeout(() => {
+              router.push('/');
+            }, 1500);
+          } else {
+            console.error('API 응답에서 유효하지 않은 토큰 타입:', response.data);
+            throw new Error('로그인 토큰이 유효하지 않습니다.');
+          }
         } else {
           throw new Error('로그인 처리 중 오류가 발생했습니다.');
         }

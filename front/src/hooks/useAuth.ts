@@ -39,11 +39,25 @@ export const useAuth = () => {
     try {
       const response = await api.auth.getProfile();
       if (response.status === 'success') {
-        setAuthState({
-          user: response.data,
-          isLoading: false,
-          isAuthenticated: true
-        });
+        // response.data의 구조와 타입을 확인하는 로깅 추가
+        console.log('getProfile 응답 데이터:', response.data);
+
+        // user 객체의 필수 필드 타입 검사 (예시)
+        if (response.data && typeof response.data.id === 'number' && typeof response.data.email === 'string') {
+          setAuthState({
+            user: response.data,
+            isLoading: false,
+            isAuthenticated: true
+          });
+        } else {
+          console.error('getProfile 응답 데이터가 유효하지 않습니다:', response.data);
+          tokenManager.clearTokens();
+          setAuthState({
+            user: null,
+            isLoading: false,
+            isAuthenticated: false
+          });
+        }
       }
     } catch (error) {
       console.error('인증 체크 실패:', error);
