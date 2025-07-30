@@ -5,29 +5,32 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { api, tokenManager } from '@/lib/api';
 
 export default function LoginCallbackPage() {
+  console.log('LoginCallbackPage: Component rendering started.'); // 1. 컴포넌트 렌더링 시작
   const router = useRouter();
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('로그인 처리 중...');
 
   useEffect(() => {
+    console.log('LoginCallbackPage: useEffect entered.'); // 2. useEffect 훅 진입
     const handleCallback = async () => {
       try {
         // URL에서 토큰 확인 (백엔드에서 직접 전달받은 경우)
         const access = searchParams.get('access');
         const refresh = searchParams.get('refresh');
         
+        console.log('URL Params - access:', access, 'type:', typeof access); // 3. URL 파라미터 값 및 타입
+        console.log('URL Params - refresh:', refresh, 'type:', typeof refresh); // 3. URL 파라미터 값 및 타입
+
         if (access && refresh) {
-          // 백엔드에서 이미 처리된 토큰을 받은 경우
+          console.log('URL 토큰 처리: tokenManager.setTokens 호출 직전'); // 4. tokenManager.setTokens 호출 직전 (URL 토큰)
           tokenManager.setTokens(String(access), String(refresh));
           
           setStatus('success');
           setMessage('로그인 성공! 홈페이지로 이동합니다...');
           
           // 홈페이지로 리다이렉트
-          setTimeout(() => {
-            router.push('/');
-          }, 1500);
+          router.push('/');
           return;
         }
 
@@ -35,6 +38,10 @@ export default function LoginCallbackPage() {
         const code = searchParams.get('code');
         const state = searchParams.get('state');
         const error = searchParams.get('error');
+
+        console.log('URL Params - code:', code, 'type:', typeof code); // 3. URL 파라미터 값 및 타입
+        console.log('URL Params - state:', state, 'type:', typeof state); // 3. URL 파라미터 값 및 타입
+        console.log('URL Params - error:', error, 'type:', typeof error); // 3. URL 파라미터 값 및 타입
 
         if (error) {
           throw new Error(`OAuth 인증 실패: ${error}`);
@@ -52,23 +59,27 @@ export default function LoginCallbackPage() {
 
         setMessage(`${provider === 'kakao' ? '카카오' : '구글'} 로그인 처리 중...`);
 
+        console.log('API 호출: api.auth.socialLogin 호출 직전'); // 5. api.auth.socialLogin 호출 직전
         // 백엔드로 인증 코드 전송
         const response = await api.auth.socialLogin(provider, code);
+        console.log('API 호출: api.auth.socialLogin 응답 수신:', response); // 6. api.auth.socialLogin 응답 수신 직후
 
         if (response.status === 'success') {
           // 토큰 저장
           const { access_token, refresh_token } = response.data;
 
+          console.log('API 응답 토큰 - access_token:', access_token, 'type:', typeof access_token); // 7. API 응답 토큰 값 및 타입
+          console.log('API 응답 토큰 - refresh_token:', refresh_token, 'type:', typeof refresh_token); // 7. API 응답 토큰 값 및 타입
+
           if (typeof access_token === 'string' && typeof refresh_token === 'string') {
+            console.log('API 응답 토큰 처리: tokenManager.setTokens 호출 직전'); // 8. tokenManager.setTokens 호출 직전 (API 응답 토큰)
             tokenManager.setTokens(String(access_token), String(refresh_token));
             
             setStatus('success');
             setMessage('로그인 성공! 홈페이지로 이동합니다...');
             
             // 홈페이지로 리다이렉트
-            setTimeout(() => {
-              router.push('/');
-            }, 1500);
+            router.push('/');
           } else {
             console.error('API 응답에서 유효하지 않은 토큰 타입:', response.data);
             throw new Error('로그인 토큰이 유효하지 않습니다.');
@@ -77,7 +88,7 @@ export default function LoginCallbackPage() {
           throw new Error('로그인 처리 중 오류가 발생했습니다.');
         }
       } catch (error) {
-        console.error('OAuth 콜백 처리 실패:', error);
+        console.error('OAuth 콜백 처리 실패 (catch 블록 진입):', error); // 9. 오류 발생 시 catch 블록 진입
         setStatus('error');
         setMessage(
           error instanceof Error 
