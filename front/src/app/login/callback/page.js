@@ -19,7 +19,7 @@ export default function LoginCallbackPage() {
         
         if (access && refresh) {
           // 백엔드에서 이미 처리된 토큰을 받은 경우
-          tokenManager.setTokens(access, refresh);
+          tokenManager.setTokens(String(access), String(refresh));
           
           setStatus('success');
           setMessage('로그인 성공! 홈페이지로 이동합니다...');
@@ -60,7 +60,7 @@ export default function LoginCallbackPage() {
           const { access_token, refresh_token } = response.data;
 
           if (typeof access_token === 'string' && typeof refresh_token === 'string') {
-            tokenManager.setTokens(access_token, refresh_token);
+            tokenManager.setTokens(String(access_token), String(refresh_token));
             
             setStatus('success');
             setMessage('로그인 성공! 홈페이지로 이동합니다...');
