@@ -63,7 +63,7 @@ export default function LoginCallbackPage() {
 
         console.log('API 호출: api.auth.socialLogin 호출 직전'); // 5. api.auth.socialLogin 호출 직전
         // 백엔드로 인증 코드 전송
-        const response = await api.auth.socialLogin(provider, code);
+        const response = await api.auth.socialLogin(provider as 'kakao' | 'google', code);
         console.log('API 호출: api.auth.socialLogin 응답 수신:', response); // 6. api.auth.socialLogin 응답 수신 직후
 
         if (response.status === 'success') {
@@ -144,4 +144,4 @@ export default function LoginCallbackPage() {
       </div>
     </div>
   );
-} 
+}
