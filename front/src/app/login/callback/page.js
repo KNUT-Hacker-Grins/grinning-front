@@ -1,12 +1,15 @@
+export const dynamic = 'force-dynamic';
+
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { api, tokenManager } from '@/lib/api';
 
 export default function LoginCallbackPage() {
   console.log('LoginCallbackPage: Component rendering started.'); // 1. 컴포넌트 렌더링 시작
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('로그인 처리 중...');
 
@@ -14,10 +17,9 @@ export default function LoginCallbackPage() {
     console.log('LoginCallbackPage: useEffect entered.'); // 2. useEffect 훅 진입
     const handleCallback = async () => {
       try {
-        // URL에서 직접 쿼리 파라미터 파싱
-        const urlParams = new URLSearchParams(window.location.search);
-        const access = urlParams.get('access');
-        const refresh = urlParams.get('refresh');
+        // URL에서 토큰 확인 (백엔드에서 직접 전달받은 경우)
+        const access = searchParams.get('access');
+        const refresh = searchParams.get('refresh');
         
         console.log('URL Params - access:', access, 'type:', typeof access); // 3. URL 파라미터 값 및 타입
         console.log('URL Params - refresh:', refresh, 'type:', typeof refresh); // 3. URL 파라미터 값 및 타입
@@ -35,9 +37,9 @@ export default function LoginCallbackPage() {
         }
 
         // URL에서 인증 코드와 상태 확인 (기존 로직)
-        const code = urlParams.get('code');
-        const state = urlParams.get('state');
-        const error = urlParams.get('error');
+        const code = searchParams.get('code');
+        const state = searchParams.get('state');
+        const error = searchParams.get('error');
 
         console.log('URL Params - code:', code, 'type:', typeof code); // 3. URL 파라미터 값 및 타입
         console.log('URL Params - state:', state, 'type:', typeof state); // 3. URL 파라미터 값 및 타입
@@ -104,7 +106,7 @@ export default function LoginCallbackPage() {
     };
 
     handleCallback();
-  }, [router]);
+  }, [searchParams, router]);
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-50">
