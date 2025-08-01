@@ -204,6 +204,7 @@ export default function LostItemRegisterPage() {
       <RegisterFooter 
         onSubmit={handleSubmit} 
         isLoading={isLoading} 
+        disabled={!form.title.trim() || !form.category || !form.description.trim() || !form.lost_location.trim() || !form.lost_at}
         buttonText="분실물 신고하기"
       />
 

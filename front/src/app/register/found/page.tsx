@@ -307,6 +307,7 @@ export default function FoundItemRegisterPage() {
       <RegisterFooter 
         onSubmit={handleSubmit}
         isLoading={isLoading} 
+        disabled={!form.title.trim() || !form.category || !form.description.trim() || !form.found_location.trim() || !form.found_date}
         buttonText="습득물 신고하기"
       />
 
