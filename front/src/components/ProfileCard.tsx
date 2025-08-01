@@ -5,9 +5,10 @@ import { useRouter } from 'next/navigation';
 type Props = {
   name: string
   email: string
+  profileImage?: string | null
 }
 
-export default function ProfileCard({ name, email }: Props) {
+export default function ProfileCard({ name, email, profileImage }: Props) {
   const router = useRouter();
 
   const handleProfileClick = () => {
@@ -25,13 +26,19 @@ export default function ProfileCard({ name, email }: Props) {
     }
   };
 
+  const defaultProfileImage = "https://randomuser.me/api/portraits/women/32.jpg";
+
   return (
     <div className="flex items-center gap-4">
       <img
-        src="https://randomuser.me/api/portraits/women/32.jpg"
+        src={profileImage || defaultProfileImage}
         alt="profile"
         className="w-14 h-14 rounded-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
         onClick={handleProfileClick}
+        onError={(e) => {
+          // 프로필 이미지 로드 실패 시 기본 이미지로 대체
+          e.currentTarget.src = defaultProfileImage;
+        }}
       />
       <div>
         <div className="text-base font-semibold text-gray-800">{name}</div>
