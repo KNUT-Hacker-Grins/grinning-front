@@ -23,7 +23,7 @@ export default function LostPage() {
       try {
         const params = selectedCategory === '전체' ? {} : { category: selectedCategory };
         const response: MyLostItemsResponse = await api.lostItems.getAll(params);
-        if (response.status === 'success') {
+        if (response.status === 'success' && response.data && Array.isArray(response.data.items)) {
           setLostItems(response.data.items);
         } else {
           setError(response.message || '분실물 목록을 불러오는데 실패했습니다.');

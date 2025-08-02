@@ -268,7 +268,12 @@ export default function LostItemDetailPage() {
               {item.title}
             </h2>
             <div className="flex items-center text-sm text-gray-600 mb-1">
-              <span>{item.category || "기타"} · 개인용품</span>
+              <span>
+                {item.category && typeof item.category === 'object'
+                  ? (item.category as { name: string }).name
+                  : item.category || "기타"}{" "}
+                · 개인용품
+              </span>
             </div>
             <div className="flex items-center text-sm text-gray-500">
               <span>
