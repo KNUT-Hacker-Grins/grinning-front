@@ -178,7 +178,8 @@ export default function MyPage() {
 
           <ProfileCard 
             name={user.name || user.nickname || '사용자'} 
-            email={user.email} 
+            email={user.email}
+            profileImage={user.profile_image}
           />
 
           <div className="space-y-2">
