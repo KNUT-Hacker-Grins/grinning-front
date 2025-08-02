@@ -191,6 +191,7 @@ export default function Home() {
       setWantedItems(translatedWantedItems);
     } catch (error) {
       console.error('번역 중 오류:', error);
+      alert('번역 서비스에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해주세요.');
     } finally {
       setIsTranslating(false);
     }

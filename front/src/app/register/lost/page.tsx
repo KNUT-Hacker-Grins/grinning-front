@@ -10,6 +10,7 @@ import PhotoUploadSection from '@/components/PhotoUploadSection';
 import FormInputSection from '@/components/FormInputSection';
 import FormSelectSection from '@/components/FormSelectSection';
 import RegisterFooter from '@/components/RegisterFooter';
+import MapModal from '@/components/MapModal';
 import Link from 'next/link';
 
 export default function LostItemRegisterPage() {
@@ -26,6 +27,7 @@ export default function LostItemRegisterPage() {
 
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
 
   // 인증 상태 확인
   useEffect(() => {
@@ -105,25 +107,12 @@ export default function LostItemRegisterPage() {
   };
 
   const handleCurrentLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          // 실제로는 좌표를 주소로 변환하는 로직이 필요함
-          // 여기서는 간단히 좌표만 표시
-          const { latitude, longitude } = position.coords;
-          setForm(prev => ({ 
-            ...prev, 
-            lost_location: `위도: ${latitude.toFixed(6)}, 경도: ${longitude.toFixed(6)}` 
-          }));
-        },
-        (error) => {
-          console.error('위치 정보를 가져올 수 없습니다:', error);
-          alert('위치 정보를 가져올 수 없습니다. 직접 입력해주세요.');
-        }
-      );
-    } else {
-      alert('이 브라우저는 위치 서비스를 지원하지 않습니다.');
-    }
+    setIsMapModalOpen(true);
+  };
+
+  const handleSelectAddress = (address: string, lat: number, lng: number) => {
+    setForm((prev) => ({ ...prev, lost_location: address }));
+    console.log(`선택된 주소: ${address}, 위도: ${lat}, 경도: ${lng}`);
   };
 
   return (
@@ -156,9 +145,19 @@ export default function LostItemRegisterPage() {
             { value: '기타', label: '기타' },
           ]}
         />
-        <Link href="/airesult" className="text-xs text-blue-500 mt-1">
-            AI 카테고리 추천받기
-        </Link>
+        <button
+          type="button"
+          onClick={() => {
+            if (uploadedImages.length === 0) {
+              alert('이미지를 먼저 업로드해주세요.');
+              return;
+            }
+            window.location.href = '/airesult';
+          }}
+          className="text-xs text-blue-500 mt-1 hover:text-blue-700 hover:underline cursor-pointer"
+        >
+          AI 카테고리 추천받기
+        </button>
 
         <FormInputSection
           label="상세 설명"
@@ -205,7 +204,14 @@ export default function LostItemRegisterPage() {
       <RegisterFooter 
         onSubmit={handleSubmit} 
         isLoading={isLoading} 
+        disabled={!form.title.trim() || !form.category || !form.description.trim() || !form.lost_location.trim() || !form.lost_at}
         buttonText="분실물 신고하기"
+      />
+
+      <MapModal
+        isOpen={isMapModalOpen}
+        onClose={() => setIsMapModalOpen(false)}
+        onSelectAddress={handleSelectAddress}
       />
     </div>
   );

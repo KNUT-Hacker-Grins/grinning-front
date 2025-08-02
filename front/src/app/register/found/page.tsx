@@ -60,11 +60,13 @@ export default function FoundItemRegisterPage() {
 
     try {
       setIsClassifying(true);
+      setRecommendations([]);
+      setShowRecommendations(false);
       
       // 첫 번째 이미지를 사용하여 분류
       const response = await api.classify.image(uploadedImages[0]);
       
-      if (response.status === 'success' && response.data) {
+      if (response.status === 'success' && response.data && Array.isArray(response.data)) {
         // confidence 높은 순서대로 정렬하고 상위 2개만 가져오기
         const sortedRecommendations = response.data
           .sort((a: CategoryRecommendation, b: CategoryRecommendation) => 
@@ -72,12 +74,30 @@ export default function FoundItemRegisterPage() {
           )
           .slice(0, 2);
         
-        setRecommendations(sortedRecommendations);
-        setShowRecommendations(true);
+        if (sortedRecommendations.length > 0) {
+          setRecommendations(sortedRecommendations);
+          setShowRecommendations(true);
+        } else {
+          alert('AI 카테고리 추천 결과가 없습니다. 다른 이미지를 시도해보세요.');
+        }
+      } else {
+        console.error('AI 분류 응답 형식 오류:', response);
+        alert('AI 카테고리 추천 응답 형식에 문제가 있습니다.');
       }
     } catch (error) {
       console.error('AI 카테고리 추천 실패:', error);
-      alert('AI 카테고리 추천에 실패했습니다. 다시 시도해주세요.');
+      const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
+      
+      // 네트워크 오류 체크
+      if (errorMessage.includes('Failed to fetch') || errorMessage.includes('Network')) {
+        alert('서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.');
+      } else if (errorMessage.includes('404')) {
+        alert('AI 분류 서비스를 찾을 수 없습니다. 관리자에게 문의해주세요.');
+      } else if (errorMessage.includes('500')) {
+        alert('서버에 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      } else {
+        alert(`AI 카테고리 추천에 실패했습니다: ${errorMessage}`);
+      }
     } finally {
       setIsClassifying(false);
     }
@@ -120,21 +140,45 @@ export default function FoundItemRegisterPage() {
       const requestData: CreateFoundItemRequest = {
         title: form.title.trim(),
         description: form.description.trim(),
-        found_date: form.found_date, // 새로운 명세서에 맞춤
+        found_date: new Date(form.found_date).toISOString(), // ISO 형식으로 변환
         found_location: form.found_location.trim(),
-        image_urls: uploadedImages, // 배열로 변경
+        image_urls: uploadedImages,
         category: form.category,
       };
+
+      console.log('습득물 신고 API 요청 데이터:', requestData);
+      console.log('현재 토큰:', localStorage.getItem('access_token'));
 
       const response = await api.foundItems.create(requestData);
 
       if (response.status === 'success') {
         alert('습득물이 성공적으로 신고되었습니다!');
-        router.push('/mypage'); // 마이페이지로 이동
+        router.push('/mypage');
+      } else {
+        console.error('습득물 신고 응답 오류:', response);
+        alert('습득물 신고에 실패했습니다. 서버 응답을 확인해주세요.');
       }
     } catch (error) {
       console.error('습득물 신고 실패:', error);
-      alert('습득물 신고에 실패했습니다. 다시 시도해주세요.');
+      console.error('에러 상세:', {
+        message: error instanceof Error ? error.message : '알 수 없는 오류',
+        stack: error instanceof Error ? error.stack : null
+      });
+      
+      const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
+      
+      if (errorMessage.includes('Failed to fetch') || errorMessage.includes('Network')) {
+        alert('서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.');
+      } else if (errorMessage.includes('401')) {
+        alert('로그인이 필요합니다. 다시 로그인해주세요.');
+        router.push('/login');
+      } else if (errorMessage.includes('400')) {
+        alert('입력한 정보에 문제가 있습니다. 다시 확인해주세요.');
+      } else if (errorMessage.includes('500')) {
+        alert('서버에 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      } else {
+        alert(`습득물 신고에 실패했습니다: ${errorMessage}`);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -263,6 +307,7 @@ export default function FoundItemRegisterPage() {
       <RegisterFooter 
         onSubmit={handleSubmit}
         isLoading={isLoading} 
+        disabled={!form.title.trim() || !form.category || !form.description.trim() || !form.found_location.trim() || !form.found_date}
         buttonText="습득물 신고하기"
       />
 
