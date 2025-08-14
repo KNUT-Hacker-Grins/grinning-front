@@ -135,7 +135,10 @@ export default function FoundItemRegisterPage() {
         alert('습득 시간을 입력해주세요.');
         return;
       }
-
+      if (uploadedImages.length === 0) {
+        alert('이미지를 업로드해주세요.');
+        return;
+      }
       setIsLoading(true);
 
       // API 요청 데이터 구성
