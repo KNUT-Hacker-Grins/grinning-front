@@ -174,7 +174,7 @@ export const api = {
       if (params?.page) searchParams.append('page', params.page.toString());
       if (params?.limit) searchParams.append('limit', params.limit.toString());
       if (params?.status) searchParams.append('status', params.status);
-      if (params?.category) searchParams.append('category', params.category);
+      if (params?.category && params.category !== '') searchParams.append('category', params.category);
       
       const queryString = searchParams.toString();
       return apiRequest(`/api/lost-items/list${queryString ? `?${queryString}` : ''}`);
@@ -296,7 +296,7 @@ export const api = {
       const searchParams = new URLSearchParams();
       if (params?.page) searchParams.append('page', params.page.toString());
       if (params?.limit) searchParams.append('limit', params.limit.toString());
-      if (params?.category) searchParams.append('category', params.category);
+      if (params?.category && params.category !== '') searchParams.append('category', params.category);
       if (params?.location) searchParams.append('location', params.location); // 파라미터명 수정
       
       const queryString = searchParams.toString();
