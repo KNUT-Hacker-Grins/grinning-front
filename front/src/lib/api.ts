@@ -352,6 +352,7 @@ export const api = {
   },
 
   // 번역 관련
+  // 번역 관련
   translate: {
     text: (text: string, sourceLang: string, targetLang: string) =>
       apiRequest('/api/translation/', {
@@ -364,4 +365,9 @@ export const api = {
       }),
   },
 
-}; 
+  // 지도 관련
+  map: {
+    getItems: () => apiRequest('/api/map/items/'),
+  },
+
+};

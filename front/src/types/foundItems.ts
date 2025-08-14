@@ -14,6 +14,8 @@ export interface FoundItem {
   title: string;
   description: string;
   found_location: string;
+  latitude: number; // Corrected to non-nullable
+  longitude: number; // Corrected to non-nullable
   image_urls: string[]; // 배열로 변경
   category: string;
   status: FoundItemStatus;
@@ -24,8 +26,10 @@ export interface FoundItem {
 }
 
 // 습득물 상세 정보 타입 (상세 조회 시 사용)
-export interface FoundItemDetail extends Omit<FoundItem, 'user' | 'created_at' | 'updated_at'> {
+export interface FoundItemDetail extends Omit<FoundItem, 'user' | 'created_at' | 'updated_at' | 'latitude' | 'longitude'> {
   user: FoundItemOwner;
+  latitude: number; // Add latitude
+  longitude: number; // Add longitude
 }
 
 // 습득물 생성 요청 타입
@@ -34,6 +38,8 @@ export interface CreateFoundItemRequest {
   description: string;
   found_date: string; // 새로운 명세서에 맞춤
   found_location: string;
+  latitude: number | null; // Add latitude
+  longitude: number | null; // Add longitude
   category: string;
   image_urls: string[]; // 배열로 변경
 }

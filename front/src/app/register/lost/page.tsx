@@ -23,6 +23,8 @@ export default function LostItemRegisterPage() {
     lost_location: '',
     lost_at: '',
     reward: '',
+    latitude: null as number | null, // Add latitude
+    longitude: null as number | null, // Add longitude
   });
 
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
@@ -79,7 +81,9 @@ export default function LostItemRegisterPage() {
         title: form.title.trim(),
         description: form.description.trim(),
         lost_at: new Date(form.lost_at).toISOString(),
-        lost_location: form.lost_location.trim(),
+                lost_location: form.lost_location.trim(),
+        latitude: form.latitude, // Include latitude
+        longitude: form.longitude, // Include longitude
         image_urls: uploadedImages,
         category: { name: form.category }, // 객체 형태로 변경
         reward: form.reward ? parseInt(form.reward) : 0,
@@ -111,7 +115,7 @@ export default function LostItemRegisterPage() {
   };
 
   const handleSelectAddress = (address: string, lat: number, lng: number) => {
-    setForm((prev) => ({ ...prev, lost_location: address }));
+    setForm((prev) => ({ ...prev, lost_location: address, latitude: lat, longitude: lng }));
     console.log(`선택된 주소: ${address}, 위도: ${lat}, 경도: ${lng}`);
   };
 

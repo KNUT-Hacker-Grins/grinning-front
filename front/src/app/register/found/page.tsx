@@ -30,6 +30,8 @@ export default function FoundItemRegisterPage() {
     description: '',
     found_location: '',
     found_date: '',
+    latitude: null as number | null, // Add latitude
+    longitude: null as number | null, // Add longitude
   });
 
   const { user, isAuthenticated, isLoading: authLoading, logout, updateProfile } = useAuth();
@@ -141,7 +143,9 @@ export default function FoundItemRegisterPage() {
         title: form.title.trim(),
         description: form.description.trim(),
         found_date: new Date(form.found_date).toISOString(), // ISO 형식으로 변환
-        found_location: form.found_location.trim(),
+                found_location: form.found_location.trim(),
+        latitude: form.latitude, // Include latitude
+        longitude: form.longitude, // Include longitude
         image_urls: uploadedImages,
         category: form.category,
       };
@@ -191,7 +195,7 @@ export default function FoundItemRegisterPage() {
   };
 
   const handleSelectAddress = (address: string, lat: number, lng: number) => {
-    setForm((prev) => ({ ...prev, found_location: address }));
+    setForm((prev) => ({ ...prev, found_location: address, latitude: lat, longitude: lng }));
     console.log(`선택된 주소: ${address}, 위도: ${lat}, 경도: ${lng}`);
   };
 
