@@ -20,13 +20,12 @@ export default function ItemMap() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<MapItem | null>(null);
+  const [activeMarker, setActiveMarker] = useState<naver.maps.Marker | null>(null);
 
   useEffect(() => {
     if (!mapRef.current) {
       return;
     }
-
-    let activeMarker: naver.maps.Marker | null = null;
 
     const initializeMap = async () => {
       try {
@@ -51,7 +50,7 @@ export default function ItemMap() {
           setSelectedItem(null);
           if (activeMarker) {
             activeMarker.setAnimation(null);
-            activeMarker = null;
+            setActiveMarker(null);
           }
         });
 
@@ -86,10 +85,10 @@ export default function ItemMap() {
               
               if (activeMarker !== marker) {
                 marker.setAnimation(naver.maps.Animation.BOUNCE);
-                activeMarker = marker;
+                setActiveMarker(marker);
                 setSelectedItem(item);
               } else {
-                activeMarker = null;
+                setActiveMarker(null);
                 setSelectedItem(null);
               }
             });
@@ -137,7 +136,7 @@ export default function ItemMap() {
             setSelectedItem(null);
             if (activeMarker) {
               activeMarker.setAnimation(null);
-              activeMarker = null;
+              setActiveMarker(null);
             }
           }} 
         />
