@@ -403,7 +403,7 @@ export default function Home() {
                   (selectedCategory === null || item.category === selectedCategory)
                 )
                 .map((item) => (
-                <Link key={item.id} href={`/lost-item/${item.id}`} className="flex flex-col flex-shrink-0 transition-opacity cursor-pointer hover:opacity-80" style={{ width: '124px' }}>
+                <Link key={item.id} href={`/items/found-item/${item.id}`} className="flex flex-col flex-shrink-0 transition-opacity cursor-pointer hover:opacity-80" style={{ width: '124px' }}>
                   <div className="w-[124px] h-[124px] bg-gray-300 rounded-xl mb-[7px] overflow-hidden">
                     {item.image_urls && item.image_urls.length > 0 ? (
                       <img 
