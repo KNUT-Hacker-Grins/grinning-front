@@ -1,119 +1,113 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { api } from '@/lib/api';
-import { FoundItemListResponse, FoundItem } from '@/types/foundItems';
+import { FoundItemDetailResponse } from '@/types/foundItems';
 import MainHeader from '@/components/MainHeader';
 import { useAuth } from '@/hooks/useAuth';
+import { useParams } from 'next/navigation'; // Import useParams
 
-
-export default function FoundPage() {
-  const categories = ['전체', '지갑/카드', '전자기기', '의류', '기타'];
-  const [selectedCategory, setSelectedCategory] = useState('전체');
-  const [foundItems, setFoundItems] = useState<FoundItem[]>([]);
+export default function FoundItemDetailPage() {
+  const { id } = useParams(); // Get the dynamic 'id' from the URL
+  const [foundItem, setFoundItem] = useState<FoundItemDetailResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { isAuthenticated, isLoading: authLoading } = useAuth();
 
   useEffect(() => {
-    const fetchFoundItems = async () => {
+    if (!id) {
+      setError('Item ID is missing.');
+      setIsLoading(false);
+      return;
+    }
+
+    const fetchFoundItem = async () => {
       setIsLoading(true);
       setError(null);
       try {
-        const params = selectedCategory === '전체' ? {} : { category: selectedCategory };
-        const response: FoundItemListResponse = await api.foundItems.getAll(params);
+        // Ensure id is a number for the API call
+        const itemId = typeof id === 'string' ? parseInt(id, 10) : id;
+        if (isNaN(itemId)) {
+          setError('Invalid Item ID.');
+          setIsLoading(false);
+          return;
+        }
+
+        const response = await api.foundItems.getById(itemId);
         if (response.status === 'success') {
-          setFoundItems(response.data.items);
+          setFoundItem(response.data);
         } else {
-          setError(response.message || '습득물 목록을 불러오는데 실패했습니다.');
+          setError(response.message || 'Failed to load found item details.');
         }
       } catch (err) {
-        console.error('Failed to fetch found items:', err);
-        setError('습득물 목록을 불러오는데 실패했습니다. 서버 연결을 확인해주세요.');
+        console.error('Failed to fetch found item details:', err);
+        setError('Failed to load found item details. Please check server connection.');
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchFoundItems();
-  }, [selectedCategory]);
+    fetchFoundItem();
+  }, [id]); // Re-fetch when id changes
 
-  const statusColor = {
-    available: 'bg-green-400',
-    returned: 'bg-yellow-400',
-  };
+  if (isLoading) {
+    return (
+      <main className="flex justify-center min-h-screen bg-white">
+        <div className="flex justify-center items-center mx-auto w-full max-w-md" style={{ maxWidth: '390px' }}>
+          <div className="text-center">
+            <div className="mx-auto mb-4 w-12 h-12 rounded-full border-b-2 border-indigo-600 animate-spin"></div>
+            <p className="text-gray-600">Loading found item details...</p>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
-  
+  if (error) {
+    return (
+      <main className="flex justify-center min-h-screen bg-white">
+        <div className="flex justify-center items-center mx-auto w-full max-w-md" style={{ maxWidth: '390px' }}>
+          <div className="text-center">
+            <p className="mb-4 text-red-600">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  if (!foundItem) {
+    return (
+      <main className="flex justify-center min-h-screen bg-white">
+        <div className="flex justify-center items-center mx-auto w-full max-w-md" style={{ maxWidth: '390px' }}>
+          <div className="text-center">
+            <p className="mb-4 text-gray-600">Found item not found.</p>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <div className="w-full mx-auto bg-white min-h-screen" style={{ maxWidth: '390px' }}>
       <MainHeader isAuthenticated={isAuthenticated} authLoading={authLoading} />
       <div className="px-4 py-6">
-        {/* 카테고리 필터 */}
-        <div className="flex gap-[15px] mb-[13px] pl-[23px] overflow-x-auto">
-          {categories.map((category) => (
-            <button
-              key={category}
-              onClick={() => setSelectedCategory(category)}
-              className={`px-3 h-6 rounded-[20px] text-xs font-normal flex items-center justify-center whitespace-nowrap ${
-                selectedCategory === category
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-[#d9d9d9] text-[#8b8484]'
-              }`}
-              style={{ fontFamily: 'Inter, sans-serif' }}
-            >
-              {category}
-            </button>
-          ))}
-        </div>
-
-        {/* 리스트 */}
-        <div className="flex flex-col gap-3">
-          {isLoading ? (
-            <div className="text-center py-10">습득물 목록을 불러오는 중...</div>
-          ) : error ? (
-            <div className="text-center py-10 text-red-500">{error}</div>
-          ) : foundItems.length > 0 ? (
-            foundItems.map((item) => (
-              <Link href={`/found-item/${item.id}`} key={item.id} className="block">
-                <div
-                  className="flex items-start gap-4 p-3 rounded-xl border border-gray-200 bg-white shadow-sm"
-                >
-                  {/* 이미지 */}
-                  <div className="flex-shrink-0 w-16 h-16 rounded overflow-hidden">
-                    <img
-                      src={item.image_urls[0] || '/placeholder.png'} // Use first image or placeholder
-                      alt={item.title}
-                      className="object-cover w-full h-full"
-                    />
-                  </div>
-
-                  {/* 텍스트 */}
-                  <div className="flex flex-col flex-grow">
-                    <h3 className="text-sm font-semibold text-gray-800">
-                      {item.title}
-                    </h3>
-                    <p className="text-xs text-gray-500 mt-1 flex items-center">
-                      {item.found_location}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1 flex items-center">
-                      <span className="mr-1"></span>
-                      {item.created_at ? new Date(item.created_at).toLocaleDateString() : '날짜 미상'}
-                    </p>
-                  </div>
-
-                  {/* 상태 점 */}
-                  <div
-                    className={`w-3 h-3 rounded-full mt-1 ${statusColor[item.status]}`}
-                  ></div>
-                </div>
-              </Link>
-            ))
-          ) : (
-            <div className="text-center py-10 text-gray-500">등록된 습득물이 없습니다.</div>
-          )}
-        </div>
+        <h1 className="text-xl font-bold mb-4">{foundItem.title}</h1>
+        <p className="text-gray-700 mb-2">{foundItem.description}</p>
+        <p className="text-gray-600 text-sm mb-2">Found at: {foundItem.found_location}</p>
+        {foundItem.image_urls && foundItem.image_urls.length > 0 && (
+          <div className="mb-4">
+            <img src={foundItem.image_urls[0]} alt={foundItem.title} className="w-full h-auto rounded-lg" />
+          </div>
+        )}
+        <p className="text-gray-600 text-sm">Category: {foundItem.category?.label || 'N/A'}</p>
+        <p className="text-gray-600 text-sm">Status: {foundItem.status}</p>
+        {/* Add more details as needed */}
       </div>
     </div>
   );
