@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { loadNaverMapsScript } from '@/utils/loadNaverMapsScript';
 import { api } from '@/lib/api';
 import { useRouter } from 'next/navigation';
-import MapItemPreview from './MapItemPreview'; // Import the new component
+import MapItemPreview from './MapItemPreview';
 
 interface MapItem {
   id: number;
@@ -17,17 +17,16 @@ interface MapItem {
 
 export default function ItemMap() {
   const mapRef = useRef<HTMLDivElement | null>(null);
-  const mapInstance = useRef<naver.maps.Map | null>(null);
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<MapItem | null>(null);
-  const [activeMarker, setActiveMarker] = useState<naver.maps.Marker | null>(null);
 
   useEffect(() => {
     if (!mapRef.current) {
       return;
     }
+
+    let activeMarker: naver.maps.Marker | null = null;
 
     const initializeMap = async () => {
       try {
@@ -40,21 +39,19 @@ export default function ItemMap() {
         }
 
         const defaultCenter = new naver.maps.LatLng(37.5665, 126.9780);
-
-        mapInstance.current = new naver.maps.Map(mapRef.current!, {
+        const mapInstance = new naver.maps.Map(mapRef.current!, {
           center: defaultCenter,
           zoom: 12,
           scaleControl: true,
           zoomControl: true,
           mapDataControl: true,
         });
-        
-        // Add a click listener to the map to close the preview
-        naver.maps.Event.addListener(mapInstance.current, 'click', () => {
+
+        naver.maps.Event.addListener(mapInstance, 'click', () => {
           setSelectedItem(null);
           if (activeMarker) {
             activeMarker.setAnimation(null);
-            setActiveMarker(null);
+            activeMarker = null;
           }
         });
 
@@ -63,39 +60,38 @@ export default function ItemMap() {
           response.forEach((item: MapItem) => {
             const position = new naver.maps.LatLng(item.latitude, item.longitude);
             
-            const markerIconUrl = item.item_type === 'lost' ? '/lost_marker.png' : '/found_marker.png';
+            const markerIconUrl = item.item_type === 'lost' 
+              ? "https://navermaps.github.io/maps.js.ncp/docs/img/example/pin_spot.png" // Orange-like
+              : "https://navermaps.github.io/maps.js.ncp/docs/img/example/pin_default.png"; // Blue
 
             const marker = new naver.maps.Marker({
               position: position,
-              map: mapInstance.current,
+              map: mapInstance,
               title: item.title,
               icon: {
                 url: markerIconUrl,
-                size: new naver.maps.Size(32, 32),
-                scaledSize: new naver.maps.Size(32, 32),
+                size: new naver.maps.Size(24, 32),
+                scaledSize: new naver.maps.Size(24, 32),
                 origin: new naver.maps.Point(0, 0),
-                anchor: new naver.maps.Point(16, 32)
+                anchor: new naver.maps.Point(12, 32)
               }
             });
 
             naver.maps.Event.addListener(marker, 'click', (e: { domEvent: MouseEvent }) => {
-              // Stop event propagation to prevent map click listener from firing
               e.domEvent.stopPropagation();
 
-              // If the same marker is clicked again, do nothing.
-              if (activeMarker === marker) {
-                return;
-              }
-
-              // Stop the animation of the previously active marker
               if (activeMarker) {
                 activeMarker.setAnimation(null);
               }
               
-              // Start animation on the new marker and set it as active
-              marker.setAnimation(naver.maps.Animation.BOUNCE);
-              setActiveMarker(marker);
-              setSelectedItem(item);
+              if (activeMarker !== marker) {
+                marker.setAnimation(naver.maps.Animation.BOUNCE);
+                activeMarker = marker;
+                setSelectedItem(item);
+              } else {
+                activeMarker = null;
+                setSelectedItem(null);
+              }
             });
           });
         } else {
@@ -111,7 +107,7 @@ export default function ItemMap() {
     };
 
     initializeMap();
-  }, [mapRef.current]);
+  }, []);
 
   return (
     <div className="w-full h-screen relative" ref={mapRef} id="naver-map" style={{ maxWidth: '390px', margin: '0 auto' }}>
@@ -141,7 +137,7 @@ export default function ItemMap() {
             setSelectedItem(null);
             if (activeMarker) {
               activeMarker.setAnimation(null);
-              setActiveMarker(null);
+              activeMarker = null;
             }
           }} 
         />
