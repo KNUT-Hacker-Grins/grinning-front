@@ -200,7 +200,8 @@ declare namespace naver {
     }
 
     interface SymbolIcon {
-      path: string;
+      path: any; // naver.maps.SymbolPath or string[]
+      style?: string;
       size?: Size | SizeLiteral;
       anchor?: Point | PointLiteral;
       fillColor?: string;

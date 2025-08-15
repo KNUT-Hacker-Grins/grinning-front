@@ -47,49 +47,47 @@ export default function ItemMap() {
         });
 
         naver.maps.Event.addListener(mapInstance, 'click', () => {
-          setSelectedItem(null);
           if (activeMarker) {
             activeMarker.setAnimation(null);
             setActiveMarker(null);
           }
+          setSelectedItem(null);
         });
 
         const response = await api.map.getItems();
         if (response && Array.isArray(response)) {
           response.forEach((item: MapItem) => {
             const position = new naver.maps.LatLng(item.latitude, item.longitude);
-            
-            const markerIconUrl = item.item_type === 'lost' 
-              ? "https://navermaps.github.io/maps.js.ncp/docs/img/example/pin_spot.png" // Orange-like
-              : "https://navermaps.github.io/maps.js.ncp/docs/img/example/pin_default.png"; // Blue
 
             const marker = new naver.maps.Marker({
               position: position,
               map: mapInstance,
               title: item.title,
               icon: {
-                url: markerIconUrl,
-                size: new naver.maps.Size(24, 32),
-                scaledSize: new naver.maps.Size(24, 32),
-                origin: new naver.maps.Point(0, 0),
-                anchor: new naver.maps.Point(12, 32)
-              }
+                content: [
+                  '<div style="background-color: ',
+                  (item.item_type === 'lost' ? '#ff7f00' : '#007bff'), // Orange for lost, Blue for found
+                  '; border-radius: 50%; width: 22px; height: 22px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></div>'
+                ].join(''),
+                anchor: new naver.maps.Point(11, 11),
+              },
             });
 
             naver.maps.Event.addListener(marker, 'click', (e: { domEvent: MouseEvent }) => {
               e.domEvent.stopPropagation();
 
-              if (activeMarker) {
+              if (activeMarker && activeMarker !== marker) {
                 activeMarker.setAnimation(null);
               }
-              
-              if (activeMarker !== marker) {
+
+              if (activeMarker === marker) {
+                marker.setAnimation(null);
+                setActiveMarker(null);
+                setSelectedItem(null);
+              } else {
                 marker.setAnimation(naver.maps.Animation.BOUNCE);
                 setActiveMarker(marker);
                 setSelectedItem(item);
-              } else {
-                setActiveMarker(null);
-                setSelectedItem(null);
               }
             });
           });
@@ -133,11 +131,11 @@ export default function ItemMap() {
         <MapItemPreview 
           item={selectedItem} 
           onClose={() => {
-            setSelectedItem(null);
             if (activeMarker) {
               activeMarker.setAnimation(null);
               setActiveMarker(null);
             }
+            setSelectedItem(null);
           }} 
         />
       )}
