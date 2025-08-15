@@ -3,7 +3,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { loadNaverMapsScript } from '@/utils/loadNaverMapsScript';
 import { api } from '@/lib/api';
-import { useRouter } from 'next/navigation';
 import MapItemPreview from './MapItemPreview';
 
 interface MapItem {
@@ -17,10 +16,11 @@ interface MapItem {
 
 export default function ItemMap() {
   const mapRef = useRef<HTMLDivElement | null>(null);
+  const activeMarkerRef = useRef<naver.maps.Marker | null>(null);
+  
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<MapItem | null>(null);
-  const [activeMarker, setActiveMarker] = useState<naver.maps.Marker | null>(null);
 
   useEffect(() => {
     if (!mapRef.current) {
@@ -47,9 +47,9 @@ export default function ItemMap() {
         });
 
         naver.maps.Event.addListener(mapInstance, 'click', () => {
-          if (activeMarker) {
-            activeMarker.setAnimation(null);
-            setActiveMarker(null);
+          if (activeMarkerRef.current) {
+            activeMarkerRef.current.setAnimation(null);
+            activeMarkerRef.current = null;
           }
           setSelectedItem(null);
         });
@@ -58,35 +58,38 @@ export default function ItemMap() {
         if (response && Array.isArray(response)) {
           response.forEach((item: MapItem) => {
             const position = new naver.maps.LatLng(item.latitude, item.longitude);
+            
+            const markerIconUrl = item.item_type === 'lost'
+              ? 'https://navermaps.github.io/maps.js.ncp/docs/img/example/pin_spot.png' // Orange Pin
+              : 'https://navermaps.github.io/maps.js.ncp/docs/img/example/pin_default.png'; // Blue Pin
 
             const marker = new naver.maps.Marker({
               position: position,
               map: mapInstance,
               title: item.title,
               icon: {
-                content: [
-                  '<div style="background-color: ',
-                  (item.item_type === 'lost' ? '#ff7f00' : '#007bff'), // Orange for lost, Blue for found
-                  '; border-radius: 50%; width: 22px; height: 22px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></div>'
-                ].join(''),
-                anchor: new naver.maps.Point(11, 11),
-              },
+                url: markerIconUrl,
+                size: new naver.maps.Size(24, 38),
+                scaledSize: new naver.maps.Size(24, 38),
+                origin: new naver.maps.Point(0, 0),
+                anchor: new naver.maps.Point(12, 38)
+              }
             });
 
             naver.maps.Event.addListener(marker, 'click', (e: { domEvent: MouseEvent }) => {
               e.domEvent.stopPropagation();
 
-              if (activeMarker && activeMarker !== marker) {
-                activeMarker.setAnimation(null);
+              if (activeMarkerRef.current && activeMarkerRef.current !== marker) {
+                activeMarkerRef.current.setAnimation(null);
               }
 
-              if (activeMarker === marker) {
+              if (activeMarkerRef.current === marker) {
                 marker.setAnimation(null);
-                setActiveMarker(null);
+                activeMarkerRef.current = null;
                 setSelectedItem(null);
               } else {
                 marker.setAnimation(naver.maps.Animation.BOUNCE);
-                setActiveMarker(marker);
+                activeMarkerRef.current = marker;
                 setSelectedItem(item);
               }
             });
@@ -104,7 +107,12 @@ export default function ItemMap() {
     };
 
     initializeMap();
-  }, []);
+    
+    return () => {
+      // Clean up markers and event listeners when component unmounts
+      // This part is tricky as markers are not stored in state, but it's good practice
+    };
+  }, []); // Empty dependency array ensures this runs only once
 
   return (
     <div className="w-full h-screen relative" ref={mapRef} id="naver-map" style={{ maxWidth: '390px', margin: '0 auto' }}>
@@ -131,9 +139,9 @@ export default function ItemMap() {
         <MapItemPreview 
           item={selectedItem} 
           onClose={() => {
-            if (activeMarker) {
-              activeMarker.setAnimation(null);
-              setActiveMarker(null);
+            if (activeMarkerRef.current) {
+              activeMarkerRef.current.setAnimation(null);
+              activeMarkerRef.current = null;
             }
             setSelectedItem(null);
           }} 
