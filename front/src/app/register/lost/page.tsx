@@ -85,7 +85,7 @@ export default function LostItemRegisterPage() {
         latitude: form.latitude, // Include latitude
         longitude: form.longitude, // Include longitude
         image_urls: uploadedImages,
-        category: { name: form.category }, // 객체 형태로 변경
+        category: [{ category: form.category, label: form.category, confidence: "100%" }], // AI 예측 결과와 동일한 형태로 변경
         reward: form.reward ? parseInt(form.reward) : 0,
       };
 
