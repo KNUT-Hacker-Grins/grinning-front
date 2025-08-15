@@ -82,10 +82,17 @@ export default function ItemMap() {
               // Stop event propagation to prevent map click listener from firing
               e.domEvent.stopPropagation();
 
+              // If the same marker is clicked again, do nothing.
+              if (activeMarker === marker) {
+                return;
+              }
+
+              // Stop the animation of the previously active marker
               if (activeMarker) {
                 activeMarker.setAnimation(null);
               }
               
+              // Start animation on the new marker and set it as active
               marker.setAnimation(naver.maps.Animation.BOUNCE);
               setActiveMarker(marker);
               setSelectedItem(item);
