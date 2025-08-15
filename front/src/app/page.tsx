@@ -362,7 +362,7 @@ export default function Home() {
         <section className="mb-[56px]">
           <div className="flex justify-between items-center mb-[27px] px-6">
             <h2 className="text-lg font-normal text-black">분실물 찾기</h2>
-            <Link href="../items/found-item" className="text-xs text-black/30">더보기</Link> 
+            <Link href="/found-item" className="text-xs text-black/30">더보기</Link> 
           </div>
           
           {/* 가로 스크롤 컨테이너 */}
@@ -376,7 +376,7 @@ export default function Home() {
                   (selectedCategory === null || item.category.some(cat => cat.label === selectedCategory))
                 )
                 .map((item) => (
-                <Link key={item.id} href={`/items/found-item/${item.id}`} className="flex flex-col flex-shrink-0 transition-opacity cursor-pointer hover:opacity-80" style={{ width: '124px' }}>
+                <Link key={item.id} href={`/found-item/${item.id}`} className="flex flex-col flex-shrink-0 transition-opacity cursor-pointer hover:opacity-80" style={{ width: '124px' }}>
                   <div className="w-[124px] h-[124px] bg-gray-300 rounded-xl mb-[7px] overflow-hidden">
                     {item.image_urls && item.image_urls.length > 0 ? (
                       <img 
