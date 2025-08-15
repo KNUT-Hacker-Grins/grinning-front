@@ -11,7 +11,7 @@ export interface LostItem {
   latitude: number; // Add latitude
   longitude: number; // Add longitude
   image_urls: string[];
-  category: string;
+  category: { category: string; label: string; confidence: string; }[];
   reward: number;
   status: LostItemStatus;
   user_name: string;
@@ -28,7 +28,7 @@ export interface CreateLostItemRequest {
   latitude: number | null; // Add latitude
   longitude: number | null; // Add longitude
   image_urls: string[];
-  category: { name: string }; // 백엔드 요구사항에 맞춰 객체 형태로 변경
+  category: { category: string; label: string; confidence: string; }[]; // 백엔드 요구사항에 맞춰 객체 형태로 변경
   reward?: number; // 선택적 현상금
 }
 

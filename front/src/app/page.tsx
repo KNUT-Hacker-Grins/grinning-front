@@ -4,38 +4,11 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
+import { FoundItem } from '@/types/foundItems'; // Import FoundItem
+import { LostItem } from '@/types/lostItems';   // Import LostItem
 
 
-// 분실물 타입 (Lost Items)
-interface LostItem {
-  id: number; // Integer ID (백엔드 요구사항에 맞춤)
-  title: string;
-  description: string;
-  lost_at: string;
-  lost_location: string;
-  image_urls: string[];
-  category: string;
-  reward: number;
-  status: 'searching' | 'found' | 'cancelled';
-  user_name: string;
-  created_at: string;
-  updated_at: string;
-}
 
-// 습득물 타입 (Found Items)
-interface FoundItem {
-  id: number;
-  title: string;
-  description: string;
-  found_location: string;
-  image_urls: string[];
-  category: string;
-  status: 'available' | 'returned';
-  created_at?: string; // 시간 표시용
-  owner: {
-    nickname: string;
-  };
-}
 
 // 시간 차이 계산 함수
 const getTimeAgo = (dateString: string) => {
@@ -400,7 +373,7 @@ export default function Home() {
                   (searchQuery === '' || 
                    item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                    item.found_location.toLowerCase().includes(searchQuery.toLowerCase())) &&
-                  (selectedCategory === null || item.category === selectedCategory)
+                  (selectedCategory === null || item.category.some(cat => cat.label === selectedCategory))
                 )
                 .map((item) => (
                 <Link key={item.id} href={`/items/found-item/${item.id}`} className="flex flex-col flex-shrink-0 transition-opacity cursor-pointer hover:opacity-80" style={{ width: '124px' }}>
@@ -452,7 +425,7 @@ export default function Home() {
                   (searchQuery === '' || 
                    item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                    item.lost_location.toLowerCase().includes(searchQuery.toLowerCase())) &&
-                  (selectedCategory === null || item.category === selectedCategory)
+                  (selectedCategory === null || item.category.some(cat => cat.label === selectedCategory))
                 )
                 .map((item) => (
                 <Link key={item.id} href={`/lost-item/${item.id}`} className="flex flex-col flex-shrink-0 transition-opacity cursor-pointer hover:opacity-80" style={{ width: '124px' }}>
