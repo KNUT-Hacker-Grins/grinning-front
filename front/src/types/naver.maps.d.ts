@@ -175,6 +175,7 @@ declare namespace naver {
       getVisible(): boolean;
       setZIndex(zIndex: number): void;
       getZIndex(): number;
+      setAnimation(animation: Animation | null): void;
     }
 
     interface MarkerOptions {

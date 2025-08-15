@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { loadNaverMapsScript } from '@/utils/loadNaverMapsScript';
 import { api } from '@/lib/api';
 import { useRouter } from 'next/navigation';
+import MapItemPreview from './MapItemPreview'; // Import the new component
 
 interface MapItem {
   id: number;
@@ -20,9 +21,10 @@ export default function ItemMap() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedItem, setSelectedItem] = useState<MapItem | null>(null);
+  const [activeMarker, setActiveMarker] = useState<naver.maps.Marker | null>(null);
 
   useEffect(() => {
-    // Only proceed if mapRef.current is available
     if (!mapRef.current) {
       return;
     }
@@ -37,7 +39,6 @@ export default function ItemMap() {
           throw new Error("Map container not found.");
         }
 
-        // Default center (Seoul)
         const defaultCenter = new naver.maps.LatLng(37.5665, 126.9780);
 
         mapInstance.current = new naver.maps.Map(mapRef.current!, {
@@ -47,26 +48,29 @@ export default function ItemMap() {
           zoomControl: true,
           mapDataControl: true,
         });
+        
+        // Add a click listener to the map to close the preview
+        naver.maps.Event.addListener(mapInstance.current, 'click', () => {
+          setSelectedItem(null);
+          if (activeMarker) {
+            activeMarker.setAnimation(null);
+            setActiveMarker(null);
+          }
+        });
 
-        // Fetch items from backend
-        const response = await api.map.getItems(); // Assuming api.map.getItems() exists
+        const response = await api.map.getItems();
         if (response && Array.isArray(response)) {
           response.forEach((item: MapItem) => {
             const position = new naver.maps.LatLng(item.latitude, item.longitude);
             
-            let markerIcon = '';
-            if (item.item_type === 'lost') {
-              markerIcon = '/lost_marker.png'; // Custom icon for lost items
-            } else {
-              markerIcon = '/found_marker.png'; // Custom icon for found items
-            }
+            const markerIconUrl = item.item_type === 'lost' ? '/lost_marker.png' : '/found_marker.png';
 
             const marker = new naver.maps.Marker({
               position: position,
               map: mapInstance.current,
               title: item.title,
               icon: {
-                url: markerIcon,
+                url: markerIconUrl,
                 size: new naver.maps.Size(32, 32),
                 scaledSize: new naver.maps.Size(32, 32),
                 origin: new naver.maps.Point(0, 0),
@@ -74,13 +78,17 @@ export default function ItemMap() {
               }
             });
 
-            // Add click listener to marker
-            naver.maps.Event.addListener(marker, 'click', () => {
-              if (item.item_type === 'lost') {
-                router.push(`/lost-item/${item.id}`);
-              } else {
-                router.push(`/found-item/${item.id}`);
+            naver.maps.Event.addListener(marker, 'click', (e: { domEvent: MouseEvent }) => {
+              // Stop event propagation to prevent map click listener from firing
+              e.domEvent.stopPropagation();
+
+              if (activeMarker) {
+                activeMarker.setAnimation(null);
               }
+              
+              marker.setAnimation(naver.maps.Animation.BOUNCE);
+              setActiveMarker(marker);
+              setSelectedItem(item);
             });
           });
         } else {
@@ -118,7 +126,19 @@ export default function ItemMap() {
           </div>
         </div>
       )}
-      {/* Map will be rendered here by Naver Maps API */}
+      
+      {selectedItem && (
+        <MapItemPreview 
+          item={selectedItem} 
+          onClose={() => {
+            setSelectedItem(null);
+            if (activeMarker) {
+              activeMarker.setAnimation(null);
+              setActiveMarker(null);
+            }
+          }} 
+        />
+      )}
     </div>
   );
 }
