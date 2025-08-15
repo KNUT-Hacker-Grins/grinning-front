@@ -2,21 +2,21 @@
 
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
-import { FoundItemDetailResponse } from '@/types/foundItems';
+import { FoundItemDetailResponse, FoundItemDetail } from '@/types/foundItems';
 import MainHeader from '@/components/MainHeader';
 import { useAuth } from '@/hooks/useAuth';
 import { useParams } from 'next/navigation'; // Import useParams
 
 export default function FoundItemDetailPage() {
   const { id } = useParams(); // Get the dynamic 'id' from the URL
-  const [foundItem, setFoundItem] = useState<FoundItemDetailResponse | null>(null);
+  const [foundItem, setFoundItem] = useState<FoundItemDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { isAuthenticated, isLoading: authLoading } = useAuth();
 
   useEffect(() => {
-    if (!id) {
-      setError('Item ID is missing.');
+    if (typeof id !== 'string') {
+      setError('Invalid Item ID.');
       setIsLoading(false);
       return;
     }
@@ -25,8 +25,7 @@ export default function FoundItemDetailPage() {
       setIsLoading(true);
       setError(null);
       try {
-        // Ensure id is a number for the API call
-        const itemId = typeof id === 'string' ? parseInt(id, 10) : id;
+        const itemId = parseInt(id, 10);
         if (isNaN(itemId)) {
           setError('Invalid Item ID.');
           setIsLoading(false);
@@ -105,7 +104,7 @@ export default function FoundItemDetailPage() {
             <img src={foundItem.image_urls[0]} alt={foundItem.title} className="w-full h-auto rounded-lg" />
           </div>
         )}
-        <p className="text-gray-600 text-sm">Category: {foundItem.category?.label || 'N/A'}</p>
+        <p className="text-gray-600 text-sm">Category: {foundItem.category[0]?.label || 'N/A'}</p>
         <p className="text-gray-600 text-sm">Status: {foundItem.status}</p>
         {/* Add more details as needed */}
       </div>

@@ -17,7 +17,7 @@ export interface FoundItem {
   latitude: number; // Corrected to non-nullable
   longitude: number; // Corrected to non-nullable
   image_urls: string[]; // 배열로 변경
-  category: string;
+  category: { category: string; label: string; confidence: string; }[];
   status: FoundItemStatus;
   created_at?: string; // 메인 페이지 표시용 추가
   owner: {
