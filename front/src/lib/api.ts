@@ -193,7 +193,7 @@ export const api = {
     
     // 분실물 상세 조회
     getById: (id: number): Promise<LostItemDetailResponse> => 
-      apiRequest(`/api/lost-items/${id}`),
+      apiRequest(`/api/lost-items/${id}/`),
     
     // 분실물 정보 수정
     update: (id: number, itemData: UpdateLostItemRequest): Promise<LostItemUpdateResponse> =>
