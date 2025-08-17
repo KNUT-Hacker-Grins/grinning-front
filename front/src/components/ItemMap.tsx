@@ -60,8 +60,8 @@ export default function ItemMap() {
             const position = new naver.maps.LatLng(item.latitude, item.longitude);
             
             const markerIconUrl = item.item_type === 'lost'
-              ? 'https://navermaps.github.io/maps.js.ncp/docs/img/example/pin_spot.png' // Orange Pin
-              : 'https://navermaps.github.io/maps.js.ncp/docs/img/example/pin_default.png'; // Blue Pin
+              ? '/분실물.png'
+              : '/습득물.png';
 
             const marker = new naver.maps.Marker({
               position: position,
