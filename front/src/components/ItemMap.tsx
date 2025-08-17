@@ -115,7 +115,7 @@ export default function ItemMap() {
   }, []); // Empty dependency array ensures this runs only once
 
   return (
-    <div className="absolute inset-0" ref={mapRef} id="naver-map">
+    <div className="absolute inset-0 w-full h-full" ref={mapRef} id="naver-map">
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-50 bg-opacity-75 z-10">
           <div className="text-center">
