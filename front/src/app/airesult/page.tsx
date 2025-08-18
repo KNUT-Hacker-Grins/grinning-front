@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
 import RegisterHeader from '@/components/RegisterHeader';
 import SectionTitle from '@/components/SectionTitle';
 
@@ -9,7 +10,18 @@ export default function AIClassificationResult() {
   const router = useRouter();
   const q = useSearchParams();
   const imageId = q.get('image_id') || '';   // ?image_id=... 로 전달 받는다고 가정
-  const { data, raw, loading, error } = useAIResult(imageId);
+      // TODO: 빌드 오류 해결을 위해 임시 주석 처리. useAIResult 훅 구현 필요.
+  // const { data, raw, loading, error } = useAIResult(imageId);
+
+  // TODO: 임시 하드코딩 데이터. useAIResult 훅 구현 후 삭제 필요.
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<{ message: string } | null>(null);
+  const [data, setData] = useState({
+    category: '전자제품',
+    subcategory: '스마트폰 · 휴대폰',
+    confidence: 0.95
+  });
+  const [raw, setRaw] = useState({});
 
   return (
     <div className="max-w-md mx-auto bg-white p-4">
