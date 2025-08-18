@@ -1,12 +1,15 @@
 'use client';
 
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import RegisterHeader from '@/components/RegisterHeader';
 import SectionTitle from '@/components/SectionTitle';
 
 export default function AIClassificationResult() {
   const router = useRouter();
+  const q = useSearchParams();
+  const imageId = q.get('image_id') || '';   // ?image_id=... 로 전달 받는다고 가정
+  const { data, raw, loading, error } = useAIResult(imageId);
 
   return (
     <div className="max-w-md mx-auto bg-white p-4">
@@ -24,6 +27,16 @@ export default function AIClassificationResult() {
         />
       </div>
 
+      {/* 로딩/에러 */}
+      {loading && (
+        <div className="bg-gray-50 text-gray-600 p-3 rounded mb-3">분류 결과 불러오는 중…</div>
+      )}
+      {error && (
+        <div className="bg-red-50 text-red-700 p-3 rounded mb-3">
+          불러오기 실패: {error.message}
+        </div>
+      )}
+
       {/* 분류 정보 박스 */}
       <div className="bg-blue-50 rounded-xl p-4 mb-3">
         <div className="flex items-center gap-2 mb-2 font-semibold text-blue-700">
@@ -32,12 +45,16 @@ export default function AIClassificationResult() {
         </div>
         <div className="flex justify-between items-center mb-2 text-sm">
           <div>
-            <span className="bg-blue-100 text-blue-600 px-2 py-1 rounded-md">전자제품</span>
+            <span className="bg-blue-100 text-blue-600 px-2 py-1 rounded-md">
+              {data.category}
+            </span>
           </div>
-          <div className="text-green-600 font-semibold">정확도 95%</div>
+          <div className="text-green-600 font-semibold">
+            정확도: {Math.round((data.confidence ?? 0) * 100)}%
+          </div>
         </div>
         <div className="text-sm text-gray-700">
-          세부 분류: <b>스마트폰 · 휴대폰</b>
+          세부 분류: <b>{data.subcategory}</b>
         </div>
       </div>
 
