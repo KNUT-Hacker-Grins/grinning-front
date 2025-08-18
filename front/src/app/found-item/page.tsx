@@ -124,11 +124,9 @@ export default function FoundPage() {
             <div className="text-center py-10">경찰청 목록을 불러오는 중...</div>
           ) : policeItems.length > 0 ? (
             policeItems.map((item) => (
-              <a
+              <Link
                 key={item.atcId}
-                href={`https://www.lost112.go.kr/lost/lostDetail.do?atcId=${item.atcId}&fdSn=${item.fdSn}`}
-                target="_blank"
-                rel="noopener noreferrer"
+                href={`/police-item/${item.atcId}/${item.fdSn}`}
                 className="block hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-start gap-4 p-3 rounded-xl border border-gray-200 bg-white shadow-sm">
@@ -141,7 +139,7 @@ export default function FoundPage() {
                     <p className="text-xs text-gray-500 mt-1">습득일: {item.fdYmd}</p>
                   </div>
                 </div>
-              </a>
+              </Link>
             ))
           ) : (
             <div className="text-center py-10 text-gray-500">경찰청에 등록된 습득물이 없습니다.</div>

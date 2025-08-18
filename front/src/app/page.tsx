@@ -422,10 +422,10 @@ export default function Home() {
           ))}
         </div>
 
-        {/* 주인을 찾고 있어요 섹션 */}
+        {/* 분실물 찾기 섹션 */}
         <section className="mb-[56px]">
           <div className="flex justify-between items-center mb-[27px] px-6">
-            <h2 className="text-lg font-normal text-black">주인을 찾고 있어요</h2>
+            <h2 className="text-lg font-normal text-black">분실물 찾기</h2>
             <Link href="/found-item" className="text-xs text-black/30">
               더보기
             </Link>
@@ -573,7 +573,7 @@ export default function Home() {
                         {item.lost_location}
                       </span>
                       <span className="flex-shrink-0">
-                        {getTimeAgo(item.created_at)}
+                        {getTimeAgo(item.lost_at || item.created_at)}
                       </span>
                     </div>
                   </Link>

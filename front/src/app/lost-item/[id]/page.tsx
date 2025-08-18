@@ -283,7 +283,7 @@ export default function LostItemDetailPage() {
             </div>
             <div className="flex items-center text-sm text-gray-500">
               <span>
-                {getTimeAgo(item.created_at)} · {formatDate(item.created_at)}{" "}
+                {getTimeAgo(item.lost_at || item.created_at)} · {formatDate(item.lost_at || item.created_at)}{" "}
                 등록
               </span>
             </div>
