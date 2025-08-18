@@ -15,6 +15,7 @@ import { api } from "@/lib/api";
 import MainHeader from '@/components/MainHeader';
 import { useAuth } from '@/hooks/useAuth';
 import { FoundItemDetail } from '@/types/foundItems';
+import SingleItemMap from '@/components/SingleItemMap';
 
 // 시간 차이 계산 함수
 const getTimeAgo = (dateString: string) => {

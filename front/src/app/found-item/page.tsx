@@ -15,6 +15,8 @@ interface PoliceItem {
   fdYmd: string;
   depPlace: string;
   fdFilePathImg: string;
+  prdtClNm: string;
+  clrNm: string;
 }
 
 export default function FoundPage() {
@@ -126,7 +128,16 @@ export default function FoundPage() {
             policeItems.map((item) => (
               <Link
                 key={item.atcId}
-                href={{ pathname: '/police-item', query: item }}
+                href={{ pathname: '/police-item', query: {
+                  atcId: item.atcId,
+                  fdSn: item.fdSn,
+                  fdPrdtNm: item.fdPrdtNm,
+                  fdYmd: item.fdYmd,
+                  depPlace: item.depPlace,
+                  fdFilePathImg: item.fdFilePathImg,
+                  prdtClNm: item.prdtClNm,
+                  clrNm: item.clrNm,
+                } }}
                 className="block hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-start gap-4 p-3 rounded-xl border border-gray-200 bg-white shadow-sm">
