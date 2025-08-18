@@ -24,6 +24,7 @@ export function useAIResult(imageId?: string) {
     const ctrl = new AbortController();
 
     async function run() {
+      if (!imageId) return; // 타입스크립트 추론을 위한 명시적 체크 추가
       try {
         setLoading(true);
         setError(null);
