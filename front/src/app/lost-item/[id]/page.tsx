@@ -18,9 +18,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { LostItem } from '@/types/lostItems';
 
 // 시간 차이 계산 함수
-const getTimeAgo = (dateString: string) => {
-  const now = new Date();
+const getTimeAgo = (dateString?: string) => {
+  if (!dateString) return '날짜 정보 없음';
   const createdAt = new Date(dateString);
+  if (isNaN(createdAt.getTime())) return '유효하지 않은 날짜';
+
+  const now = new Date();
   const diffInMinutes = Math.floor(
     (now.getTime() - createdAt.getTime()) / (1000 * 60)
   );
@@ -36,8 +39,11 @@ const getTimeAgo = (dateString: string) => {
 };
 
 // 날짜 포맷 함수
-const formatDate = (dateString: string) => {
+const formatDate = (dateString?: string) => {
+  if (!dateString) return '날짜 정보 없음';
   const date = new Date(dateString);
+  if (isNaN(date.getTime())) return 'Invalid Date';
+
   return date.toLocaleDateString("ko-KR", {
     year: "numeric",
     month: "long",

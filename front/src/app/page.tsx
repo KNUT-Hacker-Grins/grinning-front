@@ -8,9 +8,12 @@ import { FoundItem } from "@/types/foundItems"; // Import FoundItem
 import { LostItem } from "@/types/lostItems"; // Import LostItem
 
 // 시간 차이 계산 함수
-const getTimeAgo = (dateString: string) => {
-  const now = new Date();
+const getTimeAgo = (dateString?: string) => {
+  if (!dateString) return '날짜 정보 없음';
   const createdAt = new Date(dateString);
+  if (isNaN(createdAt.getTime())) return '유효하지 않은 날짜';
+
+  const now = new Date();
   const diffInMinutes = Math.floor(
     (now.getTime() - createdAt.getTime()) / (1000 * 60)
   );
@@ -419,10 +422,10 @@ export default function Home() {
           ))}
         </div>
 
-        {/* 분실물 찾기 섹션 */}
+        {/* 주인을 찾고 있어요 섹션 */}
         <section className="mb-[56px]">
           <div className="flex justify-between items-center mb-[27px] px-6">
-            <h2 className="text-lg font-normal text-black">분실물 찾기</h2>
+            <h2 className="text-lg font-normal text-black">주인을 찾고 있어요</h2>
             <Link href="/found-item" className="text-xs text-black/30">
               더보기
             </Link>
@@ -482,10 +485,10 @@ export default function Home() {
                       style={{ fontFamily: "Inter, Noto Sans KR, sans-serif" }}
                     >
                       <span className="line-clamp-1 max-w-[70px]">
-                        {item.found_location}
+                        {item.found_location || '위치 없음'}
                       </span>
                       <span className="flex-shrink-0">
-                        {item.created_at ? getTimeAgo(item.created_at) : "최근"}
+                        {getTimeAgo(item.found_at)}
                       </span>
                     </div>
                   </Link>
@@ -495,7 +498,7 @@ export default function Home() {
                 <div className="flex items-center justify-center w-[124px] h-[124px] bg-gray-100 rounded-xl text-gray-500 text-sm">
                   등록된
                   <br />
-                  분실물이
+                  습득물이
                   <br />
                   없습니다
                 </div>
