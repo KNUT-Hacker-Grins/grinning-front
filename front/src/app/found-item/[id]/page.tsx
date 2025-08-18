@@ -192,7 +192,7 @@ export default function FoundItemDetailPage() {
               <span>{item.category && item.category.length > 0 ? item.category[0].label : "기타"}</span>
             </div>
             <div className="flex items-center text-sm text-gray-500">
-              <span>{getTimeAgo(item.created_at || new Date().toISOString())} · {formatDate(item.created_at || new Date().toISOString())} 등록</span>
+              <span>{getTimeAgo(item.found_at || new Date().toISOString())} · {formatDate(item.found_at || new Date().toISOString())} 등록</span>
             </div>
           </div>
           <div className="bg-gray-50 p-4 rounded-lg">
@@ -212,10 +212,10 @@ export default function FoundItemDetailPage() {
             <h3 className="font-medium text-gray-900 mb-2">등록자</h3>
             <div className="flex items-center">
               <div className="w-10 h-10 bg-indigo-500 text-white rounded-full flex items-center justify-center font-medium">
-                {item.owner.name?.charAt(0) || "U"}
+                {item.user.name?.charAt(0) || "U"}
               </div>
               <div className="ml-3">
-                <p className="font-medium text-gray-900">{item.owner.name || "익명"}</p>
+                <p className="font-medium text-gray-900">{item.user.name || "익명"}</p>
                 <p className="text-sm text-gray-500">등록자</p>
               </div>
             </div>
