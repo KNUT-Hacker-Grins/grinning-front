@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import MainHeader from '@/components/MainHeader';
 import { useAuth } from '@/hooks/useAuth';
@@ -9,16 +9,17 @@ import RegisterHeader from '@/components/RegisterHeader'; // Reusing header
 
 export default function PoliceItemDetailPage() {
   const router = useRouter();
-  const params = useParams();
-  const [atcId, setAtcId] = useState<string | null>(null);
-  const [fdSn, setFdSn] = useState<string | null>(null);
+  const searchParams = useSearchParams();
 
-  useEffect(() => {
-    if (params.slug && Array.isArray(params.slug)) {
-      setAtcId(params.slug[0]);
-      setFdSn(params.slug[1]);
-    }
-  }, [params.slug]);
+  // Extract all PoliceItem fields from searchParams
+  const atcId = searchParams.get('atcId');
+  const fdSn = searchParams.get('fdSn');
+  const fdPrdtNm = searchParams.get('fdPrdtNm');
+  const fdYmd = searchParams.get('fdYmd');
+  const depPlace = searchParams.get('depPlace');
+  const fdFilePathImg = searchParams.get('fdFilePathImg');
+  const prdtClNm = searchParams.get('prdtClNm');
+  const clrNm = searchParams.get('clrNm');
 
   const officialSiteUrl = atcId && fdSn
     ? `https://www.lost112.go.kr/lost/lostDetail.do?atcId=${atcId}&fdSn=${fdSn}`
@@ -41,10 +42,25 @@ export default function PoliceItemDetailPage() {
           </div>
 
           {atcId && fdSn ? (
-            <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-              <h3 className="font-medium text-gray-900">유실물 관리 번호</h3>
-              <p className="text-sm text-gray-600"><strong>관리 ID:</strong> {atcId}</p>
-              <p className="text-sm text-gray-600"><strong>습득 순번:</strong> {fdSn}</p>
+            <div className="space-y-4">
+              <div className="w-full h-60 bg-gray-200 rounded-lg overflow-hidden">
+                {fdFilePathImg ? (
+                  <img src={fdFilePathImg} alt={fdPrdtNm || '유실물 이미지'} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-400">이미지 없음</div>
+                )}
+              </div>
+
+              <h2 className="text-xl font-bold text-gray-900">{fdPrdtNm || '이름 없음'}</h2>
+
+              <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                <p className="text-sm text-gray-600"><strong>보관 장소:</strong> {depPlace || '정보 없음'}</p>
+                <p className="text-sm text-gray-600"><strong>습득 일자:</strong> {fdYmd || '정보 없음'}</p>
+                <p className="text-sm text-gray-600"><strong>물품 분류:</strong> {prdtClNm || '정보 없음'}</p>
+                <p className="text-sm text-gray-600"><strong>색상:</strong> {clrNm || '정보 없음'}</p>
+                <p className="text-sm text-gray-600"><strong>관리 ID:</strong> {atcId}</p>
+                <p className="text-sm text-gray-600"><strong>습득 순번:</strong> {fdSn}</p>
+              </div>
             </div>
           ) : (
             <div className="text-center text-gray-500 py-10">유실물 정보를 불러올 수 없습니다.</div>

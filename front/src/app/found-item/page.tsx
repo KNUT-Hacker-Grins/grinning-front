@@ -126,7 +126,7 @@ export default function FoundPage() {
             policeItems.map((item) => (
               <Link
                 key={item.atcId}
-                href={`/police-item/${item.atcId}/${item.fdSn}`}
+                href={{ pathname: '/police-item', query: item }}
                 className="block hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-start gap-4 p-3 rounded-xl border border-gray-200 bg-white shadow-sm">
