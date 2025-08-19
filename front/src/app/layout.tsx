@@ -1,6 +1,7 @@
 import BottomNav from '@/components/BottomNav';
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from 'next/script';
 import "./globals.css";
 
 const geistSans = Geist({
@@ -50,6 +51,18 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen pb-16 bg-gray-100`}
       >
+        <div id="google_translate_element" className="w-full flex justify-end p-4"></div>
+        <Script id="google-translate-init" strategy="afterInteractive">
+          {`
+            function googleTranslateElementInit() {
+              new google.translate.TranslateElement({pageLanguage: 'ko', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
+            }
+          `}
+        </Script>
+        <Script
+          src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
+          strategy="afterInteractive"
+        />
         <main className="flex-grow px-4 py-6">
           <div className="bg-white rounded-2xl shadow-md w-[380px] mx-auto p-4">
             {children}
