@@ -9,9 +9,9 @@ import { LostItem } from "@/types/lostItems"; // Import LostItem
 
 // 시간 차이 계산 함수
 const getTimeAgo = (dateString?: string) => {
-  if (!dateString) return '날짜 정보 없음';
+  if (!dateString) return "날짜 정보 없음";
   const createdAt = new Date(dateString);
-  if (isNaN(createdAt.getTime())) return '유효하지 않은 날짜';
+  if (isNaN(createdAt.getTime())) return "유효하지 않은 날짜";
 
   const now = new Date();
   const diffInMinutes = Math.floor(
@@ -496,7 +496,7 @@ export default function Home() {
                       style={{ fontFamily: "Inter, Noto Sans KR, sans-serif" }}
                     >
                       <span className="line-clamp-1 max-w-[70px]">
-                        {item.found_location || '위치 없음'}
+                        {item.found_location || "위치 없음"}
                       </span>
                       <span className="flex-shrink-0">
                         {getTimeAgo(item.found_at)}
@@ -612,7 +612,6 @@ export default function Home() {
             💬
           </button>
         </section>
-
         {/* 챗봇 모달 */}
         {isOpen && (
           <div
@@ -623,9 +622,9 @@ export default function Home() {
             <div
               onClick={(e) => e.stopPropagation()}
               className={[
-                "w-[300px] bg-white rounded-2xl  shadow-xl", // 좌우 폭 줄임
+                "w-[300px] bg-white rounded-2xl shadow-xl",
                 "flex flex-col",
-                "h-[600px]", // 높이 줄임
+                "h-[600px]",
                 "pb-4",
                 "mb-[80px]",
                 "transform transition-transform duration-300 ease-out",
@@ -662,6 +661,55 @@ export default function Home() {
                 <button className="ml-2 px-3 py-2 bg-indigo-600 text-white rounded-lg">
                   전송
                 </button>
+              </div>
+
+              {/* ✅ 카테고리 선택 영역 (footer) */}
+              <div className="px-4 pt-3">
+                <p className="text-center text-sm text-gray-700 mb-2">
+                  찾고 있는 물건 종류를 선택해주세요
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  <button className="flex items-center gap-2 bg-blue-100 text-blue-500 rounded-xl px-3 py-2">
+                    <img
+                      src="/icons/electronics.svg"
+                      alt="전자기기"
+                      className="w-4 h-4"
+                    />
+                    전자기기
+                  </button>
+                  <button className="flex items-center gap-2 bg-purple-100 text-purple-500 rounded-xl px-3 py-2">
+                    <img
+                      src="/icons/wallet.svg"
+                      alt="지갑"
+                      className="w-4 h-4"
+                    />
+                    지갑
+                  </button>
+                  <button className="flex items-center gap-2 bg-pink-100 text-pink-500 rounded-xl px-3 py-2">
+                    <img
+                      src="/icons/clothes.svg"
+                      alt="의류"
+                      className="w-4 h-4"
+                    />
+                    의류
+                  </button>
+                  <button className="flex items-center gap-2 bg-blue-100 text-blue-500 rounded-xl px-3 py-2">
+                    <img src="/icons/bag.svg" alt="가방" className="w-4 h-4" />
+                    가방
+                  </button>
+                  <button className="flex items-center gap-2 bg-purple-100 text-purple-500 rounded-xl px-3 py-2">
+                    <img
+                      src="/icons/accessory.svg"
+                      alt="액세서리"
+                      className="w-4 h-4"
+                    />
+                    액세서리
+                  </button>
+                  <button className="flex items-center gap-2 bg-pink-100 text-pink-500 rounded-xl px-3 py-2">
+                    <img src="/icons/etc.svg" alt="기타" className="w-4 h-4" />
+                    기타
+                  </button>
+                </div>
               </div>
             </div>
           </div>
