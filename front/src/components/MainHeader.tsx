@@ -1,6 +1,7 @@
-"use client";
+'use client';
 
 import Link from "next/link";
+import LanguageSelector from "./LanguageSelector";
 
 interface MainHeaderProps {
   isAuthenticated: boolean;
@@ -26,20 +27,7 @@ export default function MainHeader({
             />
           </Link>
           <h1 className="text-xl font-bold text-gray-800">찾아줘!</h1>
-          <div className="flex gap-1 items-center ml-2">
-            <span className="text-lg">🇰🇷</span>
-            <select
-              className="text-sm text-gray-600 bg-transparent border-none cursor-pointer"
-              onChange={(e) => {
-                console.log("언어 변경:", e.target.value);
-              }}
-            >
-              <option value="ko">한국어</option>
-              <option value="en">English</option>
-              <option value="ja">日本語</option>
-              <option value="zh">中文</option>
-            </select>
-          </div>
+          <LanguageSelector />
         </div>
 
         {/* 오른쪽: 프로필 버튼 */}
