@@ -54,9 +54,20 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<"found" | "wanted">("found");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isOpen, setIsOpen] = useState(false); // 챗봇 버튼
+  const [panelEnter, setPanelEnter] = useState(false); // 챗봇 패널 보이게
 
   const [currentLanguage, setCurrentLanguage] = useState("ko");
   const [isTranslating, setIsTranslating] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      // 다음 프레임에 엔터 상태로 전환 → 부드러운 슬라이드업
+      requestAnimationFrame(() => setPanelEnter(true));
+    } else {
+      setPanelEnter(false);
+    }
+  }, [isOpen]);
 
   // Home 컴포넌트 마운트/업데이트 시 useAuth 상태 로깅
   useEffect(() => {
@@ -589,18 +600,69 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 챗봇 이동 버튼 섹션 */}
+        {/* 챗봇 열기 버튼 */}
         <section className="fixed bottom-[96px] left-[calc(50%+125px)] z-50">
-          {" "}
-          <Link href="/chatbot">
-            <button
-              className="w-14 h-14 flex items-center justify-center bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-colors"
-              aria-label="챗봇 열기"
-            >
-              💬
-            </button>
-          </Link>
+          <button
+            onClick={() => setIsOpen(true)}
+            className="w-14 h-14 flex items-center justify-center bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-colors"
+          >
+            💬
+          </button>
         </section>
+
+        {/* 챗봇 모달 */}
+        {isOpen && (
+          <div
+            className="fixed inset-0 z-[9999] flex items-end justify-center bg-black/40"
+            onClick={() => setIsOpen(false)} // 배경 클릭 닫기
+          >
+            {/* 패널: 클릭 전파 방지 */}
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className={[
+                "w-[300px] bg-white rounded-2xl  shadow-xl", // 좌우 폭 줄임
+                "flex flex-col",
+                "h-[600px]", // 높이 줄임
+                "pb-4",
+                "mb-[80px]",
+                "transform transition-transform duration-300 ease-out",
+                panelEnter ? "translate-y-0" : "translate-y-full",
+              ].join(" ")}
+            >
+              {/* 상단 헤더 */}
+              <div className="flex justify-between items-center p-4 border-b">
+                <h2 className="text-lg font-semibold">찾아줘 챗봇</h2>
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                  aria-label="챗봇 닫기"
+                >
+                  ✖
+                </button>
+              </div>
+
+              {/* 채팅 영역 */}
+              <div className="flex-1 overflow-y-auto p-4">
+                <div className="p-3 mb-2 bg-gray-100 rounded-lg w-fit">
+                  안녕하세요! 무엇을 도와드릴까요?
+                </div>
+                {/* TODO: 메시지 리스트 렌더링 */}
+              </div>
+
+              {/* 입력 영역 */}
+              <div className="flex items-center border-t px-3 pt-3">
+                <input
+                  type="text"
+                  placeholder="메시지를 입력하세요..."
+                  className="flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none"
+                />
+                <button className="ml-2 px-3 py-2 bg-indigo-600 text-white rounded-lg">
+                  전송
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 하단 네비게이션 */}
         <div className="fixed bottom-0 left-1/2 py-2 w-full max-w-md bg-white border-t border-gray-200 transform -translate-x-1/2">
