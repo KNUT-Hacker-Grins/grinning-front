@@ -7,13 +7,16 @@ import { FoundItemListResponse, FoundItem } from '@/types/foundItems';
 import MainHeader from '@/components/MainHeader';
 import { useAuth } from '@/hooks/useAuth';
 
-// 경찰청 API 아이템 타입 (임시)
+// 경찰청 API 아이템 타입
 interface PoliceItem {
   atcId: string;
+  fdSn: string; // 상세 페이지 링크에 필요
   fdPrdtNm: string;
   fdYmd: string;
   depPlace: string;
   fdFilePathImg: string;
+  prdtClNm: string;
+  clrNm: string;
 }
 
 export default function FoundPage() {
@@ -42,7 +45,6 @@ export default function FoundPage() {
           setFoundItems(serviceResponse.value.data.items);
         } else {
           console.error('Failed to fetch service items:', serviceResponse.status === 'rejected' && serviceResponse.reason);
-          // 이 경우엔 우리 서비스의 에러 메시지만 표시하거나, 부분 성공으로 처리
         }
 
         if (policeResponse.status === 'fulfilled' && policeResponse.value.status === 'success') {
@@ -124,16 +126,31 @@ export default function FoundPage() {
             <div className="text-center py-10">경찰청 목록을 불러오는 중...</div>
           ) : policeItems.length > 0 ? (
             policeItems.map((item) => (
-              <div key={item.atcId} className="flex items-start gap-4 p-3 rounded-xl border border-gray-200 bg-white shadow-sm">
-                <div className="flex-shrink-0 w-16 h-16 rounded overflow-hidden">
-                  <img src={item.fdFilePathImg || '/placeholder.png'} alt={item.fdPrdtNm} className="object-cover w-full h-full" />
+              <Link
+                key={item.atcId}
+                href={{ pathname: '/police-item', query: {
+                  atcId: item.atcId,
+                  fdSn: item.fdSn,
+                  fdPrdtNm: item.fdPrdtNm,
+                  fdYmd: item.fdYmd,
+                  depPlace: item.depPlace,
+                  fdFilePathImg: item.fdFilePathImg,
+                  prdtClNm: item.prdtClNm,
+                  clrNm: item.clrNm,
+                } }}
+                className="block hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex items-start gap-4 p-3 rounded-xl border border-gray-200 bg-white shadow-sm">
+                  <div className="flex-shrink-0 w-16 h-16 rounded overflow-hidden">
+                    <img src={item.fdFilePathImg || '/placeholder.png'} alt={item.fdPrdtNm} className="object-cover w-full h-full" />
+                  </div>
+                  <div className="flex flex-col flex-grow">
+                    <h3 className="text-sm font-semibold text-gray-800">{item.fdPrdtNm}</h3>
+                    <p className="text-xs text-gray-500 mt-1">보관장소: {item.depPlace}</p>
+                    <p className="text-xs text-gray-500 mt-1">습득일: {item.fdYmd}</p>
+                  </div>
                 </div>
-                <div className="flex flex-col flex-grow">
-                  <h3 className="text-sm font-semibold text-gray-800">{item.fdPrdtNm}</h3>
-                  <p className="text-xs text-gray-500 mt-1">보관장소: {item.depPlace}</p>
-                  <p className="text-xs text-gray-500 mt-1">습득일: {item.fdYmd}</p>
-                </div>
-              </div>
+              </Link>
             ))
           ) : (
             <div className="text-center py-10 text-gray-500">경찰청에 등록된 습득물이 없습니다.</div>
