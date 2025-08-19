@@ -30,7 +30,7 @@ export default function MainHeader({
         </div>
 
         {/* 오른쪽: 프로필 버튼 */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <LanguageSelector />
           <Link href={isAuthenticated ? "/mypage" : "/login"}>
             <div className="flex justify-center items-center w-10 h-10 bg-gray-300 rounded-full">

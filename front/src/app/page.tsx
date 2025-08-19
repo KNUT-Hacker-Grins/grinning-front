@@ -8,6 +8,7 @@ import { FoundItem } from "@/types/foundItems"; // Import FoundItem
 import { LostItem } from "@/types/lostItems"; // Import LostItem
 import BottomNav from "@/components/BottomNav";
 import Chatbot from "@/components/Chatbot";
+import LanguageSelector from "@/components/LanguageSelector";
 
 
 // 시간 차이 계산 함수
@@ -172,7 +173,7 @@ export default function Home() {
           {/* 로고와 네비게이션 */}
           <div className="flex justify-between items-center mb-[50px]">
             {/* 왼쪽: 로고 + 찾아줘! + 번역 */}
-            <div className="flex gap-3 items-center">
+            <div className="flex gap-4 items-center">
               {/* 로고 */}
               <img
                 src="/logo.jpeg"
@@ -184,6 +185,8 @@ export default function Home() {
 
               {/* 찾아줘! 타이틀 */}
               <h1 className="text-xl font-bold text-gray-800">찾아줘!</h1>
+
+              <LanguageSelector />
 
               
             </div>
