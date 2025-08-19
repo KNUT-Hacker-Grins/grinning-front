@@ -19,8 +19,7 @@
 body {
   color: rgb(var(--foreground-rgb));
   background: white;
-}
-
+}
 /* 스크롤바 숨기기 및 스크롤 개선 */
 .scrollbar-hide {
   -ms-overflow-style: none;  /* IE and Edge */
@@ -35,4 +34,19 @@ body {
 .scrollbar-hide {
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch; /* iOS 터치 스크롤 개선 */
+}
+
+/* Hide Google Translate top bar */
+.goog-te-banner-frame.skiptranslate {
+    display: none !important;
+}
+body {
+    top: 0px !important;
+}
+/* Hide the Google Translate tooltip that appears on hover */
+.goog-tooltip {
+    display: none !important;
+}
+.goog-tooltip:hover {
+    display: none !important;
 }

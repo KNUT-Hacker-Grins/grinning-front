@@ -27,19 +27,21 @@ export default function MainHeader({
             />
           </Link>
           <h1 className="text-xl font-bold text-gray-800">찾아줘!</h1>
-          <LanguageSelector />
         </div>
 
         {/* 오른쪽: 프로필 버튼 */}
-        <Link href={isAuthenticated ? "/mypage" : "/login"}>
-          <div className="flex justify-center items-center w-10 h-10 bg-gray-300 rounded-full">
-            {!authLoading && (
-              <span className="text-xs text-gray-600">
-                {isAuthenticated ? "MY" : "LOGIN"}
-              </span>
-            )}
-          </div>
-        </Link>
+        <div className="flex items-center gap-3">
+          <LanguageSelector />
+          <Link href={isAuthenticated ? "/mypage" : "/login"}>
+            <div className="flex justify-center items-center w-10 h-10 bg-gray-300 rounded-full">
+              {!authLoading && (
+                <span className="text-xs text-gray-600">
+                  {isAuthenticated ? "MY" : "LOGIN"}
+                </span>
+              )}
+            </div>
+          </Link>
+        </div>
       </div>
     </header>
   );
