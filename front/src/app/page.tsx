@@ -59,6 +59,13 @@ export default function Home() {
   const [currentLanguage, setCurrentLanguage] = useState('ko');
   const [isTranslating, setIsTranslating] = useState(false);
 
+  // 인기 카테고리 상태
+  const [popularCategory, setPopularCategory] = useState({
+    category: '지갑 & 악세사리',
+    searchCount: 0,
+    sampleItem: null as any
+  });
+
   // Home 컴포넌트 마운트/업데이트 시 useAuth 상태 로깅
   useEffect(() => {
     console.log('Home component mounted/updated.');
@@ -111,6 +118,46 @@ export default function Home() {
 
     fetchAllItems();
   }, []);
+
+  // 인기 카테고리 데이터 가져오기
+  useEffect(() => {
+    const fetchPopularCategory = async () => {
+      try {
+        // 백엔드 API가 준비되면 주석 해제
+        // const response = await api.stats.getPopularCategories();
+        // if (response?.data?.length > 0) {
+        //   setPopularCategory({
+        //     category: response.data[0].category,
+        //     searchCount: response.data[0].search_count,
+        //     sampleItem: response.data[0].sample_item
+        //   });
+        // }
+        
+        // 임시 목업 데이터 (실제 가장 많이 검색되는 지갑 아이템으로 설정)
+        if (foundItems.length > 0) {
+          const walletItems = foundItems.filter(item => 
+            item.category.some(cat => cat.label === '지갑') ||
+            item.title.toLowerCase().includes('지갑') ||
+            item.title.toLowerCase().includes('wallet')
+          );
+          
+          if (walletItems.length > 0) {
+            setPopularCategory({
+              category: '지갑 & 악세사리',
+              searchCount: 45,
+              sampleItem: walletItems[0]
+            });
+          }
+        }
+      } catch (error) {
+        console.error('인기 카테고리 조회 실패:', error);
+      }
+    };
+
+    if (foundItems.length > 0) {
+      fetchPopularCategory();
+    }
+  }, [foundItems]);
 
   // 번역 함수
   const translateItems = async (targetLang: string) => {
@@ -335,6 +382,57 @@ export default function Home() {
             <div className="absolute right-3 top-[17px] w-5 h-5 overflow-hidden">
               <div className="absolute bottom-[12.5%] left-[4.167%] right-[4.167%] top-[12.5%]">
                 <img src="/Camera.svg" alt="카메라" className="block w-full h-full" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 오늘 가장 많이 검색된 카테고리 섹션 */}
+        <div className="flex justify-center mb-[20px]">
+          <div 
+            className="w-[340px] h-[120px] bg-blue-500 rounded-[15px] overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+            style={{
+              background: 'linear-gradient(135deg, #2563eb, #1d4ed8)'
+            }}
+            onClick={() => {
+              setSelectedCategory('지갑');
+              setSearchQuery('');
+            }}
+          >
+            <div className="relative w-full h-full p-4 text-white">
+              <div className="text-sm font-medium mb-1">오늘 가장 많이 검색된 카테고리</div>
+              <div className="text-xl font-bold">{popularCategory.category}</div>
+              <div className="text-xs opacity-80">찾으시는 분실물을 검색해보세요</div>
+              
+              {/* 실제 이미지 또는 fallback */}
+              <div className="absolute bottom-4 right-4 w-16 h-12 rounded-md overflow-hidden shadow-lg">
+                {popularCategory.sampleItem?.image_urls?.[0] ? (
+                  <img 
+                    src={popularCategory.sampleItem.image_urls[0]} 
+                    alt={popularCategory.sampleItem.title}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      // 이미지 로드 실패 시 fallback
+                      (e.target as HTMLImageElement).style.display = 'none';
+                      const fallback = (e.target as HTMLImageElement).parentElement?.querySelector('.fallback-wallet');
+                      if (fallback) {
+                        (fallback as HTMLElement).style.display = 'flex';
+                      }
+                    }}
+                  />
+                ) : null}
+                
+                {/* Fallback 지갑 아이콘 */}
+                <div 
+                  className={`fallback-wallet w-full h-full bg-gradient-to-br from-amber-800 to-amber-900 rounded-md flex items-center justify-center ${
+                    popularCategory.sampleItem?.image_urls?.[0] ? 'hidden' : 'flex'
+                  }`}
+                >
+                  <div className="w-12 h-8 bg-amber-700 rounded-sm border border-amber-600 relative">
+                    <div className="absolute top-1 left-1 w-2 h-1 bg-amber-600 rounded-sm"></div>
+                    <div className="absolute bottom-1 right-1 w-3 h-3 bg-amber-600 rounded-full opacity-50"></div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

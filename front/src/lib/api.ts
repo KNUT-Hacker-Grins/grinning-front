@@ -370,4 +370,9 @@ export const api = {
     getItems: () => apiRequest('/api/map/items/'),
   },
 
+  // 통계 관련
+  stats: {
+    getPopularCategories: () => apiRequest('/api/stats/popular-categories'),
+  },
+
 };
