@@ -1,7 +1,9 @@
 import BottomNav from '@/components/BottomNav';
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from 'next/script';
 import "./globals.css";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -47,11 +49,34 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen pb-16`}
-      >
-        <main className="flex-grow">{children}</main>
-        <BottomNav />
+      <body>
+        {/* Hidden Google Translate Widget */}
+        <div id="google_translate_element" style={{ display: 'none' }}></div>
+        <Script
+          id="google-translate-init"
+          strategy="afterInteractive"
+        >
+          {`
+            function googleTranslateElementInit() {
+              new google.translate.TranslateElement({pageLanguage: 'ko'}, 'google_translate_element');
+            }
+          `}
+        </Script>
+        <Script
+          src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
+          strategy="afterInteractive"
+        />
+        
+        <LanguageProvider>
+          <div className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen pb-16 bg-gray-100`}>
+            <main className="flex-grow px-4 py-6">
+              <div className="bg-white rounded-2xl shadow-md w-[380px] mx-auto p-4">
+                {children}
+              </div>
+            </main>
+            <BottomNav />
+          </div>
+        </LanguageProvider>
       </body>
     </html>
   );

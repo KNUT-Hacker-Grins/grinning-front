@@ -14,6 +14,7 @@ export interface FoundItem {
   title: string;
   description: string;
   found_location: string;
+  found_at: string; // Add this line
   latitude: number; // Corrected to non-nullable
   longitude: number; // Corrected to non-nullable
   image_urls: string[]; // 배열로 변경
