@@ -1,11 +1,27 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 import { FoundItem } from '@/types/foundItems'; // Import FoundItem
 import { LostItem } from '@/types/lostItems';   // Import LostItem
+
+// 타입 정의
+interface PopularCategory {
+  category: string;
+  search_count: number;
+  sample_item: {
+    id: number;
+    title: string;
+    image_url: string;
+    found_location: string;
+  } | null;
+}
+
+// 상수 정의
+const CATEGORIES = ['전자기기', '지갑', '의류', '기타'] as const;
+type CategoryType = typeof CATEGORIES[number];
 
 
 
@@ -60,9 +76,11 @@ export default function Home() {
   const [isTranslating, setIsTranslating] = useState(false);
 
   // 인기 카테고리 상태
-  const [popularCategories, setPopularCategories] = useState<any[]>([]);
+  const [popularCategories, setPopularCategories] = useState<PopularCategory[]>([]);
   const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
   const [popularCategoriesError, setPopularCategoriesError] = useState(false);
+  const [isLoadingPopularCategories, setIsLoadingPopularCategories] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   // Home 컴포넌트 마운트/업데이트 시 useAuth 상태 로깅
   useEffect(() => {
@@ -117,26 +135,56 @@ export default function Home() {
     fetchAllItems();
   }, []);
 
+  // 콜백 함수들 정의
+  const handleCategoryCardClick = useCallback(() => {
+    if (!popularCategoriesError && popularCategories.length > 0) {
+      const currentCategory = popularCategories[currentCategoryIndex];
+      if (currentCategory.sample_item?.id) {
+        // Link 컴포넌트가 처리
+        return;
+      } else {
+        setSelectedCategory(currentCategory.category);
+        setSearchQuery('');
+      }
+    }
+  }, [popularCategoriesError, popularCategories, currentCategoryIndex, setSelectedCategory, setSearchQuery]);
+
+  const handleCategoryCardKeyDown = useCallback((event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleCategoryCardClick();
+    }
+  }, [handleCategoryCardClick]);
+
+  const handleRetryPopularCategories = useCallback(() => {
+    setRetryCount(prev => prev + 1);
+    fetchPopularCategories();
+  }, []);
+
+  // 인기 카테고리 데이터 가져오기 함수
+  const fetchPopularCategories = useCallback(async () => {
+    try {
+      setIsLoadingPopularCategories(true);
+      setPopularCategoriesError(false);
+      const response = await api.stats.getPopularCategories();
+      if (response?.data?.length > 0) {
+        setPopularCategories(response.data);
+      } else {
+        setPopularCategoriesError(true);
+      }
+    } catch (error) {
+      console.error('인기 카테고리 조회 실패:', error);
+      setPopularCategoriesError(true);
+      setPopularCategories([]);
+    } finally {
+      setIsLoadingPopularCategories(false);
+    }
+  }, []);
+
   // 인기 카테고리 데이터 가져오기
   useEffect(() => {
-    const fetchPopularCategories = async () => {
-      try {
-        setPopularCategoriesError(false);
-        const response = await api.stats.getPopularCategories();
-        if (response?.data?.length > 0) {
-          setPopularCategories(response.data);
-        } else {
-          setPopularCategoriesError(true);
-        }
-      } catch (error) {
-        console.error('인기 카테고리 조회 실패:', error);
-        setPopularCategoriesError(true);
-        setPopularCategories([]);
-      }
-    };
-
     fetchPopularCategories();
-  }, [foundItems]);
+  }, []); // foundItems 의존성 제거
 
   // 번역 함수
   const translateItems = async (targetLang: string) => {
@@ -235,9 +283,42 @@ export default function Home() {
     }
   };
 
-  const handleRegister = () => {
+  // 메모화된 필터링 로직
+  const filteredFoundItems = useMemo(() => {
+    return foundItems.filter(item => 
+      (searchQuery === '' || 
+       item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+       item.found_location.toLowerCase().includes(searchQuery.toLowerCase())) &&
+      (selectedCategory === null || item.category.some(cat => cat.label === selectedCategory))
+    );
+  }, [foundItems, searchQuery, selectedCategory]);
+
+  const filteredWantedItems = useMemo(() => {
+    return wantedItems.filter(item => 
+      (searchQuery === '' || 
+       item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+       item.lost_location.toLowerCase().includes(searchQuery.toLowerCase())) &&
+      (selectedCategory === null || item.category.some(cat => cat.label === selectedCategory))
+    );
+  }, [wantedItems, searchQuery, selectedCategory]);
+
+  // 메모화된 현재 인기 카테고리
+  const currentPopularCategory = useMemo(() => {
+    return popularCategories[currentCategoryIndex] || null;
+  }, [popularCategories, currentCategoryIndex]);
+
+  // 콜백 함수들
+  const handleCategorySelect = useCallback((category: CategoryType | null) => {
+    setSelectedCategory(category === selectedCategory ? null : category);
+  }, [selectedCategory]);
+
+  const handleSearchChange = useCallback((query: string) => {
+    setSearchQuery(query);
+  }, []);
+
+  const handleRegister = useCallback(() => {
     window.location.href = '/register';
-  };
+  }, []);
 
   // 로딩 상태 표시
   if (isLoading) {
@@ -352,9 +433,10 @@ export default function Home() {
               type="text"
               placeholder="내 물건 찾기"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="absolute left-[55px] top-[15px] w-[200px] h-[24px] text-gray-800 text-base font-normal outline-none bg-transparent leading-none placeholder:text-[#8b8484] placeholder:leading-none"
               style={{ fontFamily: 'Inter, Noto Sans KR, sans-serif' }}
+              aria-label="분실물 검색"
             />
             
             {/* 카메라 아이콘 */}
@@ -368,15 +450,36 @@ export default function Home() {
 
         {/* 오늘 가장 많이 검색된 카테고리 섹션 */}
         <div className="flex justify-center mb-[20px]">
-          {!popularCategoriesError && popularCategories.length > 0 && popularCategories[currentCategoryIndex]?.sample_item?.id ? (
-            <Link href={`/found-item/${popularCategories[currentCategoryIndex].sample_item.id}`}>
-              <div className="relative w-[340px] h-[120px] rounded-[15px] overflow-hidden cursor-pointer hover:opacity-90 transition-opacity">
+          {isLoadingPopularCategories ? (
+            <div className="relative w-[340px] h-[120px] rounded-[15px] overflow-hidden bg-gray-200 flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            </div>
+          ) : popularCategoriesError ? (
+            <div className="relative w-[340px] h-[120px] rounded-[15px] overflow-hidden bg-gray-200 flex flex-col items-center justify-center">
+              <p className="text-gray-600 mb-2">카테고리 정보를 불러올 수 없습니다</p>
+              <button 
+                onClick={handleRetryPopularCategories}
+                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                aria-label="인기 카테고리 다시 불러오기"
+              >
+                다시 시도
+              </button>
+            </div>
+          ) : !popularCategoriesError && popularCategories.length > 0 && currentPopularCategory?.sample_item?.id ? (
+            <Link href={`/found-item/${currentPopularCategory.sample_item.id}`}>
+              <div 
+                className="relative w-[340px] h-[120px] rounded-[15px] overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                role="button"
+                tabIndex={0}
+                aria-label={`${currentPopularCategory.category} 카테고리의 ${currentPopularCategory.sample_item.title} 상세보기`}
+                onKeyDown={handleCategoryCardKeyDown}
+              >
                 {/* 배경 이미지 또는 fallback */}
-                {popularCategories[currentCategoryIndex]?.sample_item?.image_url ? (
+                {currentPopularCategory?.sample_item?.image_url ? (
                   <div 
                     className="absolute inset-0 bg-cover bg-center"
                     style={{
-                      backgroundImage: `url(${popularCategories[currentCategoryIndex].sample_item.image_url})`
+                      backgroundImage: `url(${currentPopularCategory.sample_item.image_url})`
                     }}
                   />
                 ) : (
@@ -396,11 +499,11 @@ export default function Home() {
                   <div>
                     <div className="text-sm font-medium mb-1 drop-shadow-lg">오늘 가장 많이 검색된 카테고리</div>
                     <div className="text-xl font-bold drop-shadow-lg">
-                      {popularCategories[currentCategoryIndex]?.category || 'N/A'}
+                      {currentPopularCategory?.category || 'N/A'}
                     </div>
                   </div>
                   <div className="text-xs opacity-90 drop-shadow-lg">
-                    검색횟수: {`${popularCategories[currentCategoryIndex]?.search_count || 0}회`}
+                    검색횟수: {`${currentPopularCategory?.search_count || 0}회`}
                   </div>
                 </div>
               </div>
@@ -408,13 +511,11 @@ export default function Home() {
           ) : (
             <div 
               className="relative w-[340px] h-[120px] rounded-[15px] overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
-              onClick={() => {
-                if (!popularCategoriesError && popularCategories.length > 0) {
-                  const currentCategory = popularCategories[currentCategoryIndex];
-                  setSelectedCategory(currentCategory.category);
-                  setSearchQuery('');
-                }
-              }}
+              role="button"
+              tabIndex={0}
+              aria-label={`${currentPopularCategory?.category || 'N/A'} 카테고리 필터 적용`}
+              onClick={handleCategoryCardClick}
+              onKeyDown={handleCategoryCardKeyDown}
             >
               {/* 배경 이미지 또는 fallback */}
               {!popularCategoriesError && popularCategories.length > 0 && popularCategories[currentCategoryIndex]?.sample_item?.image_url ? (
@@ -458,16 +559,18 @@ export default function Home() {
 
         {/* 카테고리 필터 */}
         <div className="flex gap-[15px] mb-[13px] pl-[23px] overflow-x-auto">
-          {['전자기기', '지갑', '의류', '기타'].map((category) => (
+          {CATEGORIES.map((category) => (
             <button
               key={category}
-              onClick={() => setSelectedCategory(category === selectedCategory ? null : category)}
+              onClick={() => handleCategorySelect(category)}
               className={`px-3 h-6 rounded-[20px] text-xs font-normal flex items-center justify-center whitespace-nowrap ${
                 selectedCategory === category
                   ? 'bg-blue-500 text-white'
                   : 'bg-[#d9d9d9] text-[#8b8484]'
               }`}
               style={{ fontFamily: 'Inter, sans-serif' }}
+              aria-label={`${category} 카테고리 ${selectedCategory === category ? '선택됨' : '선택'}`}
+              aria-pressed={selectedCategory === category}
             >
               {category}
             </button>
@@ -484,14 +587,7 @@ export default function Home() {
           {/* 가로 스크롤 컨테이너 */}
           <div className="overflow-x-auto scrollbar-hide">
             <div className="flex gap-[20px] px-6" style={{ width: 'max-content' }}>
-              {foundItems
-                .filter(item => 
-                  (searchQuery === '' || 
-                   item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                   item.found_location.toLowerCase().includes(searchQuery.toLowerCase())) &&
-                  (selectedCategory === null || item.category.some(cat => cat.label === selectedCategory))
-                )
-                .map((item) => (
+              {filteredFoundItems.map((item) => (
                 <Link key={item.id} href={`/found-item/${item.id}`} className="flex flex-col flex-shrink-0 transition-opacity cursor-pointer hover:opacity-80" style={{ width: '124px' }}>
                   <div className="w-[124px] h-[124px] bg-gray-300 rounded-xl mb-[7px] overflow-hidden">
                     {item.image_urls && item.image_urls.length > 0 ? (
@@ -517,7 +613,7 @@ export default function Home() {
                 </Link>
               ))}
               
-              {foundItems.length === 0 && (
+              {filteredFoundItems.length === 0 && (
                 <div className="flex items-center justify-center w-[124px] h-[124px] bg-gray-100 rounded-xl text-gray-500 text-sm">
                   등록된<br />분실물이<br />없습니다
                 </div>
@@ -536,14 +632,7 @@ export default function Home() {
           {/* 가로 스크롤 컨테이너 */}
           <div className="overflow-x-auto scrollbar-hide">
             <div className="flex gap-[20px] px-6" style={{ width: 'max-content' }}>
-              {wantedItems
-                .filter(item => 
-                  (searchQuery === '' || 
-                   item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                   item.lost_location.toLowerCase().includes(searchQuery.toLowerCase())) &&
-                  (selectedCategory === null || item.category.some(cat => cat.label === selectedCategory))
-                )
-                .map((item) => (
+              {filteredWantedItems.map((item) => (
                 <Link key={item.id} href={`/lost-item/${item.id}`} className="flex flex-col flex-shrink-0 transition-opacity cursor-pointer hover:opacity-80" style={{ width: '124px' }}>
                   <div className="w-[124px] h-[124px] bg-gray-300 rounded-xl mb-[7px] overflow-hidden">
                     {item.image_urls && item.image_urls.length > 0 ? (
@@ -569,7 +658,7 @@ export default function Home() {
                 </Link>
               ))}
               
-              {wantedItems.length === 0 && (
+              {filteredWantedItems.length === 0 && (
                 <div className="flex items-center justify-center w-[124px] h-[124px] bg-gray-100 rounded-xl text-gray-500 text-sm">
                   등록된<br />분실물이<br />없습니다
                 </div>
