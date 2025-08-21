@@ -62,6 +62,7 @@ export default function Home() {
   // 인기 카테고리 상태
   const [popularCategories, setPopularCategories] = useState<any[]>([]);
   const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
+  const [popularCategoriesError, setPopularCategoriesError] = useState(false);
 
   // Home 컴포넌트 마운트/업데이트 시 useAuth 상태 로깅
   useEffect(() => {
@@ -120,23 +121,17 @@ export default function Home() {
   useEffect(() => {
     const fetchPopularCategories = async () => {
       try {
+        setPopularCategoriesError(false);
         const response = await api.stats.getPopularCategories();
         if (response?.data?.length > 0) {
           setPopularCategories(response.data);
+        } else {
+          setPopularCategoriesError(true);
         }
       } catch (error) {
         console.error('인기 카테고리 조회 실패:', error);
-        // API 실패 시 fallback 데이터
-        setPopularCategories([
-          {
-            category: '지갑',
-            search_count: 45,
-            sample_item: foundItems.find(item => 
-              item.category.some(cat => cat.label === '지갑') ||
-              item.title.toLowerCase().includes('지갑')
-            ) || null
-          }
-        ]);
+        setPopularCategoriesError(true);
+        setPopularCategories([]);
       }
     };
 
@@ -372,18 +367,57 @@ export default function Home() {
         </div>
 
         {/* 오늘 가장 많이 검색된 카테고리 섹션 */}
-        {popularCategories.length > 0 && (
-          <div className="flex justify-center mb-[20px]">
+        <div className="flex justify-center mb-[20px]">
+          {!popularCategoriesError && popularCategories.length > 0 && popularCategories[currentCategoryIndex]?.sample_item?.id ? (
+            <Link href={`/found-item/${popularCategories[currentCategoryIndex].sample_item.id}`}>
+              <div className="relative w-[340px] h-[120px] rounded-[15px] overflow-hidden cursor-pointer hover:opacity-90 transition-opacity">
+                {/* 배경 이미지 또는 fallback */}
+                {popularCategories[currentCategoryIndex]?.sample_item?.image_url ? (
+                  <div 
+                    className="absolute inset-0 bg-cover bg-center"
+                    style={{
+                      backgroundImage: `url(${popularCategories[currentCategoryIndex].sample_item.image_url})`
+                    }}
+                  />
+                ) : (
+                  <div 
+                    className="absolute inset-0"
+                    style={{
+                      background: 'linear-gradient(135deg, #6b7280, #4b5563)'
+                    }}
+                  />
+                )}
+                
+                {/* 어두운 오버레이 */}
+                <div className="absolute inset-0 bg-black/40" />
+                
+                {/* 텍스트 컨텐츠 */}
+                <div className="relative w-full h-full p-4 text-white flex flex-col justify-between">
+                  <div>
+                    <div className="text-sm font-medium mb-1 drop-shadow-lg">오늘 가장 많이 검색된 카테고리</div>
+                    <div className="text-xl font-bold drop-shadow-lg">
+                      {popularCategories[currentCategoryIndex]?.category || 'N/A'}
+                    </div>
+                  </div>
+                  <div className="text-xs opacity-90 drop-shadow-lg">
+                    검색횟수: {`${popularCategories[currentCategoryIndex]?.search_count || 0}회`}
+                  </div>
+                </div>
+              </div>
+            </Link>
+          ) : (
             <div 
               className="relative w-[340px] h-[120px] rounded-[15px] overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
               onClick={() => {
-                const currentCategory = popularCategories[currentCategoryIndex];
-                setSelectedCategory(currentCategory.category);
-                setSearchQuery('');
+                if (!popularCategoriesError && popularCategories.length > 0) {
+                  const currentCategory = popularCategories[currentCategoryIndex];
+                  setSelectedCategory(currentCategory.category);
+                  setSearchQuery('');
+                }
               }}
             >
-              {/* 배경 이미지 */}
-              {popularCategories[currentCategoryIndex]?.sample_item?.image_url ? (
+              {/* 배경 이미지 또는 fallback */}
+              {!popularCategoriesError && popularCategories.length > 0 && popularCategories[currentCategoryIndex]?.sample_item?.image_url ? (
                 <div 
                   className="absolute inset-0 bg-cover bg-center"
                   style={{
@@ -394,7 +428,7 @@ export default function Home() {
                 <div 
                   className="absolute inset-0"
                   style={{
-                    background: 'linear-gradient(135deg, #2563eb, #1d4ed8)'
+                    background: 'linear-gradient(135deg, #6b7280, #4b5563)'
                   }}
                 />
               )}
@@ -406,13 +440,21 @@ export default function Home() {
               <div className="relative w-full h-full p-4 text-white flex flex-col justify-between">
                 <div>
                   <div className="text-sm font-medium mb-1 drop-shadow-lg">오늘 가장 많이 검색된 카테고리</div>
-                  <div className="text-xl font-bold drop-shadow-lg">{popularCategories[currentCategoryIndex]?.category}</div>
+                  <div className="text-xl font-bold drop-shadow-lg">
+                    {popularCategoriesError || popularCategories.length === 0 
+                      ? 'N/A' 
+                      : popularCategories[currentCategoryIndex]?.category || 'N/A'}
+                  </div>
                 </div>
-                <div className="text-xs opacity-90 drop-shadow-lg">검색횟수: {popularCategories[currentCategoryIndex]?.search_count}회</div>
+                <div className="text-xs opacity-90 drop-shadow-lg">
+                  검색횟수: {popularCategoriesError || popularCategories.length === 0 
+                    ? 'N/A' 
+                    : `${popularCategories[currentCategoryIndex]?.search_count || 0}회`}
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* 카테고리 필터 */}
         <div className="flex gap-[15px] mb-[13px] pl-[23px] overflow-x-auto">
