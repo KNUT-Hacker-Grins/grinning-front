@@ -37,7 +37,7 @@ export default function PoliceLostItemDetailContent() {
             </p>
           </div>
 
-          {atcId && lstSn ? (
+          {atcId ? (
             <div className="space-y-4">
               <div className="w-full h-60 bg-gray-200 rounded-lg overflow-hidden">
                 {lstFilePathImg ? (

@@ -157,7 +157,7 @@ export default function FoundPage() {
                 <div className="flex items-start gap-4 p-3 rounded-xl border border-gray-200 bg-white shadow-sm">
                   <div className="flex-shrink-0 w-16 h-16 rounded overflow-hidden relative">
                     <img
-                      src={item.type === 'found' ? (item.originalItem as FoundItem).image_urls[0] || '/placeholder.png' : (item.originalItem as PoliceItem).fdFilePathImg || '/placeholder.png'}
+                      src={item.type === 'found' ? (item.originalItem as FoundItem).image_urls[0] || '/placeholder.svg' : (item.originalItem as PoliceItem).fdFilePathImg || '/placeholder.svg'}
                       alt={item.type === 'found' ? (item.originalItem as FoundItem).title : (item.originalItem as PoliceItem).fdPrdtNm}
                       className="object-cover w-full h-full"
                     />
