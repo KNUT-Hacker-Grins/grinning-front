@@ -56,7 +56,7 @@ export default function LostItemDetailPage() {
   const router = useRouter();
   const params = useParams();
   const itemId = params.id as string;
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth(); // Added user
   const [item, setItem] = useState<LostItem | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -106,6 +106,7 @@ export default function LostItemDetailPage() {
 
         if (response && response.data) {
           setItem(response.data);
+          console.log('Lost Item Detail - item.profile_picture_url:', response.data.profile_picture_url); // Added console.log
         } else {
           setError("분실물을 찾을 수 없습니다.");
         }
@@ -215,7 +216,7 @@ export default function LostItemDetailPage() {
         className="flex flex-col mx-auto w-full max-w-md"
         style={{ maxWidth: "390px" }}
       >
-      <MainHeader isAuthenticated={isAuthenticated} authLoading={authLoading} />
+      <MainHeader isAuthenticated={isAuthenticated} authLoading={authLoading} user={user} />
       
         {/* 메인 이미지 */}
         <div className="relative w-full h-80 bg-gray-200">

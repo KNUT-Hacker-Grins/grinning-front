@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api, tokenManager } from '@/lib/api';
 
-interface User {
+export interface User { // Added export
   id: number;
   email: string;
   name: string;

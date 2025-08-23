@@ -61,6 +61,8 @@ export default function MyPage() {
     const loadUserData = async () => {
       if (!isAuthenticated || !user) return;
 
+      console.log('My Page - user.profile_picture_url:', user?.profile_picture_url); // Added console.log
+
       try {
         setIsDataLoading(true);
         setError(null);
@@ -173,7 +175,7 @@ export default function MyPage() {
     <main className="flex justify-center min-h-screen bg-white">
       <div className="mx-auto w-full max-w-md" style={{maxWidth: '390px'}}>
         <div className="p-4 pt-0 space-y-4">
-          <MainHeader isAuthenticated={isAuthenticated} authLoading={authLoading} />
+          <MainHeader isAuthenticated={isAuthenticated} authLoading={authLoading} user={user} />
 
 
           <ProfileCard 

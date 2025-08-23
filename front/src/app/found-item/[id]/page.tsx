@@ -49,7 +49,7 @@ export default function FoundItemDetailPage() {
   const router = useRouter();
   const params = useParams();
   const itemId = params.id as string;
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth(); // Added user
   const [item, setItem] = useState<FoundItemDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -171,7 +171,7 @@ export default function FoundItemDetailPage() {
   return (
     <main className="flex justify-center min-h-screen bg-white">
       <div className="flex flex-col mx-auto w-full max-w-md" style={{ maxWidth: "390px" }}>
-        <MainHeader isAuthenticated={isAuthenticated} authLoading={authLoading} />
+        <MainHeader isAuthenticated={isAuthenticated} authLoading={authLoading} user={user} />
         <div className="relative w-full h-80 bg-gray-200">
           {item.image_urls && item.image_urls.length > 0 ? (
             <img src={item.image_urls[0]} alt={item.title} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = "/api/placeholder/400/300"; }} />
