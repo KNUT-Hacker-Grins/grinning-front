@@ -7,7 +7,7 @@ interface User {
   name: string;
   nickname?: string;
   phone_number?: string;
-  profile_image?: string;
+  profile_picture_url?: string; // Changed from profile_image to profile_picture_url
 }
 
 interface AuthState {

@@ -195,15 +195,15 @@ export default function Home() {
             <Link href={isAuthenticated ? "/mypage" : "/login"}>
               <div className="flex justify-center items-center w-10 h-10 bg-gray-300 rounded-full overflow-hidden"> {/* Added overflow-hidden */}
                 {!authLoading && (
-                  isAuthenticated && user && user.profile_picture_url ? (
+                  isAuthenticated && user ? (
                     <img
-                      src={user.profile_picture_url}
+                      src={user.profile_picture_url || "/default-profile.png"}
                       alt="프로필 사진"
                       className="w-full h-full object-cover rounded-full"
                     />
                   ) : (
                     <span className="text-xs text-gray-600">
-                      {isAuthenticated ? "MY" : "LOGIN"}
+                      LOGIN
                     </span>
                   )
                 )}

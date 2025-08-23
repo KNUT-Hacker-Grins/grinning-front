@@ -8,15 +8,10 @@ import ChatMessage from '@/components/ChatMessage';
 import { api } from '@/lib/api'; // API 클라이언트
 import { useAuth } from '@/hooks/useAuth';
 
-interface Message {
-  id: number;
-  content: string;
-  sender: {
-    id: number;
-    name: string;
-  };
-  timestamp: string;
-}
+import { ChatMessage as ChatMessageType, ChatMessageSender } from '@/types/chat'; // Import types
+
+// Use the imported type
+interface Message extends ChatMessageType {}
 
 
 
@@ -126,6 +121,8 @@ export default function ChatRoomPage() {
               key={msg.id}
               text={msg.content}
               isMine={msg.sender.id === user?.id}
+              senderProfilePictureUrl={msg.sender.profile_picture_url} // Pass profile picture URL
+              senderName={msg.sender.name} // Pass sender name
             />
           ))
         )}
