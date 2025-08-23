@@ -44,7 +44,7 @@ export default function LostPage() {
       setError(null);
       try {
         const serviceParams = selectedCategory === '전체' ? {} : { category: selectedCategory };
-        const policeParams = { page: currentPage, limit: itemsPerPage };
+        const policeParams = { page: 1, limit: 1000 }; // Fetch a large number to combine
 
         const [serviceResponse, policeResponse] = await Promise.allSettled([
           api.lostItems.getAll(serviceParams),
@@ -52,17 +52,13 @@ export default function LostPage() {
         ]);
 
         let serviceItems: LostItem[] = [];
-        let serviceTotal = 0;
         if (serviceResponse.status === 'fulfilled' && serviceResponse.value.status === 'success') {
           serviceItems = serviceResponse.value.data.items;
-          serviceTotal = serviceResponse.value.data.total; // Get total from service API
         }
 
         let policeItems: PoliceLostItem[] = [];
-        let policeTotal = 0;
         if (policeResponse.status === 'fulfilled' && policeResponse.value.status === 'success') {
           policeItems = policeResponse.value.data.items;
-          policeTotal = policeResponse.value.data.total; // Get total from police API
         }
 
         const processedServiceItems: CombinedItem[] = serviceItems.map(item => ({
@@ -80,7 +76,7 @@ export default function LostPage() {
         const allCombinedItems = [...processedServiceItems, ...processedPoliceItems];
         allCombinedItems.sort((a, b) => b.date.getTime() - a.date.getTime());
 
-        setTotalCombinedItems(serviceTotal + policeTotal); // Sum of totals from both APIs
+        setTotalCombinedItems(allCombinedItems.length); // Calculate total based on combined array length
 
         const startIndex = (currentPage - 1) * itemsPerPage;
         const endIndex = startIndex + itemsPerPage;
