@@ -52,13 +52,17 @@ export default function LostPage() {
         ]);
 
         let serviceItems: LostItem[] = [];
+        let serviceTotal = 0;
         if (serviceResponse.status === 'fulfilled' && serviceResponse.value.status === 'success') {
           serviceItems = serviceResponse.value.data.items;
+          serviceTotal = serviceResponse.value.data.total; // Get total from service API
         }
 
         let policeItems: PoliceLostItem[] = [];
+        let policeTotal = 0;
         if (policeResponse.status === 'fulfilled' && policeResponse.value.status === 'success') {
           policeItems = policeResponse.value.data.items;
+          policeTotal = policeResponse.value.data.total; // Get total from police API
         }
 
         const processedServiceItems: CombinedItem[] = serviceItems.map(item => ({
@@ -76,7 +80,7 @@ export default function LostPage() {
         const allCombinedItems = [...processedServiceItems, ...processedPoliceItems];
         allCombinedItems.sort((a, b) => b.date.getTime() - a.date.getTime());
 
-        setTotalCombinedItems(allCombinedItems.length); // This might need adjustment based on total from APIs
+        setTotalCombinedItems(serviceTotal + policeTotal); // Sum of totals from both APIs
 
         const startIndex = (currentPage - 1) * itemsPerPage;
         const endIndex = startIndex + itemsPerPage;
