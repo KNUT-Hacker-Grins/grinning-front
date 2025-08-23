@@ -6,6 +6,7 @@ import { api } from '@/lib/api';
 import { FoundItemListResponse, FoundItem } from '@/types/foundItems';
 import MainHeader from '@/components/MainHeader';
 import { useAuth } from '@/hooks/useAuth';
+import Pagination from '@/components/Pagination';
 
 // 경찰청 API 아이템 타입
 interface PoliceItem {
@@ -38,6 +39,8 @@ export default function FoundPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10; // Adjust as needed
   const [totalCombinedItems, setTotalCombinedItems] = useState(0);
+
+  const totalPages = Math.ceil(totalCombinedItems / itemsPerPage);
 
   useEffect(() => {
     const fetchAllFoundItems = async () => {
@@ -192,25 +195,11 @@ export default function FoundPage() {
         </div>
 
         {/* Pagination Controls */}
-        <div className="flex justify-center mt-4 gap-2">
-          <button
-            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-            disabled={currentPage === 1}
-            className="px-4 py-2 bg-gray-200 rounded-md disabled:opacity-50"
-          >
-            이전
-          </button>
-          <span className="px-4 py-2 text-gray-700">
-            {currentPage} / {Math.ceil(totalCombinedItems / itemsPerPage)}
-          </span>
-          <button
-            onClick={() => setCurrentPage((prev) => prev + 1)}
-            disabled={currentPage * itemsPerPage >= totalCombinedItems}
-            className="px-4 py-2 bg-gray-200 rounded-md disabled:opacity-50"
-          >
-            다음
-          </button>
-        </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
 
       </div>
     </div>

@@ -6,6 +6,7 @@ import { api } from '@/lib/api';
 import { LostItem } from '@/types/lostItems';
 import MainHeader from '@/components/MainHeader';
 import { useAuth } from '@/hooks/useAuth';
+import Pagination from '@/components/Pagination';
 
 // PoliceLostItem 타입 정의 (백엔드 모델 기반)
 interface PoliceLostItem {
@@ -37,6 +38,8 @@ export default function LostPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [totalCombinedItems, setTotalCombinedItems] = useState(0);
+
+  const totalPages = Math.ceil(totalCombinedItems / itemsPerPage);
 
   useEffect(() => {
     const fetchAllLostItems = async () => {
@@ -173,25 +176,12 @@ export default function LostPage() {
           )}
         </div>
 
-        <div className="flex justify-center mt-4 gap-2">
-          <button
-            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-            disabled={currentPage === 1}
-            className="px-4 py-2 bg-gray-200 rounded-md disabled:opacity-50"
-          >
-            이전
-          </button>
-          <span className="px-4 py-2 text-gray-700">
-            {currentPage} / {Math.ceil(totalCombinedItems / itemsPerPage)}
-          </span>
-          <button
-            onClick={() => setCurrentPage((prev) => prev + 1)}
-            disabled={currentPage * itemsPerPage >= totalCombinedItems}
-            className="px-4 py-2 bg-gray-200 rounded-md disabled:opacity-50"
-          >
-            다음
-          </button>
-        </div>
+        {/* Pagination Controls */}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
 
       </div>
     </div>
