@@ -15,6 +15,7 @@ export interface LostItem {
   reward: number;
   status: LostItemStatus;
   user_name: string;
+  profile_picture_url?: string; // Added profile_picture_url
   created_at: string;
   updated_at: string;
 }

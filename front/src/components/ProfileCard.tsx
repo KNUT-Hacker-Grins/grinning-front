@@ -26,7 +26,7 @@ export default function ProfileCard({ name, email, profileImage }: Props) {
     }
   };
 
-  const defaultProfileImage = "https://randomuser.me/api/portraits/women/32.jpg";
+  const defaultProfileImage = "/default-profile.png"; // Use a local placeholder image
 
   return (
     <div className="flex items-center gap-4">

@@ -320,8 +320,18 @@ export default function LostItemDetailPage() {
           <div className="bg-gray-50 p-4 rounded-lg">
             <h3 className="font-medium text-gray-900 mb-2">등록자</h3>
             <div className="flex items-center">
-              <div className="w-10 h-10 bg-indigo-500 text-white rounded-full flex items-center justify-center font-medium">
-                {item.user_name?.charAt(0) || "U"}
+              <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center font-medium bg-gray-300"> {/* Added overflow-hidden and bg-gray-300 for placeholder */}
+                {item.profile_picture_url ? (
+                  <img
+                    src={item.profile_picture_url}
+                    alt="프로필 사진"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-xs text-gray-600">
+                    {item.user_name?.charAt(0) || "U"}
+                  </span>
+                )}
               </div>
               <div className="ml-3">
                 <p className="font-medium text-gray-900">
