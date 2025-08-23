@@ -15,7 +15,7 @@ export default function PoliceLostItemDetailContent() {
   const lstYmd = searchParams.get('lstYmd');
   const lstPlace = searchParams.get('lstPlace');
   const lstFilePathImg = searchParams.get('lstFilePathImg');
-  const prdtClNm = search_params.get('prdtClNm');
+  const prdtClNm = searchParams.get('prdtClNm');
   const clrNm = searchParams.get('clrNm');
 
   // Assumption: The URL for lost item details is similar to found items.
