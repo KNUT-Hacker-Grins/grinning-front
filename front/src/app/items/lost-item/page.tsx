@@ -33,7 +33,7 @@ export default function LostPage() {
   const [combinedItems, setCombinedItems] = useState<CombinedItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -104,7 +104,7 @@ export default function LostPage() {
 
   return (
     <div className="w-full mx-auto bg-white min-h-screen" style={{ maxWidth: '390px' }}>
-      <MainHeader isAuthenticated={isAuthenticated} authLoading={authLoading} />
+      <MainHeader isAuthenticated={isAuthenticated} authLoading={authLoading} user={user} />
       <div className="px-4 py-6">
         <div className="flex gap-[15px] mb-[13px] pl-[23px] overflow-x-auto">
           {categories.map((category) => (

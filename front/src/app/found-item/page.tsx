@@ -33,7 +33,7 @@ export default function FoundPage() {
   const [combinedItems, setCombinedItems] = useState<CombinedItem[]>([]); // Combined data state
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -114,7 +114,7 @@ export default function FoundPage() {
 
   return (
     <div className="w-full mx-auto bg-white min-h-screen" style={{ maxWidth: '390px' }}>
-      <MainHeader isAuthenticated={isAuthenticated} authLoading={authLoading} />
+      <MainHeader isAuthenticated={isAuthenticated} authLoading={authLoading} user={user} />
       <div className="px-4 py-6">
         {/* 카테고리 필터 */}
         <div className="flex gap-[15px] mb-[13px] pl-[23px] overflow-x-auto">

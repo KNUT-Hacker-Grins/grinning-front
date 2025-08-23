@@ -204,7 +204,7 @@ export default function FoundItemRegisterPage() {
 
   return (
     <div className="flex flex-col mx-auto w-full max-w-sm min-h-screen bg-white">
-      <MainHeader isAuthenticated={isAuthenticated} authLoading={authLoading} />
+      <MainHeader isAuthenticated={isAuthenticated} authLoading={authLoading} user={user} />
 
       <main className="flex-grow px-4 py-6 space-y-6">
         <PhotoUploadSection

@@ -16,6 +16,7 @@ export default function MainHeader({
   authLoading,
   user, // Destructure user prop
 }: MainHeaderProps) {
+  console.log('MainHeader Props:', { isAuthenticated, authLoading, user }); // Added console.log
   return (
     <header className="w-full bg-white border-b sticky top-0 z-10">
       <div className="max-w-screen-md mx-auto flex items-center justify-between px-4 py-10">

@@ -133,7 +133,7 @@ export default function MySettingPage() {
 
   return (
     <div className="w-full max-w-sm mx-auto bg-white min-h-screen border-x border-gray-100 relative">
-      <MainHeader isAuthenticated={isAuthenticated} authLoading={authLoading} />
+      <MainHeader isAuthenticated={isAuthenticated} authLoading={authLoading} user={user} />
       <MySettingBackground />
 
       <div className="p-6 space-y-6">
