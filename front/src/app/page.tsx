@@ -8,6 +8,7 @@ import { FoundItem } from "@/types/foundItems"; // Import FoundItem
 import { LostItem } from "@/types/lostItems"; // Import LostItem
 import BottomNav from "@/components/BottomNav";
 import Chatbot from "@/components/Chatbot";
+import LanguageSelector from "@/components/LanguageSelector";
 
 
 // 시간 차이 계산 함수
@@ -60,8 +61,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<"found" | "wanted">("found");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentLanguage, setCurrentLanguage] = useState("ko");
-  const [isTranslating, setIsTranslating] = useState(false);
+  
 
   // Home 컴포넌트 마운트/업데이트 시 useAuth 상태 로깅
   useEffect(() => {
@@ -120,134 +120,7 @@ export default function Home() {
     fetchAllItems();
   }, []);
 
-  // 번역 함수
-  const translateItems = async (targetLang: string) => {
-    if (targetLang === "ko" || isTranslating) return;
-
-    setIsTranslating(true);
-    try {
-      // 습득물 번역
-      const translatedFoundItems = await Promise.all(
-        foundItems.map(async (item) => {
-          try {
-            const titleResponse = await api.translate.text(
-              item.title,
-              "ko",
-              targetLang
-            );
-            const descResponse = await api.translate.text(
-              item.description,
-              "ko",
-              targetLang
-            );
-            const locationResponse = await api.translate.text(
-              item.found_location,
-              "ko",
-              targetLang
-            );
-
-            return {
-              ...item,
-              title: titleResponse.translated || item.title,
-              description: descResponse.translated || item.description,
-              found_location:
-                locationResponse.translated || item.found_location,
-            };
-          } catch (error) {
-            console.error("습득물 번역 오류:", error);
-            return item;
-          }
-        })
-      );
-
-      // 분실물 번역
-      const translatedWantedItems = await Promise.all(
-        wantedItems.map(async (item) => {
-          try {
-            const titleResponse = await api.translate.text(
-              item.title,
-              "ko",
-              targetLang
-            );
-            const descResponse = await api.translate.text(
-              item.description,
-              "ko",
-              targetLang
-            );
-            const locationResponse = await api.translate.text(
-              item.lost_location,
-              "ko",
-              targetLang
-            );
-
-            return {
-              ...item,
-              title: titleResponse.translated || item.title,
-              description: descResponse.translated || item.description,
-              lost_location: locationResponse.translated || item.lost_location,
-            };
-          } catch (error) {
-            console.error("분실물 번역 오류:", error);
-            return item;
-          }
-        })
-      );
-
-      setFoundItems(translatedFoundItems);
-      setWantedItems(translatedWantedItems);
-    } catch (error) {
-      console.error("번역 중 오류:", error);
-      alert(
-        "번역 서비스에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해주세요."
-      );
-    } finally {
-      setIsTranslating(false);
-    }
-  };
-
-  // 언어 변경 핸들러
-  const handleLanguageChange = async (newLang: string) => {
-    if (newLang === currentLanguage) return;
-
-    setCurrentLanguage(newLang);
-
-    if (newLang === "ko") {
-      // 한국어로 돌아갈 때는 데이터 새로고침
-      const fetchAllItems = async () => {
-        try {
-          setIsLoading(true);
-          const [foundItemsResponse, lostItemsResponse] =
-            await Promise.allSettled([
-              api.foundItems.getAll({}),
-              api.lostItems.getAll({}),
-            ]);
-
-          if (
-            foundItemsResponse.status === "fulfilled" &&
-            foundItemsResponse.value?.data?.items
-          ) {
-            setFoundItems(foundItemsResponse.value.data.items);
-          }
-
-          if (
-            lostItemsResponse.status === "fulfilled" &&
-            lostItemsResponse.value?.data?.items
-          ) {
-            setWantedItems(lostItemsResponse.value.data.items);
-          }
-        } catch (error) {
-          console.error("데이터 새로고침 실패:", error);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-
-      await fetchAllItems();
-    } else {
-      // 다른 언어로 번역
-      await translateItems(newLang);
-    }
-  };
+  
 
   const handleRegister = () => {
     window.location.href = "/register";
@@ -300,7 +173,7 @@ export default function Home() {
           {/* 로고와 네비게이션 */}
           <div className="flex justify-between items-center mb-[50px]">
             {/* 왼쪽: 로고 + 찾아줘! + 번역 */}
-            <div className="flex gap-3 items-center">
+            <div className="flex gap-4 items-center">
               {/* 로고 */}
               <img
                 src="/logo.jpeg"
@@ -313,27 +186,9 @@ export default function Home() {
               {/* 찾아줘! 타이틀 */}
               <h1 className="text-xl font-bold text-gray-800">찾아줘!</h1>
 
-              {/* 번역 기능 */}
-              <div className="flex gap-1 items-center">
-                <span className="text-lg">
-                  {currentLanguage === "ko" && "🇰🇷"}
-                  {currentLanguage === "en" && "🇺🇸"}
-                  {currentLanguage === "ja" && "🇯🇵"}
-                  {currentLanguage === "zh" && "🇨🇳"}
-                </span>
-                <select
-                  value={currentLanguage}
-                  className="text-sm text-gray-600 bg-transparent border-none cursor-pointer"
-                  onChange={(e) => handleLanguageChange(e.target.value)}
-                  disabled={isTranslating}
-                >
-                  <option value="ko">한국어</option>
-                  <option value="en">English</option>
-                </select>
-                {isTranslating && (
-                  <div className="w-3 h-3 border border-gray-400 border-t-blue-500 rounded-full animate-spin"></div>
-                )}
-              </div>
+              <LanguageSelector />
+
+              
             </div>
 
             {/* 오른쪽: 프로필 */}

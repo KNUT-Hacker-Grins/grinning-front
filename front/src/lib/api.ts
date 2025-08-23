@@ -378,6 +378,13 @@ export const api = {
       const queryString = searchParams.toString();
       return apiRequest(`/api/police/found-items/?${queryString}`);
     },
+    getLostItems: (params?: { page?: number; limit?: number; }) => {
+      const searchParams = new URLSearchParams();
+      if (params?.page) searchParams.append('pageNo', params.page.toString());
+      if (params?.limit) searchParams.append('numOfRows', params.limit.toString());
+      const queryString = searchParams.toString();
+      return apiRequest(`/api/police/lost-items/?${queryString}`);
+    },
   },
 
 };

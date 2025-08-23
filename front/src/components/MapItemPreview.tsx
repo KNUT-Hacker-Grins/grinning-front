@@ -28,7 +28,7 @@ export default function MapItemPreview({ item, onClose }: MapItemPreviewProps) {
       onClick={handleNavigate}
     >
       <img
-        src={item.image_url || '/placeholder.png'}
+        src={item.image_url || '/placeholder.svg'}
         alt={item.title}
         className="w-24 h-24 rounded-xl object-cover border border-gray-100"
       />

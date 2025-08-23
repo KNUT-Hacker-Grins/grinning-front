@@ -115,20 +115,20 @@ export default function ItemMap() {
   }, []); // Empty dependency array ensures this runs only once
 
   return (
-    <div className="absolute inset-0 w-full h-full" ref={mapRef} id="naver-map">
+    <div className="relative w-full h-full" ref={mapRef} id="naver-map" style={{ maxWidth: '390px', margin: '0 auto' }}>
       {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-50 bg-opacity-75 z-10">
+        <div className="flex absolute inset-0 z-10 justify-center items-center bg-gray-50 bg-opacity-75">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+            <div className="mx-auto mb-4 w-12 h-12 rounded-full border-b-2 border-indigo-600 animate-spin"></div>
             <p className="text-gray-600">지도 데이터를 불러오는 중...</p>
           </div>
         </div>
       )}
       {error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-red-100 bg-opacity-75 z-10">
-          <div className="text-center p-8 mx-4 w-full max-w-md bg-white rounded-lg shadow-md">
-            <p className="text-red-600 mb-4">{error}</p>
-            <button onClick={() => window.location.reload()} className="px-4 py-2 bg-blue-500 text-white rounded">
+        <div className="flex absolute inset-0 z-10 justify-center items-center bg-red-100 bg-opacity-75">
+          <div className="p-8 mx-4 w-full max-w-md text-center bg-white rounded-lg shadow-md">
+            <p className="mb-4 text-red-600">{error}</p>
+            <button onClick={() => window.location.reload()} className="px-4 py-2 text-white bg-blue-500 rounded">
               다시 시도
             </button>
           </div>

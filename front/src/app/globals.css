@@ -20,7 +20,6 @@ body {
   color: rgb(var(--foreground-rgb));
   background: white;
 }
-
 /* 스크롤바 숨기기 및 스크롤 개선 */
 .scrollbar-hide {
   -ms-overflow-style: none;  /* IE and Edge */
@@ -36,3 +35,48 @@ body {
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch; /* iOS 터치 스크롤 개선 */
 }
+
+/* Hide Google Translate top bar and related elements */
+.goog-te-banner-frame.skiptranslate, .goog-te-banner-frame, .VIpgJd-ZVi9od-ORHb-OEVmcd {
+    display: none !important;
+    height: 0px !important;
+    visibility: hidden !important;
+    overflow: hidden !important;
+}
+body {
+    top: 0px !important;
+    margin-top: 0px !important;
+    overflow: auto !important; /* Ensure body can scroll */
+}
+html {
+    overflow: auto !important; /* Ensure html can scroll */
+}
+/* Hide the Google Translate tooltip that appears on hover */
+.goog-tooltip {
+    display: none !important;
+}
+.goog-tooltip:hover {
+    display: none !important;
+}
+/* Hide the Google Translate "Powered by" link */
+.skiptranslate > .goog-tooltip-wrapper {
+    display: none !important;
+}
+.skiptranslate > .goog-tooltip-wrapper > .goog-tooltip {
+    display: none !important;
+}
+.skiptranslate > .goog-tooltip-wrapper > .goog-tooltip:hover {
+    display: none !important;
+}
+
+/* Hide the Google Translate "Powered by" link */
+.skiptranslate > .goog-tooltip-wrapper {
+    display: none !important;
+}
+.skiptranslate > .goog-tooltip-wrapper > .goog-tooltip {
+    display: none !important;
+}
+.skiptranslate > .goog-tooltip-wrapper > .goog-tooltip:hover {
+    display: none !important;
+}
+
