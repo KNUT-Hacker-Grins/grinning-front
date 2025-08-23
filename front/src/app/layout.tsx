@@ -54,9 +54,10 @@ export default function RootLayout({
           <div className="bg-white rounded-2xl shadow-md w-[380px] mx-auto p-4">
             {children}
           </div>
-        </main>
-        <BottomNav />
+        </main> 
       </body>
+      <BottomNav />
     </html>
+    
   );
 }

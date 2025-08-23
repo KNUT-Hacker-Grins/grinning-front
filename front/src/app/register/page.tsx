@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import RegisterHeader from '@/components/RegisterHeader';
 import MainHeader from '@/components/MainHeader';
 import { useAuth } from '@/hooks/useAuth';
+import BottomNav from '@/components/BottomNav';
 
 
 export default function RegisterPage() {
@@ -110,6 +111,8 @@ export default function RegisterPage() {
           </div>
         </div>
       </main>
+      
+      
     </div>
   );
 }

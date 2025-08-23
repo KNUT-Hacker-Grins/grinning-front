@@ -49,12 +49,12 @@ export default function MyPage() {
   const [isDataLoading, setIsDataLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 인증되지 않은 사용자는 로그인 페이지로 리다이렉트
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      router.push('/login');
-    }
-  }, [authLoading, isAuthenticated, router]);
+  // // 인증되지 않은 사용자는 로그인 페이지로 리다이렉트
+  // useEffect(() => {
+  //   if (!authLoading && !isAuthenticated) {
+  //     router.push('/login');
+  //   }
+  // }, [authLoading, isAuthenticated, router]);
 
   // 사용자 데이터 로드
   useEffect(() => {

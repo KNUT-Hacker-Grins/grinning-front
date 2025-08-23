@@ -1,5 +1,6 @@
 'use client';
 
+import BottomNav from '@/components/BottomNav';
 import ItemMap from '@/components/ItemMap';
 import RegisterHeader from '@/components/RegisterHeader'; // Reusing header
 
@@ -10,6 +11,8 @@ export default function MapPage() {
       <div className="flex-1 relative">
         <ItemMap />
       </div>
+    <BottomNav />
+      
     </div>
   );
 }
