@@ -94,6 +94,19 @@ export default function Home() {
       >
         {/* 상단 헤더 */}
         <div className="relative px-6 pt-16 pb-8">
+          {/* Info 버튼 (좌상단) */}
+          <div className="absolute left-6 top-16 z-30">
+            <Link href="/legal-info">
+              <div className="flex overflow-hidden justify-center items-center w-10 h-10 bg-blue-100 rounded-full transition-all duration-200 cursor-pointer hover:bg-blue-200 hover:scale-105 active:scale-95">
+                <img
+                  src="/info.png"
+                  alt="정보"
+                  className="w-6 h-6"
+                />
+              </div>
+            </Link>
+          </div>
+
           {/* 프로필 아이콘 (우상단) */}
           <div className="absolute right-6 top-16">
             <Link href={isAuthenticated ? "/mypage" : "/login"}>
@@ -116,15 +129,15 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* 중앙 로고 및 타이틀 */}
-          <div className="flex flex-col items-center mb-12">
+          {/* 중앙 로고 및 언어 선택기 */}
+          <div className="flex relative z-10 flex-col items-center mb-16">
             {/* 찾아줘! 로고 */}
-            <div className="flex gap-3 items-center mb-2">
+            <div className="flex gap-3 items-center mb-6">
               <img src="/logo.svg" alt="찾아줘 로고" className="h-34 w-34" />
             </div>
-
+            
             {/* 언어 선택기 */}
-            <div className="mt-4">
+            <div className="relative z-20 px-2 py-0.5 bg-white rounded-full border border-gray-100 shadow-lg backdrop-blur-sm">
               <LanguageSelector />
             </div>
           </div>

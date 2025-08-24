@@ -38,28 +38,41 @@ export default function LanguageSelector() {
     <div className="relative" ref={wrapperRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors w-auto"
+        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-transparent border-none rounded-full hover:bg-gray-100/50 transition-all duration-200 hover:scale-105 active:scale-95"
       >
-        <span>{currentLang.flag}</span>
-        <span>{currentLang.name}</span>
-        <svg className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+        <span className="text-lg">{currentLang.flag}</span>
+        <span className="font-medium">{currentLang.name}</span>
+        <svg 
+          className={`w-4 h-4 transition-all duration-200 ${isOpen ? 'rotate-180' : ''}`} 
+          fill="none" 
+          stroke="currentColor" 
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 max-w-[120px] bg-white rounded-md shadow-lg z-20 border border-gray-200">
-          <ul className="py-1">
+        <div className="absolute left-1/2 transform -translate-x-1/2 mt-2 w-36 bg-white rounded-2xl shadow-xl z-[100] border border-gray-100 backdrop-blur-sm animate-in slide-in-from-top-2 duration-200">
+          <div className="py-2">
             {LANGUAGES.map((lang) => (
-              <li key={lang.code}>
-                <button
-                  onClick={() => handleLanguageChange(lang.code)}
-                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
-                >
-                  <span>{lang.flag}</span>
-                  <span>{lang.name}</span>
-                </button>
-              </li>
+              <button
+                key={lang.code}
+                onClick={() => handleLanguageChange(lang.code)}
+                className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-all duration-150 hover:bg-blue-50 ${
+                  lang.code === language ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-800 hover:text-blue-600'
+                }`}
+              >
+                <span className="text-lg">{lang.flag}</span>
+                <span>{lang.name}</span>
+                {lang.code === language && (
+                  <svg className="w-4 h-4 ml-auto text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </button>
             ))}
-          </ul>
+          </div>
         </div>
       )}
     </div>
