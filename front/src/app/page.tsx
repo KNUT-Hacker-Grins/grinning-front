@@ -124,9 +124,8 @@ export default function Home() {
               <img
                 src="/logo.svg"
                 alt="찾아줘 로고"
-                className="w-12 h-12"
+                className="h-34 w-34"
               />
-              <h1 className="text-3xl font-bold text-orange-500">찾아줘!</h1>
             </div>
 
             {/* 언어 선택기 */}
