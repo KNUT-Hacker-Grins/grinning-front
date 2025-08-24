@@ -19,18 +19,6 @@ export default function Chatbot({
   const [isOpen, setIsOpen] = useState(false);
   // 모달 슬라이드 애니메이션 제어 상태 (translate-y로 전환)
   const [panelEnter, setPanelEnter] = useState(false);
-
-  // useChatbot 훅에서 가져온 상태/함수들
-  // - input: 현재 입력창 값
-  // - setInput: 입력창 값 업데이트
-  // - messages: 대화 메시지 배열
-  // - choices: 현재 서버가 내려준 선택지 버튼들
-  // - health: 서버 헬스 상태 (online/offline)
-  // - loading: 서버와 통신 중인지 여부
-  // - errorMsg: 에러 메시지 (있으면 화면 표시)
-  // - scrollRef: 메시지 리스트 스크롤 참조
-  // - handleSend: 입력창 전송 핸들러
-  // - handleChoiceClick: 선택지 버튼 클릭 핸들러
   const {
     input,
     setInput,

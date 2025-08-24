@@ -78,7 +78,6 @@ export default function RootLayout({
           </div>
         </LanguageProvider>
       </body>
-      <BottomNav />
     </html>
     
   );
