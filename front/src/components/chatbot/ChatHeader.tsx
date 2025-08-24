@@ -2,8 +2,8 @@ import { useMemo } from "react";
 import { HealthRes } from "@/types/chatbot";
 
 type ChatHeaderProps = {
-  health: HealthRes | null;
-  onClose: () => void;
+  health: HealthRes | null; // 서버 헬스체크 결과 (on/off)
+  onClose: () => void; // 닫기 버튼 눌렀을 때 실행
 };
 
 export default function ChatHeader({ health, onClose }: ChatHeaderProps) {
@@ -23,7 +23,7 @@ export default function ChatHeader({ health, onClose }: ChatHeaderProps) {
 
   return (
     <div className="flex justify-between items-center p-4 border-b">
-      <div className="flex items-center">
+      <div className="flex items-center justify-center flex-1">
         <h2 className="text-lg font-semibold">찾아줘 챗봇</h2>
         {healthBadge}
       </div>

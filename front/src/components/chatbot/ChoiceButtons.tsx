@@ -8,7 +8,7 @@ export default function ChoiceButtons({ choices, loading, onChoiceClick }: Choic
   if (choices.length === 0) return null;
 
   return (
-    <div className="flex flex-wrap gap-2 pt-2 px-4">
+    <div className="flex flex-wrap gap-2 pt-2">
       {choices.map((c) => (
         <button
           key={c}

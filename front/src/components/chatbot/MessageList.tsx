@@ -1,9 +1,9 @@
-import { RefObject } from "react";
+import React from "react";
 import { Message } from "@/types/chatbot";
 
 type MessageListProps = {
   messages: Message[];
-  scrollRef: RefObject<HTMLDivElement>;
+  scrollRef: React.Ref<HTMLDivElement>;
   errorMsg: string | null;
 };
 
