@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
 
-const DJANGO_BASE_URL = process.env.DJANGO_BASE_URL ?? "http://localhost:8000";
+const DJANGO_BASE_URL = "https://cheetahsmiling.duckdns.org";
 const SESSION_COOKIE_KEY = "chatbot_session_id";
 
 export async function POST(req: NextRequest) {
@@ -56,6 +56,7 @@ export async function POST(req: NextRequest) {
     return resp;
   } catch (err: any) {
     console.error("message route error:", err?.message || err);
+    console.log("[chatbot/message] DJANGO_BASE_URL =", process.env.DJANGO_BASE_URL)
     return NextResponse.json(
       {
         session_id: "dev",
