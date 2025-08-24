@@ -8,7 +8,7 @@ export default function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white shadow-sm max-w-md mx-auto h-16 flex justify-around items-center" style={{ maxWidth: '390px' }}>
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white shadow-sm max-w-md mx-auto h-16 flex justify-around items-center" style={{ maxWidth: '380px' }}>
       <NavItem href="/" icon={<MdHome size={24} />} label="홈" active={pathname === '/'} />
       <NavItem href="/register" icon={<MdAddBox size={24} />} label="등록" active={pathname === '/register'} />
       <NavItem href="/map" icon={<MdMap size={24} />} label="지도" active={pathname === '/map'} /> {/* New Map NavItem */}
