@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
 
 if (isNewSession) {
   resp.cookies.set(SESSION_COOKIE_KEY, sessionId!, {
-    httpOnly: true,    
+    httpOnly: false,    
     sameSite: "lax",   
     secure: false,     
     path: "/",
