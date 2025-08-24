@@ -24,7 +24,7 @@ export default function ChatHeader({ health, onClose }: ChatHeaderProps) {
   return (
     <div className="flex justify-between items-center p-4 border-b">
       <div className="flex items-center justify-center flex-1">
-        <h2 className="text-lg font-semibold">찾아줘 챗봇</h2>
+        <h2 className="text-lg font-semibold">찾아줘! 챗봇</h2>
         {healthBadge}
       </div>
       <button
