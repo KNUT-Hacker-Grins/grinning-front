@@ -2,9 +2,9 @@ import React from "react";
 import { Message } from "@/types/chatbot";
 
 type MessageListProps = {
-  messages: Message[];
-  scrollRef: React.Ref<HTMLDivElement>;
-  errorMsg: string | null;
+  messages: Message[];  // 대화 메시지 배열 (user, bot 구분 포함)
+  scrollRef: React.Ref<HTMLDivElement>; // 자동 스크롤을 위해 부모에서 전달할 ref
+  errorMsg: string | null; // 에러가 있으면 표시할 메시지, 없으면 null
 };
 
 export default function MessageList({ messages, scrollRef, errorMsg }: MessageListProps) {
@@ -14,12 +14,15 @@ export default function MessageList({ messages, scrollRef, errorMsg }: MessageLi
         <div
           key={index}
           className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-        >
+          // user이면 오른쪽 정렬
+          // bot이면 왼쪽 정렬
+        > 
           <div
             className={`p-3 rounded-xl text-sm max-w-[75%] ${
               msg.role === "user"
                 ? "bg-indigo-100 text-gray-800"
                 : "bg-gray-100 text-gray-800"
+                // 유저면 파란색 톤 배경, 봇이면 회색 톤 배경
             }`}
           >
             {msg.content}
