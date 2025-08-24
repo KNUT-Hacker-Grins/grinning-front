@@ -2,9 +2,10 @@ import Link from 'next/link';
 import { FaArrowLeft } from 'react-icons/fa';
 
 interface ChatHeaderProps {
-  name: string;
-  imageUrl?: string;
+  name: string;  // 채팅 상대방 이름
+  imageUrl?: string; // 프로필 이미지 URL (없으면 기본값 사용)
 }
+
 export default function ChatHeader({ name, imageUrl }: ChatHeaderProps) {
   return (
     <header className="flex items-center justify-between p-4 border-b">
@@ -13,8 +14,8 @@ export default function ChatHeader({ name, imageUrl }: ChatHeaderProps) {
       </Link>
       <div className="flex items-center gap-3">
         <img
-          src={imageUrl || 'https://randomuser.me/api/portraits/men/32.jpg'}
-          alt={name}
+          src={imageUrl || "/cheetah.jpeg"}
+          alt={imageUrl ? name : "기본 프로필"}
           className="w-10 h-10 rounded-full object-cover"
         />
         <h1 className="text-lg font-semibold text-gray-900">{name}</h1>

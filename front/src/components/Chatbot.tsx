@@ -1,268 +1,107 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import ChatHeader from "./chatbot/ChatHeader"; // 챗봇 헤더 (타이틀 + 상태 뱃지 + 닫기 버튼)
+import MessageList from "./chatbot/MessageList"; // 메시지 리스트 (대화창 + 에러 표시)
+import MessageInput from "./chatbot/MessageInput"; // 입력창 + 전송 버튼
+import { useChatbot } from "@/hooks/useChatbot"; // 챗봇 상태/로직을 관리하는 커스텀 훅
 
+// Chatbot 컴포넌트에 전달되는 props 타입 정의
+// - autoOpen: 외부에서 자동으로 챗봇을 열도록 설정할지 여부
+// - onRequestClose: 챗봇이 닫힐 때 호출되는 콜백 함수
 type ChatbotProps = { autoOpen?: boolean; onRequestClose?: () => void };
 
-type Role = "user" | "bot";
-
-type Message = {
-  role: Role;
-  content: string;
-};
-
-type HealthRes = {
-  ok: boolean;
-  time: string;
-  state?: string;
-  session_id?: string;
-  created?: boolean;
-};
-
-type ChatbotReply = {
-  session_id: string;
-  state: "idle" | "awaiting_description" | "move_to_article" | "other" | string;
-  reply: string;
-  choices: string[];
-  recommendations: unknown[];
-  data: Record<string, unknown>;
-};
-
-export default function Chatbot({ autoOpen = false, onRequestClose }: ChatbotProps) {
+export default function Chatbot({
+  autoOpen = false,
+  onRequestClose,
+}: ChatbotProps) {
+  // 모달이 열려 있는지 여부
   const [isOpen, setIsOpen] = useState(false);
+  // 모달 슬라이드 애니메이션 제어 상태 (translate-y로 전환)
   const [panelEnter, setPanelEnter] = useState(false);
-  const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [choices, setChoices] = useState<string[]>([]);
-  const [health, setHealth] = useState<HealthRes | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
 
-  // 자동 스크롤
-  useEffect(() => {
-    scrollRef.current?.scrollTo({
-      top: scrollRef.current.scrollHeight,
-      behavior: "smooth",
-    });
-  }, [messages, choices]);
+  // useChatbot 훅에서 가져온 상태/함수들
+  // - input: 현재 입력창 값
+  // - setInput: 입력창 값 업데이트
+  // - messages: 대화 메시지 배열
+  // - choices: 현재 서버가 내려준 선택지 버튼들
+  // - health: 서버 헬스 상태 (online/offline)
+  // - loading: 서버와 통신 중인지 여부
+  // - errorMsg: 에러 메시지 (있으면 화면 표시)
+  // - scrollRef: 메시지 리스트 스크롤 참조
+  // - handleSend: 입력창 전송 핸들러
+  // - handleChoiceClick: 선택지 버튼 클릭 핸들러
+  const {
+    input,
+    setInput,
+    messages,
+    choices,
+    health,
+    loading,
+    errorMsg,
+    scrollRef,
+    handleSend,
+    handleChoiceClick,
+  } = useChatbot(isOpen);
 
-  // 챗봇 열기
+  // 챗봇 모달 열기
   const openModal = () => {
-    setIsOpen(true);
-    setTimeout(() => setPanelEnter(true), 10);
+    setIsOpen(true); // 모달 자체는 true로 열림
+    setTimeout(() => setPanelEnter(true), 10); // 짧은 지연 후 panelEnter true → 슬라이드 인 애니메이션
   };
 
-  // 챗봇 닫기
+  // 챗봇 모달 닫기
   const closeModal = () => {
-    setPanelEnter(false);
-    setTimeout(() => setIsOpen(false), 300);
-    onRequestClose?.();
+    setPanelEnter(false); // 애니메이션: 패널이 아래로 내려감
+    setTimeout(() => setIsOpen(false), 300); // 애니메이션 시간 후 실제 모달 언마운트
+    onRequestClose?.(); // 부모 컴포넌트에서 정의한 닫기 콜백 실행 (있다면)
   };
 
-  // 열릴 때 헬스체크 & 초기 인사
-  useEffect(() => {
-    if (!isOpen) return;
-
-    (async () => {
-      try {
-        const res = await fetch("/api/chatbot/health", { method: "GET" });
-        const json: HealthRes = await res.json();
-        setHealth(json);
-      } catch {
-        setHealth({ ok: false, time: new Date().toISOString() });
-      }
-    })();
-
-    // 초기 메시지는 API가 내려주지만, 버튼 선택 전 UX를 위해 프리메시지 표시
-    setMessages([{ role: "bot", content: "안녕하세요! 무엇을 도와드릴까요?" }]);
-    setChoices(["분실물 찾기", "분실물 신고", "기타 문의"]);
-    setErrorMsg(null);
-  }, [isOpen]);
-
-  // 외부에서 자동 오픈
+  // autoOpen이 true라면 처음 렌더 시 자동으로 챗봇 열기
   useEffect(() => {
     if (autoOpen && !isOpen) openModal();
   }, [autoOpen, isOpen]);
 
-  // intent/message 전송 공용 함수
-  const sendIntent = async (intent?: string, message?: string) => {
-    setLoading(true);
-    setErrorMsg(null);
-
-    const body: any = {};
-    if (intent) body.intent = intent;
-    if (message) body.message = message;
-
-    try {
-      const res = await fetch("/api/chatbot/message", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-      const data: ChatbotReply = await res.json();
-      setMessages((prev) => [...prev, { role: "bot", content: data.reply }]);
-      setChoices(Array.isArray(data.choices) ? data.choices : []);
-
-      // 게시글 작성 이동 신호에 대응
-      if (data.reply === "게시글을 작성하기 위해 이동합니다.") {
-        // TODO: 게시글 작성 화면으로 이동하거나, data를 폼 프리필에 사용
-        // 예) router.push('/articles/new?prefill=' + encodeURIComponent(JSON.stringify(data.data)));
-        console.log("게시글 작성 이동 데이터:", data.data);
-      }
-    } catch (err) {
-      setErrorMsg("서버 통신 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.");
-      setMessages((prev) => [
-        ...prev,
-        { role: "bot", content: "오류가 발생했어요. 잠시 후 다시 시도해 주세요." },
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 입력창 전송 → AWAITING_DESCRIPTION/OTHER 등에서 message 전송
-  const handleSend = async () => {
-    const trimmed = input.trim();
-    if (!trimmed || loading) return;
-    setMessages((prev) => [...prev, { role: "user", content: trimmed }]);
-    setInput("");
-    await sendIntent(undefined, trimmed);
-  };
-
-  // 선택지 클릭 → IDLE에서 intent 전송
-  const handleChoiceClick = async (choice: string) => {
-    if (loading) return;
-    setMessages((prev) => [...prev, { role: "user", content: choice }]);
-    await sendIntent(choice);
-  };
-
-  const healthBadge = useMemo(() => {
-    if (!health) return null;
-    return (
-      <span
-        className={`ml-2 inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full ${
-          health.ok ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-        }`}
-        title={health.time}
-      >
-        ● {health.ok ? "online" : "offline"}
-      </span>
-    );
-  }, [health]);
-
   return (
     <>
-      {/* (선택) 내부 열기 버튼 — 외부에서 autoOpen이면 필요 없음
-      <section className="fixed bottom-[96px] left-[calc(50%+125px)] z-50">
-        <button
-          onClick={openModal}
-          className="w-14 h-14 flex items-center justify-center bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-colors"
-          aria-label="Open chatbot"
-        >
-          💬
-        </button>
-      </section> */}
-
-      {/* 챗봇 모달 */}
+      {/* 모달이 열렸을 때만 렌더링 */}
       {isOpen && (
         <div
           className="fixed inset-0 z-[9999] flex items-end justify-center bg-black/40"
-          onClick={closeModal}
+          onClick={closeModal} // 오버레이 클릭 시 닫기
         >
           <div
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()} // 내부 클릭은 닫힘 방지
             className={[
-              "w-[300px] bg-white rounded-2xl shadow-xl",
-              "flex flex-col",
-              "h-[600px]",
+              "w-[300px] bg-white rounded-2xl shadow-xl", // 패널 크기, 배경, 그림자, 둥근 모서리
+              "flex flex-col", // 세로 레이아웃
+              "h-[600px]", // 높이 고정
               "pb-4",
-              "mb-[80px]",
-              "transform transition-transform duration-300 ease-out",
-              panelEnter ? "translate-y-0" : "translate-y-full",
+              "mb-[80px]", // 하단 여백
+              "transform transition-transform duration-300 ease-out", // 전환 애니메이션
+              panelEnter ? "translate-y-0" : "translate-y-full", // 슬라이드 인/아웃 상태
             ].join(" ")}
           >
-            {/* 헤더 */}
-            <div className="flex justify-between items-center p-4 border-b">
-              <div className="flex items-center">
-                <h2 className="text-lg font-semibold">찾아줘 챗봇</h2>
-                {healthBadge}
-              </div>
-              <button
-                onClick={closeModal}
-                className="text-gray-500 hover:text-gray-700"
-                aria-label="챗봇 닫기"
-              >
-                ✖
-              </button>
-            </div>
+            {/* 상단 헤더: 챗봇 타이틀 + 상태 뱃지 + 닫기 버튼 */}
+            <ChatHeader health={health} onClose={closeModal} />
 
-            {/* 메시지 영역 */}
-            <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
-              {messages.map((msg, index) => (
-                <div
-                  key={index}
-                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                >
-                  <div
-                    className={`p-3 rounded-xl text-sm max-w-[75%] ${
-                      msg.role === "user"
-                        ? "bg-indigo-100 text-gray-800"
-                        : "bg-gray-100 text-gray-800"
-                    }`}
-                  >
-                    {msg.content}
-                  </div>
-                </div>
-              ))}
+            {/* 메시지 리스트: 유저/봇 메시지 + 에러 메시지 */}
+            <MessageList
+              messages={messages}
+              scrollRef={scrollRef}
+              errorMsg={errorMsg}
+              choices={choices}
+              loading={loading}
+              onChoiceClick={handleChoiceClick}
+            />
 
-              {/* 서버에서 내려준 choices */}
-              {choices.length > 0 && (
-                <div className="flex flex-wrap gap-2 pt-2">
-                  {choices.map((c) => (
-                    <button
-                      key={c}
-                      disabled={loading}
-                      onClick={() => handleChoiceClick(c)}
-                      className="px-3 py-1.5 rounded-full text-sm border border-indigo-200 text-indigo-700 hover:bg-indigo-50 disabled:opacity-60"
-                    >
-                      {c}
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {/* 에러 메시지 */}
-              {errorMsg && (
-                <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-md p-2">
-                  {errorMsg}
-                </div>
-              )}
-            </div>
-
-            {/* 입력창 */}
-            <div className="flex items-center border-t px-3 pt-3">
-              <input
-                type="text"
-                placeholder="메시지를 입력하세요..."
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleSend();
-                }}
-                className="flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none"
-              />
-              <button
-                onClick={handleSend}
-                disabled={loading}
-                className="ml-2 w-10 h-10 flex items-center justify-center bg-indigo-600 text-white rounded-full disabled:opacity-60"
-              >
-                {loading ? "..." : "전송"}
-              </button>
-            </div>
+            {/* 입력창 + 전송 버튼 */}
+            <MessageInput
+              input={input}
+              setInput={setInput}
+              onSend={handleSend}
+              loading={loading}
+            />
           </div>
         </div>
       )}
