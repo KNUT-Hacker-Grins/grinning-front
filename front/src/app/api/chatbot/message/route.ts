@@ -3,8 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
 
-const DJANGO_BASE_URL = "https://cheetahsmiling.duckdns.org";
-const SESSION_COOKIE_KEY = "chatbot_session_id";
+const DJANGO_BASE_URL = process.env.DJANGO_BASE_URL || "https://cheetahsmiling.duckdns.org";
+const SESSION_COOKIE_KEY = "chat_session_id";
 
 export async function POST(req: NextRequest) {
   try {
@@ -44,14 +44,15 @@ export async function POST(req: NextRequest) {
     // 3) 그대로 반환, 세션 쿠키 새로 발급 시 쿠키 설정
     const resp = NextResponse.json(data);
 
-    if (isNewSession) {
-      resp.cookies.set(SESSION_COOKIE_KEY, sessionId!, {
-        httpOnly: false,
-        sameSite: "lax",
-        path: "/",
-        maxAge: 60 * 60 * 24 * 7,
-      });
-    }
+if (isNewSession) {
+  resp.cookies.set(SESSION_COOKIE_KEY, sessionId!, {
+    httpOnly: true,    
+    sameSite: "lax",   
+    secure: false,     
+    path: "/",
+    maxAge: 60 * 60 * 24 * 7,
+  });
+}
 
     return resp;
   } catch (err: any) {
