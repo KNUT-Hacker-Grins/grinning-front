@@ -8,6 +8,7 @@ import { FoundItem } from "@/types/foundItems";
 import { LostItem } from "@/types/lostItems";
 import BottomNav from "@/components/BottomNav";
 import LanguageSelector from "@/components/LanguageSelector";
+import Chatbot from "@/components/Chatbot";
 
 // 메인 카드 컴포넌트
 const MainCard = ({ 
@@ -169,6 +170,7 @@ export default function Home() {
                 {/* 하단 네비게이션을 위한 여백 */}
         <div className="pb-20">
           {/* 여백만 제공하고 BottomNav는 fixed로 표시됨 */}
+          <Chatbot />
           </div>
        <BottomNav />
       </div>

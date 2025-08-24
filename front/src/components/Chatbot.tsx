@@ -246,8 +246,7 @@ export default function Chatbot() {
               <button
                 onClick={handleSend}
                 disabled={loading}
-                className="ml-2 px-3 py-2 bg-indigo-600 text-white rounded-lg disabled:opacity-60"
-              >
+                className="ml-2 w-10 h-10 flex items-center justify-center bg-indigo-600 text-white rounded-full disabled:opacity-60"              >
                 {loading ? "..." : "전송"}
               </button>
             </div>
