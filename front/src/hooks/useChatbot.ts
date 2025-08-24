@@ -100,6 +100,7 @@ export function useChatbot(isOpen: boolean) {
     // 메시지를 화면에 먼저 추가
     setInput("");
     // 입력창 비움
+    lastDescRef.current = trimmed;
     await sendIntent(undefined, trimmed);
     // 서버에 전달
   };
