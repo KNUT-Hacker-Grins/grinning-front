@@ -11,13 +11,13 @@ import LanguageSelector from "@/components/LanguageSelector";
 import Chatbot from "@/components/Chatbot";
 
 // 메인 카드 컴포넌트
-const MainCard = ({ 
-  title, 
-  icon, 
-  borderColor, 
-  bgColor, 
-  href, 
-  onClick 
+const MainCard = ({
+  title,
+  icon,
+  borderColor,
+  bgColor,
+  href,
+  onClick,
 }: {
   title: string;
   icon: string;
@@ -27,7 +27,7 @@ const MainCard = ({
   onClick?: () => void;
 }) => {
   const [isPressed, setIsPressed] = useState(false);
-  
+
   const cardContent = (
     <div
       className={`
@@ -36,33 +36,27 @@ const MainCard = ({
         transition-all duration-200 ease-out
         hover:scale-105 card-shadow hover:card-shadow-hover
         active:scale-95
-        ${isPressed ? 'scale-95' : ''}cursor-pointer }`} 
+        ${isPressed ? "scale-95" : ""}cursor-pointer }`}
       onMouseDown={() => setIsPressed(true)}
       onMouseUp={() => setIsPressed(false)}
       onMouseLeave={() => setIsPressed(false)}
       onClick={onClick}
     >
       {/* 왼쪽 텍스트 */}
-      <h3 className="text-xl font-bold text-gray-800">
-        {title}
-      </h3>
-      
+      <h3 className="text-xl font-bold text-gray-800">{title}</h3>
+
       {/* 오른쪽 아이콘 */}
       <div className="flex-shrink-0">
-        <img
-          src={icon}
-          alt={title}
-          className="object-contain w-16 h-16"
-        />
+        <img src={icon} alt={title} className="object-contain w-16 h-16" />
       </div>
-      
+
       {/* 호버 효과를 위한 오버레이 */}
       <div className="absolute inset-0 bg-white rounded-3xl opacity-0 transition-opacity duration-200 hover:opacity-5"></div>
     </div>
   );
 
   if (href) {
-  return (
+    return (
       <Link href={href} className="block w-full">
         {cardContent}
       </Link>
@@ -74,7 +68,7 @@ const MainCard = ({
 
 export default function Home() {
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
-
+  const [showChatbot, setShowChatbot] = useState(false);
   // 로딩 상태 표시
   if (authLoading) {
     return (
@@ -94,26 +88,30 @@ export default function Home() {
 
   return (
     <main className="flex justify-center min-h-screen bg-gray-50">
-      <div className="relative mx-auto w-full max-w-md" style={{ maxWidth: "390px", minHeight: "100vh" }}>
+      <div
+        className="relative mx-auto w-full max-w-md"
+        style={{ maxWidth: "390px", minHeight: "100vh" }}
+      >
         {/* 상단 헤더 */}
         <div className="relative px-6 pt-16 pb-8">
           {/* 프로필 아이콘 (우상단) */}
           <div className="absolute right-6 top-16">
             <Link href={isAuthenticated ? "/mypage" : "/login"}>
               <div className="flex overflow-hidden justify-center items-center w-10 h-10 bg-gray-300 rounded-full transition-colors hover:bg-gray-400">
-                {!authLoading && (
-                  isAuthenticated && user ? (
+                {!authLoading &&
+                  (isAuthenticated && user ? (
                     <img
                       src={user.profile_picture_url || "/default-profile.png"}
                       alt="프로필 사진"
                       className="object-cover w-full h-full rounded-full"
                     />
                   ) : (
-                    <span className="text-xs text-gray-600">
-                      LOGIN
-                    </span>
-                  )
-                )}
+                    <img
+                      src="/cheetah.jpeg"
+                      alt="기본 프로필"
+                      className="block object-cover object-center w-full h-full rounded-full"
+                    />
+                  ))}
               </div>
             </Link>
           </div>
@@ -122,11 +120,7 @@ export default function Home() {
           <div className="flex flex-col items-center mb-12">
             {/* 찾아줘! 로고 */}
             <div className="flex gap-3 items-center mb-2">
-              <img
-                src="/logo.svg"
-                alt="찾아줘 로고"
-                className="h-34 w-34"
-              />
+              <img src="/logo.svg" alt="찾아줘 로고" className="h-34 w-34" />
             </div>
 
             {/* 언어 선택기 */}
@@ -162,17 +156,18 @@ export default function Home() {
             icon="/chatbot.svg"
             borderColor="border-orange-400"
             bgColor="bg-orange-50"
-            href="/chat"
+            onClick={() => setShowChatbot(true)}
           />
         </div>
 
-
-                {/* 하단 네비게이션을 위한 여백 */}
+        {/* 하단 네비게이션을 위한 여백 */}
         <div className="pb-20">
           {/* 여백만 제공하고 BottomNav는 fixed로 표시됨 */}
-          <Chatbot />
-          </div>
-       <BottomNav />
+          {showChatbot && (
+            <Chatbot autoOpen onRequestClose={() => setShowChatbot(false)} />
+          )}{" "}
+        </div>
+        <BottomNav />
       </div>
     </main>
   );

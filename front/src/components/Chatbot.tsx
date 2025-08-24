@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
+type ChatbotProps = { autoOpen?: boolean; onRequestClose?: () => void; };
+
 type Role = "user" | "bot";
 
 type Message = {
@@ -23,7 +25,7 @@ type ChatbotReply = {
   data: Record<string, unknown>;
 };
 
-export default function Chatbot() {
+export default function Chatbot({ autoOpen = false, onRequestClose }: ChatbotProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [panelEnter, setPanelEnter] = useState(false);
   const [input, setInput] = useState("");
@@ -50,6 +52,7 @@ export default function Chatbot() {
   const closeModal = () => {
     setPanelEnter(false);
     setTimeout(() => setIsOpen(false), 300);
+    onRequestClose?.();
   };
 
   // 열릴 때 헬스체크 & 초기 인사
@@ -72,6 +75,12 @@ export default function Chatbot() {
     setErrorMsg(null);
     setSessionId(null);
   }, [isOpen]);
+
+  useEffect(() => {
+    if (autoOpen && !isOpen) {
+      openModal();
+    }
+  }, [autoOpen]);
 
   // 공통: intent 전송
   const sendIntent = async (intent: string, echoUser?: string) => {
@@ -144,16 +153,16 @@ export default function Chatbot() {
 
   return (
     <>
-      {/* 챗봇 열기 버튼 */}
+      {/* 챗봇 열기 버튼
       <section className="fixed bottom-[96px] left-[calc(50%+125px)] z-50">
         <button
           onClick={openModal}
           className="w-14 h-14 flex items-center justify-center bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-colors"
           aria-label="Open chatbot"
         >
-          💬
+          // 💬
         </button>
-      </section>
+      </section> */}
 
       {/* 챗봇 모달 */}
       {isOpen && (
@@ -246,7 +255,8 @@ export default function Chatbot() {
               <button
                 onClick={handleSend}
                 disabled={loading}
-                className="ml-2 w-10 h-10 flex items-center justify-center bg-indigo-600 text-white rounded-full disabled:opacity-60"              >
+                className="ml-2 w-10 h-10 flex items-center justify-center bg-indigo-600 text-white rounded-full disabled:opacity-60"
+              >
                 {loading ? "..." : "전송"}
               </button>
             </div>
