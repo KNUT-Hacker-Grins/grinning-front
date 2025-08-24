@@ -1,42 +1,70 @@
-import { NextResponse } from "next/server";
+// /src/app/api/chatbot/message/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
-// POST /api/chatbot/message
-export async function POST(req: Request) {
-  const body = await req.json().catch(() => ({}));
-  const intent = body.intent as string | undefined;
-  const message = body.message as string | undefined;
+const DJANGO_BASE_URL = process.env.DJANGO_BASE_URL ?? "http://localhost:8000";
+const SESSION_COOKIE_KEY = "chatbot_session_id";
 
-  // intent 예시
-  if (intent === "분실물 찾기") {
-    return NextResponse.json({
-      session_id: "dev",
-      state: "awaiting_description",
-      reply: "어떤 분실물을 찾고 계신가요? 자세히 알려주세요.",
-      choices: [],
-      recommendations: [],
-      data: {},
+export async function POST(req: NextRequest) {
+  try {
+    const { intent, message } = await req.json();
+
+    const jar = await cookies();
+    let sessionId = jar.get(SESSION_COOKIE_KEY)?.value;
+
+    let isNewSession = false;
+
+    // 1) 세션 없으면 health로 발급
+    if (!sessionId) {
+      const healthRes = await fetch(`${DJANGO_BASE_URL}/api/chatbot/health`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!healthRes.ok) throw new Error(`Health HTTP ${healthRes.status}`);
+      const healthJson = await healthRes.json();
+      sessionId = healthJson.session_id || crypto.randomUUID();
+      isNewSession = true;
+    }
+
+    // 2) Django에 프록시 (⚠️ 슬래시 삭제)
+    const upRes = await fetch(`${DJANGO_BASE_URL}/api/chatbot/message`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id: sessionId, intent, message }),
     });
-  }
 
-  // 일반 메시지 예시
-  if (message) {
-    return NextResponse.json({
-      session_id: "dev",
-      state: "other",
-      reply: `메시지 확인: ${message}`,
-      choices: ["분실물 찾기", "분실물 신고", "기타 문의"],
-      recommendations: [],
-      data: {},
-    });
-  }
+    if (!upRes.ok) {
+      const text = await upRes.text().catch(() => "");
+      throw new Error(`Upstream HTTP ${upRes.status}: ${text}`);
+    }
 
-  // 기본 응답
-  return NextResponse.json({
-    session_id: "dev",
-    state: "idle",
-    reply: "무엇을 도와드릴까요?",
-    choices: ["분실물 찾기", "분실물 신고", "기타 문의"],
-    recommendations: [],
-    data: {},
-  });
+    const data = await upRes.json();
+
+    // 3) 그대로 반환, 세션 쿠키 새로 발급 시 쿠키 설정
+    const resp = NextResponse.json(data);
+
+    if (isNewSession) {
+      resp.cookies.set(SESSION_COOKIE_KEY, sessionId!, {
+        httpOnly: false,
+        sameSite: "lax",
+        path: "/",
+        maxAge: 60 * 60 * 24 * 7,
+      });
+    }
+
+    return resp;
+  } catch (err: any) {
+    console.error("message route error:", err?.message || err);
+    return NextResponse.json(
+      {
+        session_id: "dev",
+        state: "idle",
+        reply: `오류가 발생했어요. 잠시 후 다시 시도해 주세요.`,
+        choices: ["분실물 찾기", "분실물 신고", "기타 문의"],
+        recommendations: [],
+        data: {},
+      },
+      { status: 200 } // 필요 시 500으로 바꾸고 디버깅 끝나면 200 복구
+    );
+  }
 }
