@@ -9,6 +9,7 @@ export function useChatbot(isOpen: boolean) {
   const [health, setHealth] = useState<HealthRes | null>(null); // 서버 헬스체크 상태
   const [loading, setLoading] = useState(false); // 서버 요청 중 여부
   const [errorMsg, setErrorMsg] = useState<string | null>(null); // 에러 메시지
+  const lastDescRef = useRef<string>("");
   const scrollRef = useRef<HTMLDivElement>(null); // 스크롤 div 참조
 
   useEffect(() => {
@@ -104,13 +105,24 @@ export function useChatbot(isOpen: boolean) {
   };
 
   const handleChoiceClick = async (choice: string) => {
-    if (loading) return;
-    setMessages((prev) => [...prev, { role: "user", content: choice }]);
+  if (loading) return;
+
+  setMessages((prev) => [...prev, { role: "user", content: choice }]);
+
+  if (choice === "🔍 검색하기") {
+    const payload = (lastDescRef.current || "").trim();
+
+    if (payload) {
+      // ✅ 마지막 설명을 message로 보내서 MOVE_TO_ARTICLE에서 self.message로 처리되게 함
+      await sendIntent(undefined, payload);
+    } else {
+      // 설명이 비어 있으면 기존처럼 intent로 전송(백엔드가 "설명 입력" 유도)
+      await sendIntent(choice);
+    }
+  } else {
     await sendIntent(choice);
-  };
-  // 서버가 내려준 선택지 버튼을 눌렀을 때 실행
-  // 사용자가 고른 선택지를 내 메시지로 추가 
-  // 서버에 전송
+  }
+};
 
   return {
     input,
