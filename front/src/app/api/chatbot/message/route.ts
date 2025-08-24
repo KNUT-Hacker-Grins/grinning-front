@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
+
 const DJANGO_BASE_URL = process.env.DJANGO_BASE_URL ?? "http://localhost:8000";
 const SESSION_COOKIE_KEY = "chatbot_session_id";
 
