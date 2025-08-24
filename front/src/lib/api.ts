@@ -135,6 +135,12 @@ export const api = {
         body: JSON.stringify({ provider, code })
       }),
 
+    loginPassword: (email: string, password: string) =>
+      apiRequest('/api/auth/login/password', {
+        method: 'POST',
+        body: JSON.stringify({ email, password })
+      }),
+
     logout: () =>
       apiRequest('/api/auth/logout', {
         method: 'POST',

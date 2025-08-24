@@ -6,6 +6,7 @@ export interface FoundItemOwner {
   social_id?: string;
   email: string;
   name: string;
+  profile_picture_url?: string; // Added profile_picture_url
 }
 
 // 습득물 기본 정보 타입  

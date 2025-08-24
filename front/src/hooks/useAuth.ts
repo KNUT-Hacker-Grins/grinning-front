@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { api, tokenManager } from '@/lib/api';
 
-interface User {
+export interface User { // Added export
   id: number;
   email: string;
   name: string;
   nickname?: string;
   phone_number?: string;
-  profile_image?: string;
+  profile_picture_url?: string; // Changed from profile_image to profile_picture_url
 }
 
 interface AuthState {
@@ -28,6 +28,30 @@ export const useAuth = () => {
     const token = tokenManager.getAccessToken();
     
     if (!token) {
+      // 자동 로그인 시도
+      const autoLoginEmail = process.env.NEXT_PUBLIC_AUTO_LOGIN_EMAIL;
+      const autoLoginPassword = process.env.NEXT_PUBLIC_AUTO_LOGIN_PASSWORD;
+
+      if (autoLoginEmail && autoLoginPassword) {
+        try {
+          const response = await api.auth.loginPassword(autoLoginEmail, autoLoginPassword);
+          if (response.status === 'success') {
+            tokenManager.setTokens(response.data.access_token, response.data.refresh_token);
+            setAuthState({
+              user: response.data.user,
+              isLoading: false,
+              isAuthenticated: true
+            });
+            return;
+          } else {
+            console.error('자동 로그인 실패:', response.message);
+          }
+        } catch (error) {
+          console.error('자동 로그인 중 오류 발생:', error);
+        }
+      }
+
+      // 자동 로그인 실패 또는 설정되지 않은 경우
       setAuthState({
         user: null,
         isLoading: false,

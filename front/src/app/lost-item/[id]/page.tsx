@@ -56,7 +56,7 @@ export default function LostItemDetailPage() {
   const router = useRouter();
   const params = useParams();
   const itemId = params.id as string;
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth(); // Added user
   const [item, setItem] = useState<LostItem | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -106,6 +106,7 @@ export default function LostItemDetailPage() {
 
         if (response && response.data) {
           setItem(response.data);
+          console.log('Lost Item Detail - item.profile_picture_url:', response.data.profile_picture_url); // Added console.log
         } else {
           setError("분실물을 찾을 수 없습니다.");
         }
@@ -131,7 +132,7 @@ export default function LostItemDetailPage() {
           style={{ maxWidth: "390px" }}
         >
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+            <div className="mx-auto mb-4 w-12 h-12 rounded-full border-b-2 border-indigo-600 animate-spin"></div>
             <p className="text-gray-600">분실물 정보를 불러오는 중...</p>
           </div>
         </div>
@@ -215,7 +216,7 @@ export default function LostItemDetailPage() {
         className="flex flex-col mx-auto w-full max-w-md"
         style={{ maxWidth: "390px" }}
       >
-      <MainHeader isAuthenticated={isAuthenticated} authLoading={authLoading} />
+      <MainHeader isAuthenticated={isAuthenticated} authLoading={authLoading} user={user} />
       
         {/* 메인 이미지 */}
         <div className="relative w-full h-80 bg-gray-200">
@@ -223,13 +224,13 @@ export default function LostItemDetailPage() {
             <img
               src={item.image_urls[0]}
               alt={item.title}
-              className="w-full h-full object-cover"
+              className="object-cover w-full h-full"
               onError={(e) => {
                 (e.target as HTMLImageElement).src = "/api/placeholder/400/300";
               }}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-400">
+            <div className="flex justify-center items-center w-full h-full text-gray-400">
               <svg
                 className="w-16 h-16"
                 fill="none"
@@ -270,10 +271,10 @@ export default function LostItemDetailPage() {
         <div className="flex-1 p-4 space-y-4">
           {/* 제목과 기본 정보 */}
           <div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">
+            <h2 className="mb-2 text-xl font-bold text-gray-900">
               {item.title}
             </h2>
-            <div className="flex items-center text-sm text-gray-600 mb-1">
+            <div className="flex items-center mb-1 text-sm text-gray-600">
               <span>
                 {item.category && item.category.length > 0
                   ? item.category[0].label
@@ -289,7 +290,7 @@ export default function LostItemDetailPage() {
             </div>
             {item.reward > 0 && (
               <div className="mt-2">
-                <span className="inline-block bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+                <span className="inline-block px-3 py-1 text-sm font-medium text-yellow-800 bg-yellow-100 rounded-full">
                   현상금 {item.reward.toLocaleString()}원
                 </span>
               </div>
@@ -297,14 +298,14 @@ export default function LostItemDetailPage() {
           </div>
 
           {/* 분실 위치 */}
-          <div className="bg-gray-50 p-4 rounded-lg">
+          <div className="p-4 bg-gray-50 rounded-lg">
             <div className="flex items-start">
               <FaMapMarkerAlt
-                className="text-red-500 mr-2 mt-1 flex-shrink-0"
+                className="flex-shrink-0 mt-1 mr-2 text-red-500"
                 size={16}
               />
               <div>
-                <h3 className="font-medium text-gray-900 mb-1">분실 위치</h3>
+                <h3 className="mb-1 font-medium text-gray-900">분실 위치</h3>
                 <p className="text-sm text-gray-600">{item.lost_location}</p>
               </div>
             </div>
@@ -312,16 +313,20 @@ export default function LostItemDetailPage() {
 
           {/* 상세 설명 */}
           <div>
-            <h3 className="font-medium text-gray-900 mb-2">상세 설명</h3>
-            <p className="text-gray-700 leading-relaxed">{item.description}</p>
+            <h3 className="mb-2 font-medium text-gray-900">상세 설명</h3>
+            <p className="leading-relaxed text-gray-700">{item.description}</p>
           </div>
 
           {/* 등록자 정보 */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-medium text-gray-900 mb-2">등록자</h3>
+          <div className="p-4 bg-gray-50 rounded-lg">
+            <h3 className="mb-2 font-medium text-gray-900">등록자</h3>
             <div className="flex items-center">
-              <div className="w-10 h-10 bg-indigo-500 text-white rounded-full flex items-center justify-center font-medium">
-                {item.user_name?.charAt(0) || "U"}
+              <div className="flex overflow-hidden justify-center items-center w-10 h-10 font-medium bg-gray-300 rounded-full"> {/* Added overflow-hidden and bg-gray-300 for placeholder */}
+                <img
+                  src={item.profile_picture_url || "/default-profile.png"}
+                  alt="프로필 사진"
+                  className="object-cover w-full h-full"
+                />
               </div>
               <div className="ml-3">
                 <p className="font-medium text-gray-900">
@@ -341,13 +346,13 @@ export default function LostItemDetailPage() {
               disabled={isStartingChat}
               className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center transition-colors ${
                 isStartingChat
-                  ? "bg-gray-400 text-white cursor-not-allowed"
-                  : "bg-blue-500 text-white hover:bg-blue-600"
+                  ? "text-white bg-gray-400 cursor-not-allowed"
+                  : "text-white bg-blue-500 hover:bg-blue-600"
               }`}
             >
               {isStartingChat ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  <div className="mr-2 w-4 h-4 rounded-full border-b-2 border-white animate-spin"></div>
                   채팅 시작 중...
                 </>
               ) : (
@@ -361,7 +366,7 @@ export default function LostItemDetailPage() {
             {item.status === "searching" && (
               <button
                 onClick={handleFound}
-                className="flex-1 bg-green-500 text-white py-3 px-4 rounded-lg flex items-center justify-center hover:bg-green-600 transition-colors"
+                className="flex flex-1 justify-center items-center px-4 py-3 text-white bg-green-500 rounded-lg transition-colors hover:bg-green-600"
               >
                 <FaCheck className="mr-2" size={16} />
                 찾았어요
@@ -370,7 +375,7 @@ export default function LostItemDetailPage() {
 
             <button
               onClick={handleReport}
-              className="bg-gray-200 text-gray-700 py-3 px-4 rounded-lg flex items-center justify-center hover:bg-gray-300 transition-colors"
+              className="flex justify-center items-center px-4 py-3 text-gray-700 bg-gray-200 rounded-lg transition-colors hover:bg-gray-300"
             >
               <FaFlag size={16} />
               신고하기

@@ -49,7 +49,7 @@ export default function FoundItemDetailPage() {
   const router = useRouter();
   const params = useParams();
   const itemId = params.id as string;
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth(); // Added user
   const [item, setItem] = useState<FoundItemDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -171,7 +171,7 @@ export default function FoundItemDetailPage() {
   return (
     <main className="flex justify-center min-h-screen bg-white">
       <div className="flex flex-col mx-auto w-full max-w-md" style={{ maxWidth: "390px" }}>
-        <MainHeader isAuthenticated={isAuthenticated} authLoading={authLoading} />
+        <MainHeader isAuthenticated={isAuthenticated} authLoading={authLoading} user={user} />
         <div className="relative w-full h-80 bg-gray-200">
           {item.image_urls && item.image_urls.length > 0 ? (
             <img src={item.image_urls[0]} alt={item.title} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = "/api/placeholder/400/300"; }} />
@@ -212,8 +212,12 @@ export default function FoundItemDetailPage() {
           <div className="bg-gray-50 p-4 rounded-lg">
             <h3 className="font-medium text-gray-900 mb-2">등록자</h3>
             <div className="flex items-center">
-              <div className="w-10 h-10 bg-indigo-500 text-white rounded-full flex items-center justify-center font-medium">
-                {item.user.name?.charAt(0) || "U"}
+              <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center font-medium bg-gray-300"> {/* Added overflow-hidden and bg-gray-300 for placeholder */}
+                <img
+                  src={item.user.profile_picture_url || "/default-profile.png"}
+                  alt="프로필 사진"
+                  className="w-full h-full object-cover"
+                />
               </div>
               <div className="ml-3">
                 <p className="font-medium text-gray-900">{item.user.name || "익명"}</p>
