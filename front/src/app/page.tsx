@@ -68,7 +68,7 @@ const MainCard = ({
 
 export default function Home() {
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
-
+  const [showChatbot, setShowChatbot] = useState(false);
   // 로딩 상태 표시
   if (authLoading) {
     return (
@@ -109,7 +109,7 @@ export default function Home() {
                     <img
                       src="/cheetah.jpeg"
                       alt="기본 프로필"
-                      className="object-cover w-full h-full rounded-full"
+                      className="block object-cover object-center w-full h-full rounded-full"
                     />
                   ))}
               </div>
@@ -156,14 +156,16 @@ export default function Home() {
             icon="/chatbot.svg"
             borderColor="border-orange-400"
             bgColor="bg-orange-50"
-            href="/chat"
+            onClick={() => setShowChatbot(true)}
           />
         </div>
 
         {/* 하단 네비게이션을 위한 여백 */}
         <div className="pb-20">
           {/* 여백만 제공하고 BottomNav는 fixed로 표시됨 */}
-          <Chatbot />
+          {showChatbot && (
+            <Chatbot autoOpen onRequestClose={() => setShowChatbot(false)} />
+          )}{" "}
         </div>
         <BottomNav />
       </div>
