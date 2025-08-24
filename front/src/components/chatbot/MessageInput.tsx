@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 type MessageInputProps = {
   input: string; // 현재 입력 값
   setInput: (value: string) => void; // 입력값을 변경하는 함수
@@ -11,6 +13,7 @@ export default function MessageInput({
   onSend,
   loading,
 }: MessageInputProps) {
+  const [isComposing, setIsComposing] = useState(false);
   return (
     <div className="flex items-center border-t px-3 pt-3">
       <input
@@ -18,13 +21,22 @@ export default function MessageInput({
         placeholder="메시지를 입력하세요..."
         value={input}
         onChange={(e) => setInput(e.target.value)} // 입력할 때마다 부모 state 업데이트
+        onCompositionStart={() => setIsComposing(true)}
+        onCompositionEnd={() => { setIsComposing(false); }}
         onKeyDown={(e) => {
-          if (e.key === "Enter") onSend(); // 엔터키 누르면 메시지 전송
+          if (e.key === "Enter") {
+            if (isComposing) return; // IME 조합 중이면 전송 금지
+            e.preventDefault();
+            onSend();
+          }
         }}
         className="flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none"
       />
       <button
-        onClick={onSend}
+        onClick={() => {
+          (document.activeElement as HTMLElement)?.blur(); // IME 조합 강제 종료
+          onSend();
+        }}
         disabled={loading}
         className="ml-2 w-10 h-10 flex items-center justify-center bg-indigo-600 text-white rounded-full disabled:opacity-60"
       >
