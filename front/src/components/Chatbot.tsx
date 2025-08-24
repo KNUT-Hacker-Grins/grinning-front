@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
-type ChatbotProps = { autoOpen?: boolean; onRequestClose?: () => void; };
+type ChatbotProps = { autoOpen?: boolean; onRequestClose?: () => void };
 
 type Role = "user" | "bot";
 
@@ -14,11 +14,14 @@ type Message = {
 type HealthRes = {
   ok: boolean;
   time: string;
+  state?: string;
+  session_id?: string;
+  created?: boolean;
 };
 
 type ChatbotReply = {
   session_id: string;
-  state: "INIT" | "IN_PROGRESS" | "DONE" | string;
+  state: "idle" | "awaiting_description" | "move_to_article" | "other" | string;
   reply: string;
   choices: string[];
   recommendations: unknown[];
@@ -31,7 +34,6 @@ export default function Chatbot({ autoOpen = false, onRequestClose }: ChatbotPro
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [choices, setChoices] = useState<string[]>([]);
-  const [sessionId, setSessionId] = useState<string | null>(null);
   const [health, setHealth] = useState<HealthRes | null>(null);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -39,7 +41,10 @@ export default function Chatbot({ autoOpen = false, onRequestClose }: ChatbotPro
 
   // 자동 스크롤
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    scrollRef.current?.scrollTo({
+      top: scrollRef.current.scrollHeight,
+      behavior: "smooth",
+    });
   }, [messages, choices]);
 
   // 챗봇 열기
@@ -71,48 +76,44 @@ export default function Chatbot({ autoOpen = false, onRequestClose }: ChatbotPro
 
     // 초기 메시지는 API가 내려주지만, 버튼 선택 전 UX를 위해 프리메시지 표시
     setMessages([{ role: "bot", content: "안녕하세요! 무엇을 도와드릴까요?" }]);
-    setChoices(["분실물 문의", "습득물 문의", "기타 문의"]);
+    setChoices(["분실물 찾기", "분실물 신고", "기타 문의"]);
     setErrorMsg(null);
-    setSessionId(null);
   }, [isOpen]);
 
+  // 외부에서 자동 오픈
   useEffect(() => {
-    if (autoOpen && !isOpen) {
-      openModal();
-    }
-  }, [autoOpen]);
+    if (autoOpen && !isOpen) openModal();
+  }, [autoOpen, isOpen]);
 
-  // 공통: intent 전송
-  const sendIntent = async (intent: string, echoUser?: string) => {
+  // intent/message 전송 공용 함수
+  const sendIntent = async (intent?: string, message?: string) => {
     setLoading(true);
     setErrorMsg(null);
 
-    // 사용자가 선택/입력한 내용도 대화창에 반영
-    if (echoUser) {
-      setMessages((prev) => [...prev, { role: "user", content: echoUser }]);
-    } else {
-      setMessages((prev) => [...prev, { role: "user", content: intent }]);
-    }
+    const body: any = {};
+    if (intent) body.intent = intent;
+    if (message) body.message = message;
 
     try {
       const res = await fetch("/api/chatbot/message", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(sessionId ? { "x-session-id": sessionId } : {}), // 스펙엔 없지만 있으면 전달
-        },
-        body: JSON.stringify({ intent }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
       });
 
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
-      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
       const data: ChatbotReply = await res.json();
-      setSessionId(data.session_id);
       setMessages((prev) => [...prev, { role: "bot", content: data.reply }]);
       setChoices(Array.isArray(data.choices) ? data.choices : []);
-    } catch (err: any) {
+
+      // 게시글 작성 이동 신호에 대응
+      if (data.reply === "게시글을 작성하기 위해 이동합니다.") {
+        // TODO: 게시글 작성 화면으로 이동하거나, data를 폼 프리필에 사용
+        // 예) router.push('/articles/new?prefill=' + encodeURIComponent(JSON.stringify(data.data)));
+        console.log("게시글 작성 이동 데이터:", data.data);
+      }
+    } catch (err) {
       setErrorMsg("서버 통신 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.");
       setMessages((prev) => [
         ...prev,
@@ -123,17 +124,19 @@ export default function Chatbot({ autoOpen = false, onRequestClose }: ChatbotPro
     }
   };
 
-  // 메시지 전송(입력창) → 기타 문의로 라우팅
+  // 입력창 전송 → AWAITING_DESCRIPTION/OTHER 등에서 message 전송
   const handleSend = async () => {
     const trimmed = input.trim();
     if (!trimmed || loading) return;
+    setMessages((prev) => [...prev, { role: "user", content: trimmed }]);
     setInput("");
-    await sendIntent("기타 문의", trimmed);
+    await sendIntent(undefined, trimmed);
   };
 
-  // 퀵 선택(choices) 클릭
+  // 선택지 클릭 → IDLE에서 intent 전송
   const handleChoiceClick = async (choice: string) => {
     if (loading) return;
+    setMessages((prev) => [...prev, { role: "user", content: choice }]);
     await sendIntent(choice);
   };
 
@@ -153,14 +156,14 @@ export default function Chatbot({ autoOpen = false, onRequestClose }: ChatbotPro
 
   return (
     <>
-      {/* 챗봇 열기 버튼
+      {/* (선택) 내부 열기 버튼 — 외부에서 autoOpen이면 필요 없음
       <section className="fixed bottom-[96px] left-[calc(50%+125px)] z-50">
         <button
           onClick={openModal}
           className="w-14 h-14 flex items-center justify-center bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-colors"
           aria-label="Open chatbot"
         >
-          // 💬
+          💬
         </button>
       </section> */}
 
