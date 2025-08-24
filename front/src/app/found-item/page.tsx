@@ -117,7 +117,7 @@ export default function FoundPage() {
       <MainHeader isAuthenticated={isAuthenticated} authLoading={authLoading} user={user} />
       <div className="px-4 py-6">
         {/* 카테고리 필터 */}
-        <div className="flex gap-[15px] mb-[13px] pl-[23px] overflow-x-auto">
+        <div className="flex gap-[15px] mb-[13px] pl-[23px] overflow-x-auto scrollbar-hide">
           {categories.map((category) => (
             <button
               key={category}
