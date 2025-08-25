@@ -4,8 +4,18 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
-import { FoundItem } from "@/types/foundItems";
-import { LostItem } from "@/types/lostItems";
+
+// 인기 카테고리 타입 정의
+interface PopularCategory {
+  category: string;
+  search_count: number;
+  sample_item: {
+    id: number;
+    title: string;
+    image_url: string;
+    found_location: string;
+  };
+}
 import BottomNav from "@/components/BottomNav";
 import LanguageSelector from "@/components/LanguageSelector";
 import Chatbot from "@/components/Chatbot";
@@ -13,6 +23,8 @@ import Chatbot from "@/components/Chatbot";
 // 메인 카드 컴포넌트
 const MainCard = ({
   title,
+  subtitle,
+  titleColor,
   icon,
   borderColor,
   bgColor,
@@ -20,6 +32,8 @@ const MainCard = ({
   onClick,
 }: {
   title: string;
+  subtitle: string;
+  titleColor: string;
   icon: string;
   borderColor: string;
   bgColor: string;
@@ -43,15 +57,24 @@ const MainCard = ({
       onClick={onClick}
     >
       {/* 왼쪽 텍스트 */}
-      <h3 className="text-xl font-bold text-gray-800">{title}</h3>
+      <div className="flex flex-col justify-center h-full">
+        {title.includes(' ') ? (
+          title.split(' ').map((word, index) => (
+            <h3 key={index} className={`text-2xl font-bold leading-tight ${titleColor}`}>
+              {word}
+            </h3>
+          ))
+        ) : (
+          <h3 className={`text-2xl font-bold ${titleColor}`}>{title}</h3>
+        )}
+        <p className="mt-1 text-sm text-gray-500">{subtitle}</p>
+      </div>
 
       {/* 오른쪽 아이콘 */}
       <div className="flex-shrink-0">
         <img src={icon} alt={title} className="object-contain w-16 h-16" />
       </div>
 
-      {/* 호버 효과를 위한 오버레이 */}
-      <div className="absolute inset-0 bg-white rounded-3xl opacity-0 transition-opacity duration-200 hover:opacity-5"></div>
     </div>
   );
 
@@ -66,9 +89,97 @@ const MainCard = ({
   return cardContent;
 };
 
+// 인기 카테고리 카드 컴포넌트
+const PopularCategoryCard = ({ popularCategories }: { popularCategories: PopularCategory[] }) => {
+  const [isPressed, setIsPressed] = useState(false);
+  const topCategory = popularCategories[0];
+
+  // 데이터가 없으면 기본 Figma 디자인 카드 표시
+  if (!topCategory) {
+    return (
+      <div
+        className={`
+          relative w-full h-48 rounded-3xl border-2 border-black bg-white
+          flex items-center justify-between px-6
+          transition-all duration-200 ease-out
+          hover:scale-105 card-shadow hover:card-shadow-hover
+          active:scale-95
+          ${isPressed ? "scale-95" : ""}cursor-pointer }`}
+        onMouseDown={() => setIsPressed(true)}
+        onMouseUp={() => setIsPressed(false)}
+        onMouseLeave={() => setIsPressed(false)}
+      >
+        {/* 왼쪽 텍스트 */}
+        <div className="flex flex-col">
+          <h3 className="text-xl font-bold leading-tight text-black">가장 많이</h3>
+          <h3 className="text-xl font-bold leading-tight text-black">검색된</h3>
+          <h3 className="text-xl font-bold leading-tight text-black">카테고리</h3>
+        </div>
+
+        {/* 오른쪽 화살표 */}
+        <div className="flex-shrink-0">
+          <img src="/arrow.svg" alt="화살표" className="w-8 h-8" />
+        </div>
+
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={`
+        relative w-full h-48 rounded-3xl border-2 border-black bg-white
+        flex items-center justify-between px-6
+        transition-all duration-200 ease-out
+        hover:scale-105 card-shadow hover:card-shadow-hover
+        active:scale-95
+        ${isPressed ? "scale-95" : ""}cursor-pointer }`}
+      onMouseDown={() => setIsPressed(true)}
+      onMouseUp={() => setIsPressed(false)}
+      onMouseLeave={() => setIsPressed(false)}
+      style={{
+        backgroundImage: topCategory.sample_item?.image_url ? `linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9)), url(${topCategory.sample_item.image_url})` : 'none',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
+      {/* 왼쪽 텍스트 */}
+      <div className="flex flex-col">
+        <h3 className="text-xl font-bold leading-tight text-black">가장 많이</h3>
+        <h3 className="text-xl font-bold leading-tight text-black">검색된</h3>
+        <h3 className="text-xl font-bold leading-tight text-black">카테고리</h3>
+      </div>
+
+      {/* 오른쪽 화살표 */}
+      <div className="flex-shrink-0">
+        <img src="/arrow.svg" alt="화살표" className="w-8 h-8" />
+      </div>
+
+    </div>
+  );
+};
+
 export default function Home() {
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
   const [showChatbot, setShowChatbot] = useState(false);
+  const [popularCategories, setPopularCategories] = useState<PopularCategory[]>([]);
+
+  // 인기 카테고리 데이터 가져오기
+  useEffect(() => {
+    const fetchPopularCategories = async () => {
+      try {
+        const response = await api.stats.getPopularCategories();
+        setPopularCategories(response.data || []);
+      } catch (error) {
+        console.error('인기 카테고리 로딩 실패:', error);
+        // 에러 시 빈 배열로 설정
+        setPopularCategories([]);
+      }
+    };
+
+    fetchPopularCategories();
+  }, []);
   // 로딩 상태 표시
   if (authLoading) {
     return (
@@ -93,22 +204,20 @@ export default function Home() {
         style={{ maxWidth: "390px", minHeight: "100vh" }}
       >
         {/* 상단 헤더 */}
-        <div className="relative px-6 pt-16 pb-8">
-          {/* Info 버튼 (좌상단) */}
-          <div className="absolute left-6 top-16 z-30">
-            <Link href="/legal-info">
-              <div className="flex overflow-hidden justify-center items-center w-10 h-10 bg-blue-100 rounded-full transition-all duration-200 cursor-pointer hover:bg-blue-200 hover:scale-105 active:scale-95">
-                <img
-                  src="/info.png"
-                  alt="정보"
-                  className="w-6 h-6"
-                />
-              </div>
-            </Link>
+        <div className="flex justify-between items-center px-6 pt-16 pb-8">
+          {/* 왼쪽 찾아줘 로고 */}
+          <div>
+            <img src="/logo.svg" alt="찾아줘 로고" className="w-16 h-16" />
           </div>
-
-          {/* 프로필 아이콘 (우상단) */}
-          <div className="absolute right-6 top-16">
+          
+          {/* 오른쪽 아이콘들 */}
+          <div className="flex gap-0 items-center">
+            {/* 언어 설정 아이콘 */}
+            <div className="flex justify-center items-center w-30 h-30">
+              <LanguageSelector />
+            </div>
+            
+            {/* 프로필 아이콘 */}
             <Link href={isAuthenticated ? "/mypage" : "/login"}>
               <div className="flex overflow-hidden justify-center items-center w-10 h-10 bg-gray-300 rounded-full transition-colors hover:bg-gray-400">
                 {!authLoading &&
@@ -128,26 +237,17 @@ export default function Home() {
               </div>
             </Link>
           </div>
-
-          {/* 중앙 로고 및 언어 선택기 */}
-          <div className="flex relative z-10 flex-col items-center mb-16">
-            {/* 찾아줘! 로고 */}
-            <div className="flex gap-3 items-center mb-6">
-              <img src="/logo.svg" alt="찾아줘 로고" className="h-34 w-34" />
-            </div>
-            
-            {/* 언어 선택기 */}
-            <div className="relative z-20 px-2 py-0.5 bg-white rounded-full border border-gray-100 shadow-lg backdrop-blur-sm">
-              <LanguageSelector />
-            </div>
-          </div>
         </div>
 
         {/* 메인 카드 섹션 */}
-        <div className="flex-1 px-6 space-y-6">
+        <div className="flex-1 px-6 space-y-4">
+          {/* 가장 많이 검색된 카테고리 카드 */}
+          <PopularCategoryCard popularCategories={popularCategories} />
           {/* 분실물 조회 카드 - 습득물 목록 페이지로 이동 */}
           <MainCard
             title="분실물 조회"
+            subtitle="잃어버린 물건 찾기"
+            titleColor="text-red-500"
             icon="/lostitem.svg"
             borderColor="border-red-400"
             bgColor="bg-red-50"
@@ -157,6 +257,8 @@ export default function Home() {
           {/* 분실물 수배 카드 - 분실물 목록 페이지로 이동 */}
           <MainCard
             title="분실물 수배"
+            subtitle="잃어버린 물건 수배하기"
+            titleColor="text-blue-500"
             icon="/wanted.svg"
             borderColor="border-blue-400"
             bgColor="bg-blue-50"
@@ -166,6 +268,8 @@ export default function Home() {
           {/* 찾아줘 챗봇 카드 - 채팅 페이지로 이동 */}
           <MainCard
             title="찾아줘 챗봇"
+            subtitle="잃어버린 물건 물어보기"
+            titleColor="text-orange-500"
             icon="/chatbot.svg"
             borderColor="border-orange-400"
             bgColor="bg-orange-50"

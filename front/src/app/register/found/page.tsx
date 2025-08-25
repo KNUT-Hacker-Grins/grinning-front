@@ -51,6 +51,7 @@ export default function FoundItemRegisterPage() {
   // PhotoUploadSection에서 업로드된 이미지 URL들을 받는 함수
   const handleImageUpload = (imageUrls: string[]) => {
     setUploadedImages(imageUrls);
+    console.log(imageUrls);
   };
 
   // AI 카테고리 추천 함수
