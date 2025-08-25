@@ -58,7 +58,7 @@ export default function MessageInput({
       className="w-full border rounded-lg px-3 py-2 text-sm pr-10 focus:outline-none"
       // 👉 pr-10 (padding-right) 줘서 아이콘 들어갈 공간 확보
     />
-    {/* 📎 버튼을 input 안쪽 오른쪽에 배치 */}
+    {/* 📎 버튼을 input 안쪽 오른쪽에 배치
     <button
       type="button"
       onClick={() => fileInputRef.current?.click()}
@@ -66,7 +66,7 @@ export default function MessageInput({
       title="이미지 첨부"
     >
       📎
-    </button>
+    </button> */}
     <input
       type="file"
       accept="image/*"

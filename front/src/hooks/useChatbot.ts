@@ -120,12 +120,15 @@ export function useChatbot(isOpen: boolean) {
     if (choice === "🔍 검색하기") {
       const payload = (lastDescRef.current || "").trim();
 
+
       if (payload) {
         // ✅ 마지막 설명을 message로 보내서 MOVE_TO_ARTICLE에서 self.message로 처리되게 함
-        await sendIntent(undefined, payload);
+        const result = await sendIntent(undefined, payload);
+        router.push("/found-item")
       } else {
         // 설명이 비어 있으면 기존처럼 intent로 전송(백엔드가 "설명 입력" 유도)
-        await sendIntent(choice);
+        const result = await sendIntent(choice);
+        router.push("/found-item")
       }
     } else {
       await sendIntent(choice);
