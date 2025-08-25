@@ -52,13 +52,10 @@ export function useChatbot(isOpen: boolean) {
   const sendIntent = async (intent?: string, message?: string) => {
     setLoading(true);
     setErrorMsg(null);
-    // intent
-    // 챗봇 서버로 의도(intent)또는 메시지를 보냄 (챗봇 버튼 전송)
 
     const body: any = {};
     if (intent) body.intent = intent;
     if (message) body.message = message;
-    // 서버에 보낼 객체 준비,intent가 있으면 intent만 message가 있으면 message만
 
     try {
       const res = await fetch("/api/chatbot/message", {
@@ -66,33 +63,28 @@ export function useChatbot(isOpen: boolean) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      // 엔드포인트에 POST 요청 보냄
-      // body에는 사용자의 입력 또는 버튼 선택(intent)이 담김
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      // 응답이 200번대가 아니면 에러로 간주
 
       const data: ChatbotReply = await res.json();
+
       setMessages((prev) => [...prev, { role: "bot", content: data.reply }]);
       setChoices(Array.isArray(data.choices) ? data.choices : []);
-      // 챗봇 답변을 메시지 목록에 추가
-      // 서버가 내려준 choice 배열이 있으면 버튼으로 갱신
 
+      // 게시글 작성 이동 신호
       if (data.reply === "게시글을 작성하기 위해 이동합니다.") {
         console.log("게시글 작성 이동 데이터:", data.data);
-        router.push("/register/found"); //  습득물 등록 페이지로 이동
+        router.push("/register/found");
       }
+
+      return data; // ✅ 호출부에서 응답 활용
     } catch (err) {
-      setErrorMsg(
-        "서버 통신 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요."
-      );
+      setErrorMsg("서버 통신 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.");
       setMessages((prev) => [
         ...prev,
-        {
-          role: "bot",
-          content: "오류가 발생했어요. 잠시 후 다시 시도해 주세요.",
-        },
+        { role: "bot", content: "오류가 발생했어요. 잠시 후 다시 시도해 주세요." },
       ]);
+      return null; // ✅ 실패 시 null
     } finally {
       setLoading(false);
     }
@@ -115,20 +107,41 @@ export function useChatbot(isOpen: boolean) {
   const handleChoiceClick = async (choice: string) => {
     if (loading) return;
 
+    // UI에 사용자 선택 추가
     setMessages((prev) => [...prev, { role: "user", content: choice }]);
 
     if (choice === "🔍 검색하기") {
       const payload = (lastDescRef.current || "").trim();
 
+      // 1) 서버에 요청
+      const result = payload
+        ? await sendIntent(undefined, payload)   // 마지막 설명을 message로 전송
+        : await sendIntent(choice);              // 설명이 없으면 intent로 전송(서버가 안내)
 
-      if (payload) {
-        // ✅ 마지막 설명을 message로 보내서 MOVE_TO_ARTICLE에서 self.message로 처리되게 함
-        const result = await sendIntent(undefined, payload);
-        router.push("/found-item")
+      // 2) 응답에서 카테고리 ID들 추출 (두 형태 모두 지원)
+      let ids: number[] = [];
+
+      // (A) data.category_ids 또는 data.data.category_ids
+      const fromData = (result as any)?.data?.category_ids ?? (result as any)?.category_ids;
+      if (Array.isArray(fromData)) {
+        ids = fromData
+          .map((v: any) => Number(v))
+          .filter((n: number) => Number.isFinite(n));
+      }
+
+      // (B) recommendations 배열에 category_id가 들어있는 경우
+      if ((!ids || ids.length === 0) && Array.isArray((result as any)?.recommendations)) {
+        ids = ((result as any)?.recommendations || [])
+          .map((r: any) => Number(r?.category_id))
+          .filter((n: number) => Number.isFinite(n));
+      }
+
+      // 3) 라우팅: 카테고리 ID가 있으면 쿼리로 전달
+      if (ids && ids.length > 0) {
+        const qs = `?cats=${encodeURIComponent(ids.join(","))}`;
+        router.push(`/found-item${qs}`);
       } else {
-        // 설명이 비어 있으면 기존처럼 intent로 전송(백엔드가 "설명 입력" 유도)
-        const result = await sendIntent(choice);
-        router.push("/found-item")
+        router.push("/found-item");
       }
     } else {
       await sendIntent(choice);
