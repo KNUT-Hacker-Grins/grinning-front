@@ -393,4 +393,9 @@ export const api = {
     },
   },
 
+  // 통계 관련
+  stats: {
+    getPopularCategories: () => apiRequest('/api/stats/popular-categories'),
+  },
+
 };
