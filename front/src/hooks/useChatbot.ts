@@ -94,48 +94,38 @@ export function useChatbot(isOpen: boolean) {
 
     // 1) 서버에 message로 전달하여 응답 받기
     const result = await sendIntent(undefined, trimmed);
+
     if (!result) return;
 
-    // 2) 서버 응답 기반으로 카테고리 ID 추출
-    let ids: number[] = [];
-    const fromData =
-      (result as any)?.data?.category_ids ?? (result as any)?.category_ids;
-    if (Array.isArray(fromData)) {
-      ids = fromData.map((v: any) => Number(v)).filter((n: number) => Number.isFinite(n));
-    }
-    if ((!ids || ids.length === 0) && Array.isArray((result as any)?.recommendations)) {
-      ids = ((result as any)?.recommendations || [])
-        .map((r: any) => Number(r?.category_id))
-        .filter((n: number) => Number.isFinite(n));
-    }
+    // 1) 추천 배열 가져오기
+    const recs = Array.isArray((result as any)?.recommendations)
+      ? (result as any).recommendations
+      : [];
 
-    // 3) 카테고리 ID가 있으면 해당 카테고리들의 습득물 불러와 "갤러리" 메시지로 붙이기
-    if (ids && ids.length > 0) {
-      try {
-        const res = await api.foundItems.getByCategories(ids);
-        const items = (res as any)?.data?.items ?? [];
-
-        // Message 타입에 kind/cards가 없다면 any로 캐스팅(권장: 타입 확장)
-        setMessages((prev: any[]) => [
-          ...prev,
-          {
-            role: "bot",
-            // 타입 확장 권장: kind?: 'text' | 'gallery'
-            kind: "gallery",
-            note: "이 항목들이 비슷해 보여요 🙂",
-            // 타입 확장 권장: cards?: Array<{ id: number; title: string; imageUrl: string; categoryId?: number; }>
-            cards: items.map((it: any) => ({
-              id: it.id,
-              title: it.title ?? it.name ?? "항목",
-              imageUrl: it.image_url ?? it.thumbnail ?? "/placeholder.png",
-              categoryId: it.category_id,
-            })),
-          },
-        ]);
-      } catch (e) {
-        console.error("카테고리별 아이템 조회 실패:", e);
-        // 실패해도 대화는 계속 진행
-      }
+    // 2) 추천이 있으면 바로 갤러리 메시지로 붙이기
+    if (recs.length > 0) {
+      setMessages((prev: any[]) => [
+        ...prev,
+        {
+          role: "bot",
+          kind: "gallery",
+          note: "이 항목들이 비슷해 보여요 🙂",
+          cards: recs.map((r: any) => ({
+            id: r.id,
+            title: r.title ?? r.description ?? "항목",
+            imageUrl:
+              Array.isArray(r.image_urls) && r.image_urls.length > 0
+                ? r.image_urls[0]
+                : "/placeholder.png",
+            categoryId: undefined, // 지금 백엔드는 category_id를 주지 않음
+            categoryLabel:
+              Array.isArray(r.category) && r.category[0]?.label
+                ? r.category[0].label
+                : undefined,
+          })),
+        },
+      ]);
+      // 필요하면 여기서 끝. (원한다면 추가로 카테고리별 전체목록도 불러올 수 있음)
     }
   };
 
