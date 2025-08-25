@@ -1,11 +1,13 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { Message, HealthRes, ChatbotReply } from "@/types/chatbot";
+import { useRouter } from "next/navigation";
 
 export function useChatbot(isOpen: boolean) {
-  const [input, setInput] = useState("");  // 입력창 텍스트
+  const router = useRouter();
+  const [input, setInput] = useState(""); // 입력창 텍스트
   const [messages, setMessages] = useState<Message[]>([]); // 대화 기록
-  const [choices, setChoices] = useState<string[]>([]);  // 서버에서 내려준 선택지 버튼들 
+  const [choices, setChoices] = useState<string[]>([]); // 서버에서 내려준 선택지 버튼들
   const [health, setHealth] = useState<HealthRes | null>(null); // 서버 헬스체크 상태
   const [loading, setLoading] = useState(false); // 서버 요청 중 여부
   const [errorMsg, setErrorMsg] = useState<string | null>(null); // 에러 메시지
@@ -42,7 +44,7 @@ export function useChatbot(isOpen: boolean) {
     setMessages([{ role: "bot", content: "안녕하세요! 무엇을 도와드릴까요?" }]);
     // 봇의 인사 메시지
     setChoices(["분실물 찾기", "분실물 신고", "기타 문의"]);
-    // 초기 선택지 버튼 
+    // 초기 선택지 버튼
     setErrorMsg(null);
     // 이전에 남아있을 수 있는 에러 메시지 초기화
   }, [isOpen]); // 닫았다가 다시 열면 인사 선택지가 재설정됨
@@ -50,8 +52,8 @@ export function useChatbot(isOpen: boolean) {
   const sendIntent = async (intent?: string, message?: string) => {
     setLoading(true);
     setErrorMsg(null);
-  // intent
-  // 챗봇 서버로 의도(intent)또는 메시지를 보냄 (챗봇 버튼 전송)
+    // intent
+    // 챗봇 서버로 의도(intent)또는 메시지를 보냄 (챗봇 버튼 전송)
 
     const body: any = {};
     if (intent) body.intent = intent;
@@ -69,7 +71,7 @@ export function useChatbot(isOpen: boolean) {
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       // 응답이 200번대가 아니면 에러로 간주
-      
+
       const data: ChatbotReply = await res.json();
       setMessages((prev) => [...prev, { role: "bot", content: data.reply }]);
       setChoices(Array.isArray(data.choices) ? data.choices : []);
@@ -78,13 +80,18 @@ export function useChatbot(isOpen: boolean) {
 
       if (data.reply === "게시글을 작성하기 위해 이동합니다.") {
         console.log("게시글 작성 이동 데이터:", data.data);
+        router.push("/register/found"); //  습득물 등록 페이지로 이동
       }
-      // 게시글 작성 이동 신호가 오면 데이터 콘솔에 찍음(페이지 이동 처리 필요)
     } catch (err) {
-      setErrorMsg("서버 통신 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.");
+      setErrorMsg(
+        "서버 통신 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요."
+      );
       setMessages((prev) => [
         ...prev,
-        { role: "bot", content: "오류가 발생했어요. 잠시 후 다시 시도해 주세요." },
+        {
+          role: "bot",
+          content: "오류가 발생했어요. 잠시 후 다시 시도해 주세요.",
+        },
       ]);
     } finally {
       setLoading(false);
@@ -106,24 +113,24 @@ export function useChatbot(isOpen: boolean) {
   };
 
   const handleChoiceClick = async (choice: string) => {
-  if (loading) return;
+    if (loading) return;
 
-  setMessages((prev) => [...prev, { role: "user", content: choice }]);
+    setMessages((prev) => [...prev, { role: "user", content: choice }]);
 
-  if (choice === "🔍 검색하기") {
-    const payload = (lastDescRef.current || "").trim();
+    if (choice === "🔍 검색하기") {
+      const payload = (lastDescRef.current || "").trim();
 
-    if (payload) {
-      // ✅ 마지막 설명을 message로 보내서 MOVE_TO_ARTICLE에서 self.message로 처리되게 함
-      await sendIntent(undefined, payload);
+      if (payload) {
+        // ✅ 마지막 설명을 message로 보내서 MOVE_TO_ARTICLE에서 self.message로 처리되게 함
+        await sendIntent(undefined, payload);
+      } else {
+        // 설명이 비어 있으면 기존처럼 intent로 전송(백엔드가 "설명 입력" 유도)
+        await sendIntent(choice);
+      }
     } else {
-      // 설명이 비어 있으면 기존처럼 intent로 전송(백엔드가 "설명 입력" 유도)
       await sendIntent(choice);
     }
-  } else {
-    await sendIntent(choice);
-  }
-};
+  };
 
   return {
     input,
