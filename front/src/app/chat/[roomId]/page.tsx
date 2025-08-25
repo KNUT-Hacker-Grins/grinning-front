@@ -13,8 +13,6 @@ import { ChatMessage as ChatMessageType, ChatMessageSender } from '@/types/chat'
 // Use the imported type
 interface Message extends ChatMessageType {}
 
-
-
 export default function ChatRoomPage() {
   const params = useParams();
   const roomId = params.roomId as string;
@@ -34,7 +32,7 @@ export default function ChatRoomPage() {
     const fetchMessages = async () => {
       try {
         setIsLoading(true);
-        const numericRoomId = Number(roomId); // roomId를 숫자로 변환
+        const numericRoomId = Number(roomId);
         if (isNaN(numericRoomId)) {
           console.error('유효하지 않은 채팅방 ID입니다:', roomId);
           setIsLoading(false);
@@ -42,7 +40,13 @@ export default function ChatRoomPage() {
         }
         const response = await api.chat.getMessages(numericRoomId, 1, 50);
         console.log('✅ 메시지 응답:', response);
-        setMessages(response.data.messages.reverse());
+        // 방어 코드 추가: response와 response.data, response.data.messages가 유효한지 확인
+        if (response && response.data && Array.isArray(response.data.messages)) {
+          setMessages(response.data.messages.reverse());
+        } else {
+          console.error('메시지 데이터가 유효하지 않습니다:', response);
+          setMessages([]); // 메시지가 없는 경우 빈 배열로 설정
+        }
       } catch (error) {
         console.error('❌ 메시지 요청 실패:', error);
       } finally {
@@ -66,9 +70,14 @@ export default function ChatRoomPage() {
           return;
         }
         const response = await api.chat.getRooms();
-        const room = response.data.find((r: any) => Number(r.id) === numericRoomId);
-        if (room) {
-          setParticipantName(room.participant.name);
+        // 방어 코드 추가: response, response.data, response.data.items가 유효한지 확인
+        if (response && response.data && Array.isArray(response.data.items)) {
+          const room = response.data.items.find((r: any) => Number(r.id) === numericRoomId);
+          if (room && room.participant) {
+            setParticipantName(room.participant.name);
+          }
+        } else {
+          console.error('채팅방 목록 데이터가 유효하지 않습니다:', response);
         }
       } catch (error) {
         console.error('참여자 이름을 불러오는 데 실패했습니다.', error);
