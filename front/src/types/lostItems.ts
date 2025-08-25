@@ -1,21 +1,28 @@
 // 분실물 상태 타입
 export type LostItemStatus = 'searching' | 'found' | 'cancelled';
 
+// 사용자 정보 타입
+export interface User {
+  id: number | null;
+  email: string;
+  name: string;
+  profile_picture_url: string;
+}
+
 // 분실물 기본 정보 타입
 export interface LostItem {
   id: number; // Integer ID (백엔드 요구사항에 맞춤)
+  user: User | null; // user 객체로 변경
   title: string;
   description: string;
   lost_at: string; // ISO 8601 형식
-      lost_location: string;
+  lost_location: string;
   latitude: number; // Add latitude
   longitude: number; // Add longitude
   image_urls: string[];
   category: { category: string; label: string; confidence: string; }[];
   reward: number;
   status: LostItemStatus;
-  user_name: string;
-  profile_picture_url?: string; // Added profile_picture_url
   created_at: string;
   updated_at: string;
 }

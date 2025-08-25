@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -56,7 +56,7 @@ export default function LostItemDetailPage() {
   const router = useRouter();
   const params = useParams();
   const itemId = params.id as string;
-  const { isAuthenticated, isLoading: authLoading, user } = useAuth(); // Added user
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
   const [item, setItem] = useState<LostItem | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -65,11 +65,11 @@ export default function LostItemDetailPage() {
 
   // 신고 하기
   const handleReport = () => {
-    setIsReportOpen(true); // 버튼 클릭 시 모달 열림
+    setIsReportOpen(true);
   };
 
   const handleCloseReport = () => {
-    setIsReportOpen(false); // 모달 닫기
+    setIsReportOpen(false);
   };
 
   const handleSubmitReport = async (reason: string, details: string) => {
@@ -77,7 +77,7 @@ export default function LostItemDetailPage() {
     if (!item) return;
 
     const response = await api.reports.submit(item.id, {
-      post_type: "lost", // 또는 "found"로 상황에 따라 조정
+      post_type: "lost",
       reason,
       description: details,
     });
@@ -106,7 +106,6 @@ export default function LostItemDetailPage() {
 
         if (response && response.data) {
           setItem(response.data);
-          console.log('Lost Item Detail - item.profile_picture_url:', response.data.profile_picture_url); // Added console.log
         } else {
           setError("분실물을 찾을 수 없습니다.");
         }
@@ -164,19 +163,13 @@ export default function LostItemDetailPage() {
     );
   }
 
-  const handleBack = () => {
-    router.back();
-  };
-
   const handleChat = async () => {
     try {
       setIsStartingChat(true);
 
-      // 채팅방 시작 요청
       const response = await api.chat.startChat(item.id, "lost");
 
       if (response && response.data && response.data.room_id) {
-        // 채팅 페이지로 이동
         router.push(`/chat/${response.data.room_id}`);
       } else {
         alert("채팅방 생성에 실패했습니다.");
@@ -202,7 +195,6 @@ export default function LostItemDetailPage() {
       await api.lostItems.updateStatus(item.id, "found");
       alert("분실물을 찾았다고 표시되었습니다!");
 
-      // 상태 업데이트
       setItem((prev) => (prev ? { ...prev, status: "found" } : null));
     } catch (error) {
       console.error("상태 업데이트 실패:", error);
@@ -218,7 +210,6 @@ export default function LostItemDetailPage() {
       >
       <MainHeader isAuthenticated={isAuthenticated} authLoading={authLoading} user={user} />
       
-        {/* 메인 이미지 */}
         <div className="relative w-full h-80 bg-gray-200">
           {item.image_urls && item.image_urls.length > 0 ? (
             <img
@@ -247,7 +238,6 @@ export default function LostItemDetailPage() {
             </div>
           )}
 
-          {/* 상태 배지 */}
           <div className="absolute top-4 left-4">
             <span
               className={`px-3 py-1 rounded-full text-sm font-medium ${
@@ -267,9 +257,7 @@ export default function LostItemDetailPage() {
           </div>
         </div>
 
-        {/* 분실물 정보 */}
         <div className="flex-1 p-4 space-y-4">
-          {/* 제목과 기본 정보 */}
           <div>
             <h2 className="mb-2 text-xl font-bold text-gray-900">
               {item.title}
@@ -297,7 +285,6 @@ export default function LostItemDetailPage() {
             )}
           </div>
 
-          {/* 분실 위치 */}
           <div className="p-4 bg-gray-50 rounded-lg">
             <div className="flex items-start">
               <FaMapMarkerAlt
@@ -311,26 +298,24 @@ export default function LostItemDetailPage() {
             </div>
           </div>
 
-          {/* 상세 설명 */}
           <div>
             <h3 className="mb-2 font-medium text-gray-900">상세 설명</h3>
             <p className="leading-relaxed text-gray-700">{item.description}</p>
           </div>
 
-          {/* 등록자 정보 */}
           <div className="p-4 bg-gray-50 rounded-lg">
             <h3 className="mb-2 font-medium text-gray-900">등록자</h3>
             <div className="flex items-center">
-              <div className="flex overflow-hidden justify-center items-center w-10 h-10 font-medium bg-gray-300 rounded-full"> {/* Added overflow-hidden and bg-gray-300 for placeholder */}
+              <div className="flex overflow-hidden justify-center items-center w-10 h-10 font-medium bg-gray-300 rounded-full">
                 <img
-                  src={item.profile_picture_url || "/default-profile.png"}
+                  src={item.user?.profile_picture_url || "/default-profile.png"}
                   alt="프로필 사진"
                   className="object-cover w-full h-full"
                 />
               </div>
               <div className="ml-3">
                 <p className="font-medium text-gray-900">
-                  {item.user_name || "익명"}
+                  {item.user?.name || "익명"}
                 </p>
                 <p className="text-sm text-gray-500">등록자</p>
               </div>
@@ -338,7 +323,6 @@ export default function LostItemDetailPage() {
           </div>
         </div>
 
-        {/* 하단 액션 버튼 */}
         <div className="p-4 bg-white border-t border-gray-200">
           <div className="flex space-x-3">
             <button
@@ -384,8 +368,8 @@ export default function LostItemDetailPage() {
         </div>
         <ReportModal
           isOpen={isReportOpen}
-          onClose={handleCloseReport}
-          onSubmit={handleSubmitReport}
+          onClose={() => handleCloseReport()}
+          onSubmit={(reason, details) => handleSubmitReport(reason, details)}
         />
 
         <BottomNav />

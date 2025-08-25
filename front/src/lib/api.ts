@@ -453,4 +453,10 @@ export const api = {
       return apiRequest(`/api/police/lost-items/?${queryString}`);
     },
   },
+
+  // 통계 관련
+  stats: {
+    getPopularCategories: () => apiRequest('/api/stats/popular-categories'),
+  },
+
 };

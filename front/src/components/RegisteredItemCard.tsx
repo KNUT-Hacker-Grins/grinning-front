@@ -1,27 +1,71 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
-type Props = {
-  id: string | number
-  title: string
-  location: string
-  date: string
-  status: '진행 중' | '회수 완료'
+// The full item object structure from the API
+interface User {
+  id: number | null;
+  email: string;
+  name: string;
+  profile_picture_url: string;
 }
 
-export default function RegisteredItemCard({ id, title, location, date, status }: Props) {
-  const statusColor = status === '진행 중' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'
+interface Item {
+  id: number;
+  user: User | null;
+  title: string;
+  description: string;
+  lost_at?: string;
+  found_at?: string;
+  lost_location?: string;
+  found_location?: string;
+  image_urls: string[];
+  status: string;
+}
+
+interface RegisteredItemCardProps {
+  item: Item;
+  type: 'lost' | 'found';
+}
+
+export default function RegisteredItemCard({ item, type }: RegisteredItemCardProps) {
+  const location = type === 'lost' ? item.lost_location : item.found_location;
+  const date = type === 'lost' ? item.lost_at : item.found_at;
+  const detailUrl = `/${type}-item/${item.id}`;
+
+  // Default user object for robustness
+  const user = item.user || { name: '익명', profile_picture_url: '/default-profile.png' };
 
   return (
-    <Link href={`/lost-item/${id}`} className="block cursor-pointer hover:opacity-80 transition-opacity">
-      <div className="border border-gray-100 rounded-lg p-3 space-y-1 bg-white">
-        <div className="flex justify-between items-center">
-          <h3 className="text-sm font-semibold">{title}</h3>
-          <span className={`text-xs px-2 py-1 rounded ${statusColor}`}>{status}</span>
+    <Link href={detailUrl} legacyBehavior>
+      <a className="flex items-center p-4 bg-white rounded-lg shadow-md mb-4 cursor-pointer hover:bg-gray-50">
+        <div className="w-24 h-24 relative rounded-lg overflow-hidden mr-4 flex-shrink-0">
+          <Image
+            src={item.image_urls?.[0] || '/placeholder.svg'}
+            alt={item.title || 'Item image'}
+            layout="fill"
+            objectFit="cover"
+            className="bg-gray-200"
+          />
         </div>
-        <p className="text-sm text-gray-500">{location}</p>
-        <p className="text-xs text-gray-400">{date}</p>
-      </div>
+        <div className="flex-1 overflow-hidden">
+          <h3 className="font-bold text-lg mb-1 truncate">{item.title || '제목 없음'}</h3>
+          <p className="text-gray-600 text-sm mb-2 truncate">{item.description}</p>
+          <div className="flex items-center text-xs text-gray-500">
+            <div className="w-5 h-5 rounded-full overflow-hidden mr-2 relative flex-shrink-0">
+              <Image
+                src={user.profile_picture_url || '/placeholder.svg'}
+                alt={user.name || 'User profile'}
+                layout="fill"
+                objectFit="cover"
+              />
+            </div>
+            <span className="truncate">{user.name || '익명'}</span>
+            <span className="mx-2">|</span>
+            <span className="truncate">{location}</span>
+          </div>
+        </div>
+      </a>
     </Link>
-  )
+  );
 }
   

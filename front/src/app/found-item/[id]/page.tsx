@@ -243,7 +243,11 @@ export default function FoundItemDetailPage() {
             </button>
           </div>
         </div>
-        <ReportModal isOpen={isReportOpen} onClose={handleCloseReport} onSubmit={handleSubmitReport} />
+        <ReportModal
+          isOpen={isReportOpen}
+          onClose={() => handleCloseReport()}
+          onSubmit={(reason, details) => handleSubmitReport(reason, details)}
+        />
         <BottomNav />
       </div>
     </main>

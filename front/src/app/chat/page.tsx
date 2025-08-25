@@ -51,8 +51,14 @@ export default function ChatListPage() {
     if (isAuthenticated) {
       const fetchChatRooms = async () => {
         try {
-          const response: ChatRoomsResponse = await api.chat.getRooms(); 
-          setChatRooms(response.data.items);
+          const response: ChatRoomsResponse = await api.chat.getRooms();
+          // 방어 코드 추가: response, response.data, response.data.items가 유효한지 확인
+          if (response && response.data && Array.isArray(response.data.items)) {
+            setChatRooms(response.data.items);
+          } else {
+            console.error('채팅방 목록 데이터가 유효하지 않습니다:', response);
+            setChatRooms([]); // 데이터가 없거나 형식이 잘못된 경우 빈 배열로 설정
+          }
         } catch (error) {
           console.error('채팅 목록을 불러오는 데 실패했습니다.', error);
         } finally {
