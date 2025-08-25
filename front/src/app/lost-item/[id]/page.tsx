@@ -368,8 +368,8 @@ export default function LostItemDetailPage() {
         </div>
         <ReportModal
           isOpen={isReportOpen}
-          onClose={handleCloseReport}
-          onSubmit={handleSubmitReport}
+          onClose={() => handleCloseReport()}
+          onSubmit={(reason, details) => handleSubmitReport(reason, details)}
         />
 
         <BottomNav />

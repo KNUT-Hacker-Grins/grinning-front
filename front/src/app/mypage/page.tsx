@@ -190,11 +190,8 @@ export default function MyPage() {
               myLostItems.map((item) => (
                 <RegisteredItemCard
                   key={item.id}
-                  id={item.id.toString()}
-                  title={item.title}
-                  location={item.lost_location}
-                  date={formatDate(item.created_at)}
-                  status={getStatusText(item.status)}
+                  item={item}
+                  type="lost"
                 />
               ))
             ) : (
