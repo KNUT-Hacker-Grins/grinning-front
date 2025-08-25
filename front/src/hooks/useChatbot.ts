@@ -94,14 +94,42 @@ export function useChatbot(isOpen: boolean) {
     const trimmed = input.trim();
     // 문자열 앞 뒤 공백 모두 제거
     if (!trimmed || loading) return;
-    // 공백이거나 로딩 주이면 무시
+    // 공백이거나 로딩 중이면 무시
+
+    // UI에 사용자 입력 먼저 추가
     setMessages((prev) => [...prev, { role: "user", content: trimmed }]);
-    // 메시지를 화면에 먼저 추가
+
+    // 입력창 비움 + 마지막 설명 저장
     setInput("");
-    // 입력창 비움
     lastDescRef.current = trimmed;
-    await sendIntent(undefined, trimmed);
-    // 서버에 전달
+
+    // 서버에 message로 전달
+    const result = await sendIntent(undefined, trimmed);
+
+    // 서버 응답 기반으로 카테고리 ID 추출
+    let ids: number[] = [];
+
+    // (A) data.category_ids 또는 data.data.category_ids 에서 우선 추출
+    const fromData = (result as any)?.data?.category_ids ?? (result as any)?.category_ids;
+    if (Array.isArray(fromData)) {
+      ids = fromData
+        .map((v: any) => Number(v))
+        .filter((n: number) => Number.isFinite(n));
+    }
+
+    // (B) recommendations 배열에 category_id가 존재하는 경우 보조 추출
+    if ((!ids || ids.length === 0) && Array.isArray((result as any)?.recommendations)) {
+      ids = ((result as any)?.recommendations || [])
+        .map((r: any) => Number(r?.category_id))
+        .filter((n: number) => Number.isFinite(n));
+    }
+
+    // 카테고리 ID가 하나라도 있으면 즉시 /found-item로 이동하여 이미지/목록 표시
+    if (ids && ids.length > 0) {
+      const qs = `?cats=${encodeURIComponent(ids.join(","))}`;
+      router.push(`/found-item${qs}`);
+    }
+    // 없으면 이동하지 않고 대화만 이어감(필요시 "검색하기" 버튼으로 유도)
   };
 
   const handleChoiceClick = async (choice: string) => {
