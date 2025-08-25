@@ -49,8 +49,8 @@ export default function LanguageSelector() {
               <button
                 key={lang.code}
                 onClick={() => handleLanguageChange(lang.code)}
-                className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-all duration-150 hover:bg-blue-50 ${
-                  lang.code === language ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-800 hover:text-blue-600'
+                className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-all duration-150 hover:bg-orange-50 ${
+                  lang.code === language ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-800 hover:text-orange-600'
                 }`}
               >
                 <span className="text-lg">{lang.flag}</span>
