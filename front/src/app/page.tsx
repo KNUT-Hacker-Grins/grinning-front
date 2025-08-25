@@ -94,7 +94,11 @@ const PopularCategoryCard = ({ popularCategories }: { popularCategories: Popular
   const [isPressed, setIsPressed] = useState(false);
   const topCategory = popularCategories[0];
 
-  // 데이터가 없으면 기본 Figma 디자인 카드 표시
+  const handleClick = () => {
+    const category = topCategory?.category || "지갑";
+    window.location.href = `/found-item?category=${encodeURIComponent(category)}`;
+  };
+  
   if (!topCategory) {
     return (
       <div
@@ -108,6 +112,7 @@ const PopularCategoryCard = ({ popularCategories }: { popularCategories: Popular
         onMouseDown={() => setIsPressed(true)}
         onMouseUp={() => setIsPressed(false)}
         onMouseLeave={() => setIsPressed(false)}
+        onClick={handleClick}
       >
         {/* 왼쪽 텍스트 */}
         <div className="flex flex-col">
@@ -137,6 +142,7 @@ const PopularCategoryCard = ({ popularCategories }: { popularCategories: Popular
       onMouseDown={() => setIsPressed(true)}
       onMouseUp={() => setIsPressed(false)}
       onMouseLeave={() => setIsPressed(false)}
+      onClick={handleClick}
       style={{
         backgroundImage: topCategory.sample_item?.image_url ? `linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9)), url(${topCategory.sample_item.image_url})` : 'none',
         backgroundSize: 'cover',
