@@ -6,57 +6,75 @@ const DJANGO_BASE_URL = process.env.DJANGO_BASE_URL || "https://cheetahsmiling.d
 const SESSION_COOKIE_KEY = "chat_session_id";
 
 export async function POST(req: NextRequest) {
+  console.log('=== API Route 시작 ===');
+  
   try {
-    const { intent, message } = await req.json();
+    const requestBody = await req.json();
+    console.log('1. 받은 요청:', requestBody);
+    
+    const { intent, message } = requestBody;
 
     const jar = await cookies();
     let sessionId = jar.get(SESSION_COOKIE_KEY)?.value;
+    console.log('2. 현재 세션 ID:', sessionId);
 
     let isNewSession = false;
 
     // 1) 세션 없으면 health로 발급
     if (!sessionId) {
-      console.log('No session found, creating new session...');
+      console.log('세션이 없어서 새로 생성 중...');
       const healthRes = await fetch(`${DJANGO_BASE_URL}/api/chatbot/health`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
       });
-      if (!healthRes.ok) throw new Error(`Health HTTP ${healthRes.status}`);
+      
+      console.log('Health 요청 상태:', healthRes.status);
+      
+      if (!healthRes.ok) {
+        const healthError = await healthRes.text().catch(() => "");
+        console.log('Health 요청 실패:', healthError);
+        throw new Error(`Health HTTP ${healthRes.status}: ${healthError}`);
+      }
+      
       const healthJson = await healthRes.json();
+      console.log('Health 응답:', healthJson);
+      
       sessionId = healthJson.session_id || crypto.randomUUID();
       isNewSession = true;
-      console.log('New session created:', sessionId);
+      console.log('새 세션 생성됨:', sessionId);
     }
 
-    // 디버깅을 위한 로그 추가
-    console.log('Session ID:', sessionId);
-    console.log('Sending data to Django:', { session_id: sessionId, intent, message });
-
     // 2) Django에 프록시
+    console.log('3. Django 요청 전송:', {
+      url: `${DJANGO_BASE_URL}/api/chatbot/message`,
+      body: { session_id: sessionId, intent, message }
+    });
+
     const upRes = await fetch(`${DJANGO_BASE_URL}/api/chatbot/message`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ session_id: sessionId, intent, message }),
     });
 
-    console.log('Django response status:', upRes.status);
+    console.log('4. Django 응답 상태:', upRes.status);
+    console.log('5. Django 응답 헤더:', Object.fromEntries(upRes.headers.entries()));
 
     if (!upRes.ok) {
-      const text = await upRes.text().catch(() => "");
-      console.error('Django error response:', text);
-      throw new Error(`Upstream HTTP ${upRes.status}: ${text}`);
+      const errorText = await upRes.text().catch(() => "");
+      console.log('6. Django 에러 응답 원본:', errorText);
+      throw new Error(`Django HTTP ${upRes.status}: ${errorText}`);
     }
 
     const data = await upRes.json();
-    console.log('Django response data:', data);
+    console.log('7. Django 성공 응답:', data);
 
     // 3) 그대로 반환, 세션 쿠키 새로 발급 시 쿠키 설정
     const resp = NextResponse.json(data);
 
     if (isNewSession) {
-      console.log('Setting new session cookie:', sessionId);
+      console.log('새 세션 쿠키 설정:', sessionId);
       resp.cookies.set(SESSION_COOKIE_KEY, sessionId!, {
-        httpOnly: false,    // Django와 일치하도록 수정
+        httpOnly: false,    
         sameSite: "lax",   
         secure: false,     
         path: "/",
@@ -64,11 +82,15 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    console.log('=== API Route 성공 완료 ===');
     return resp;
+
   } catch (err: any) {
-    console.error("message route error:", err?.message || err);
-    console.error("Full error:", err);
-    console.log("[chatbot/message] DJANGO_BASE_URL =", DJANGO_BASE_URL);
+    console.log('=== API Route 에러 ===');
+    console.log('에러 타입:', typeof err);
+    console.log('에러 메시지:', err.message);
+    console.log('에러 스택:', err.stack);
+    console.log('[chatbot/message] DJANGO_BASE_URL =', DJANGO_BASE_URL);
     
     // 에러 발생 시에도 유효한 세션 ID 반환
     const jar = await cookies();
